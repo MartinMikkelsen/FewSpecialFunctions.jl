@@ -7,5 +7,10 @@ Very quick implementation of a few different (special) functions. This includes
 2. Coulomb wave functions
 3. Debye function
 4. Fresnel functions
-5. Struve functions.
+5. Struve functions
+
+TODO
+
+1. Irregular Coulomb wave functions (Normalization)
+2. Other functions
 

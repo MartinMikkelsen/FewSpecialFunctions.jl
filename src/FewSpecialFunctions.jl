@@ -9,7 +9,7 @@ include("CoulombWave.jl")
 export Debye_function
 include("Debye.jl")
 
-export S_integral_pi, C_integral_pi ,S_integral, C_integral, S_err, C_err
+export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_err, Fresnel_C_err
 include("Fresnel.jl")
 
 export Struve

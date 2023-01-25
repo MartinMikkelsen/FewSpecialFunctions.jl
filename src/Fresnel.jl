@@ -1,34 +1,34 @@
 using SpecialFunctions 
 #using the following representation to test the implementation
-function S_integral_pi(x)
+function Fresnel_S_integral_pi(x)
     S = quadgk(t -> sin(π/2*t^2),0,x)[1]
     return S    
 end
 
-function C_integral_pi(x)
+function Fresnel_C_integral_pi(x)
     C = quadgk(t -> cos(π/2*t^2),0,x)[1]
     return C    
 end
 
-function S_integral(x)
+function Fresnel_S_integral(x)
     S = quadgk(t -> sin(t^2),0,x)[1]
     return S    
 end
 
-function C_integral(x)
+function Fresnel_C_integral(x)
     C = quadgk(t -> cos(t^2),0,x)[1]
     return C    
 end
 
-function S_err(x)
-    S = sqrt(π/2)*(1+1im)/4*(erf((1+1im)/(sqrt(2))*x)-1im*erf((1-1im)*x/(sqrt(2))))
-    return S    
+function Fresnel_S_err(x)
+    S = sqrt(π/2).*(1+1im)/4*(erf.((1+1im)/(sqrt(2))*x)-1im*erf.((1-1im)*x/(sqrt(2))))
+    return real(S)    
 end
 
-function C_err(x)
+function Fresnel_C_err(x)
     C = sqrt(π/2)*(1-1im)/4*(erf((1+1im)/(sqrt(2))*x)+1im*erf((1-1im)/(sqrt(2))*x))
-    return C
+    return real(C)
 end
 
-export S_integral_pi, C_integral_pi ,S_integral, C_integral , S_err, C_err
+export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_err, Fresnel_C_err
 
