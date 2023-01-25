@@ -7,7 +7,7 @@ function regular_coulomb(ℓ,η,ρ)
     Integral_value = complex_quadrature(t -> exp(-2*1im.*ρ*t)*t^(ℓ+1im*η)*(1-t)^(ℓ-1im*η),0,1)
     return real(First.*Integral_value)
 end
-
+#Needs work
 function C(ℓ,η)
     return 2^ℓ*exp(-π*η/2)*(abs(gamma(ℓ+1+1im*η))/(factorial(2*ℓ+1)))
 end
