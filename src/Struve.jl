@@ -10,6 +10,6 @@ function Struve(ν,z,min_tol=1e-15)
         H_out = quadgk(θ -> sin(z*cos(θ))*sin.(θ)^(2*ν),0,π/2)[1]
         return H_int*H_out 
     end
-endnd
+end
 
 export Struve
