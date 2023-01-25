@@ -49,4 +49,9 @@ using Test
     @test FewSpecialFunctions.Struve_alt(0.0,4) ≈ 0.1350146 atol=1e-4
     @test FewSpecialFunctions.Struve_alt(1.0,4) ≈ 1.0697267 atol=1e-4
     @test FewSpecialFunctions.Struve_alt(2.0,4) ≈ 1.2486751 atol=1e-4
+
+    @test FewSpecialFunctions.Clausen(0) ≈ 0 atol=1e-4
+    @test FewSpecialFunctions.Clausen(π/3+2*π) ≈ 1.01494160 atol=1e-4
+    @test FewSpecialFunctions.Clausen(-π/3+2*π) ≈ -1.01494160 atol=1e-4
+
 end

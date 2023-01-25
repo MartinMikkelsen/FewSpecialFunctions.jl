@@ -1,5 +1,3 @@
-using SpecialFunctions
-
 #Only for ν larger than -1/2
 function Struve(ν,z)
     H_out = (2*(0.5*z)^ν)/(sqrt(π)*gamma(ν+0.5))
