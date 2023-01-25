@@ -1,6 +1,5 @@
 using FewSpecialFunctions
 using Test
-using BenchmarkTools
 
 @testset "FewSpecialFunctions.jl" begin
 
@@ -42,4 +41,12 @@ using BenchmarkTools
     @test FewSpecialFunctions.C_err(0.32) ≈ FewSpecialFunctions.C_integral(0.32) atol=1e-5
     @test FewSpecialFunctions.C_err(0.70) ≈ FewSpecialFunctions.C_integral(0.70) atol=1e-5
 
+
+    @test FewSpecialFunctions.Struve(0.0,4) ≈ 0.1350146 atol=1e-4
+    @test FewSpecialFunctions.Struve(1.0,4) ≈ 1.0697267 atol=1e-4
+    @test FewSpecialFunctions.Struve(2.0,4) ≈ 1.2486751 atol=1e-4
+
+    @test FewSpecialFunctions.Struve_alt(0.0,4) ≈ 0.1350146 atol=1e-4
+    @test FewSpecialFunctions.Struve_alt(1.0,4) ≈ 1.0697267 atol=1e-4
+    @test FewSpecialFunctions.Struve_alt(2.0,4) ≈ 1.2486751 atol=1e-4
 end
