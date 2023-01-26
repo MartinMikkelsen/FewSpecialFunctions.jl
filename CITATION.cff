@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: FewSpecialFunctions.jl
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Martin
+    family-names: Mikkelsen
+    email: MartinMikkelsen@proton.me
+repository-code: 'https://github.com/MartinMikkelsen/FewSpecialFunctions.jl'
+license: MIT
+version: 0.1.0
+date-released: '2023-01-26'
