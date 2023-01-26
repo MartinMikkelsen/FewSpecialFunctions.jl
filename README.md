@@ -1,6 +1,8 @@
 # FewSpecialFunctions
 [![Build Status](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
+
+
 Very quick implementation of a few different (special) functions. This includes 
 
 1. Clausen function 
@@ -19,8 +21,7 @@ TODO
 cff-version: 1.2.0
 title: FewSpecialFunctions.jl
 message: >-
-  If you use this software, please cite it using the
-  metadata from this file.
+  You can cite if you want.
 type: software
 authors:
   - given-names: Martin
