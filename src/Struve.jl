@@ -1,5 +1,5 @@
 #Only for ν larger than -1/2
-function Struve(ν,z,min_tol=1e-15)
+function Struve(ν::Number,z::Number,min_tol=1e-15)
     if ν >= 1
         H_out = (2*(0.5*z).^ν)/(sqrt(π)*gamma(ν+0.5))
         H_int = quadgk(t -> (1-t.^2)^(ν.-0.5)*sin.(t.*z),min_tol,1)[1]

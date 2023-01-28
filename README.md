@@ -15,6 +15,7 @@ TODO
 
 1. Irregular Coulomb wave functions (Normalization)
 2. Other functions
+3. Better tests
 
 
 ```yaml

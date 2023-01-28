@@ -43,4 +43,3 @@ xlabel!(L"C(x)")
 ylabel!(L"S(x)")
 title!("Euler Spiral")
 ```
-
