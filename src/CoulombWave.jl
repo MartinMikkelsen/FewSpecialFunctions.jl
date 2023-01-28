@@ -2,7 +2,7 @@ export complex_quadrature, regular_coulomb, irregular_coulomb, C
 
 using SpecialFunctions
 
-function regular_coulomb(ℓ::Number,η::Number,ρ::Number)
+function regular_coulomb(ℓ,η,ρ)
     First = ρ.^(ℓ+1)*2^ℓ*exp(1im.*ρ-(π.*η/2))/(abs(gamma(ℓ+1+1im*η)))
     Integral_value = complex_quadrature(t -> exp(-2*1im.*ρ*t).*t.^(ℓ+1im*η)*(1-t).^(ℓ-1im*η),1e-5,1)
     return real(First.*Integral_value)
