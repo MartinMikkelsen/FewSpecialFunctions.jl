@@ -2,10 +2,10 @@ export complex_quadrature, regular_coulomb, irregular_coulomb, C
 
 using SpecialFunctions #For gamma function
 
-"""
+@doc raw"""
     regular_coulomb(ℓ,η,ρ)
 
-Regular Coulomb wave function ``\ell`` is the order(non-negative integer), ``\eta``` is the charge (real parameter) and ``\rho``` is the radial coordinate (non-negative real variable).
+Regular Coulomb wave function ℓ is the order(non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (non-negative real variable).
 
 returns the value F_ℓ(η,ρ)
 """

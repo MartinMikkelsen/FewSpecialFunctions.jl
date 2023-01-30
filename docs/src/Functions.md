@@ -1,4 +1,4 @@
-
+# Functions
 ## Clausen functions
 The Clausen function is given by
 
@@ -28,6 +28,7 @@ title!("Clausen function")
 ```@docs
 Clausen
 ```
+
 ## Debye functions
 
 The Debye functions are given by
@@ -181,9 +182,6 @@ xlabel!(L"x")
 title!("Struve Functions")
 ```
 
-```@docs
-Struve
-```
 ## Fresnel functions
 
 ```@example overview

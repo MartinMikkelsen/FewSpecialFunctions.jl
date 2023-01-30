@@ -43,9 +43,3 @@ xlabel!(L"C(x)")
 ylabel!(L"S(x)")
 title!("Euler Spiral")
 ```
-## Docs
-### Fresnel functions
-```@docs
-Fresnel_C_err
-Fresnel_S_err
-```
