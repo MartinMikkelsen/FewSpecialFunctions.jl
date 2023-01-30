@@ -1,5 +1,7 @@
 using QuadGK
-
+"""
+Function to use complex integration
+"""
 function complex_quadrature(func,a,b)
     function real_func(x)
         return real(func(x))

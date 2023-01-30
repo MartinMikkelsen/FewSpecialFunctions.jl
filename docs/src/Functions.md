@@ -1,4 +1,3 @@
-# Functions
 
 ## Clausen functions
 The Clausen function is given by
@@ -58,7 +57,9 @@ plot!(x,Debye_function.(3,x), label=L"D_3(x)")
 title!("Debye Functions")
 xlabel!(L"x")
 ```
-
+```@docs
+Debye_function
+```
 ## Regular Coulomb wave functions
 
 The Coulomb wave equation for a charged particle with arbitrary angular momentum and charge is given by 
@@ -136,7 +137,9 @@ plot!(x,regular_coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
-
+```@docs
+regular_coulomb
+```
 ## Struve functions
 The Struve functions are solutions of the non-homogeneous Bessel's differential equation
 ```math
@@ -178,7 +181,9 @@ xlabel!(L"x")
 title!("Struve Functions")
 ```
 
-
+```@docs
+Struve
+```
 ## Fresnel functions
 
 ```@example overview
@@ -228,7 +233,7 @@ xlabel!(L"x")
 ```
 ### Benchmarks
 
-<!-- Using the integral approach
+Using the integral approach
 
 ```@example overview
 
@@ -243,4 +248,4 @@ Using the error function
 using FewSpecialFunctions,BenchmarkTools
 
 @benchmark Fresnel_C_integral.($x)
-``` -->
+```
