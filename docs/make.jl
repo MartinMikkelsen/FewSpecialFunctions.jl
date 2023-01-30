@@ -1,3 +1,4 @@
 using Documenter, FewSpecialFunctions
 
-makedocs(sitename="Documentation")
+makedocs(sitename="Documentation", doctest = true)
+
