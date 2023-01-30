@@ -26,7 +26,9 @@ plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
 ```
-
+```@docs
+FewSpecialFunctions.Clausen
+```
 ## Debye functions
 
 The Debye functions are given by
@@ -173,8 +175,9 @@ plot!(x,Struve.(4,x),label=L"H_4(x)")
 plot!(x,Struve.(5,x),label=L"H_5(x)")
 xlabel!(L"x")
 title!("Struve Functions")
-
 ```
+
+
 ## Fresnel functions
 
 ```@example overview
