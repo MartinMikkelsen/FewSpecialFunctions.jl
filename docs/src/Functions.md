@@ -26,7 +26,9 @@ plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
 ```
-
+```@docs
+Clausen
+```
 ## Debye functions
 
 The Debye functions are given by

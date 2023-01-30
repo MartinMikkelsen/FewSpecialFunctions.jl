@@ -2,7 +2,7 @@ export complex_quadrature, regular_coulomb, irregular_coulomb, C
 
 using SpecialFunctions #For gamma function
 
-"Defines a cool function. Returns some stuff"
+"Regular Coulomb wave function where ℓ is the order (non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (nonnegative real variable)."
 function regular_coulomb(ℓ,η,ρ)
     First = ρ.^(ℓ+1)*2^ℓ*exp(1im.*ρ-(π.*η/2))/(abs(gamma(ℓ+1+1im*η)))
     Integral_value = complex_quadrature(t -> exp(-2*1im.*ρ*t).*t.^(ℓ+1im*η)*(1-t).^(ℓ-1im*η),1e-5,1)
@@ -10,7 +10,7 @@ function regular_coulomb(ℓ,η,ρ)
 end
 
 #Needs work
-function C(ℓ::Number,η::Float64)
+function C(ℓ::Int,η::Float64)
     return 2^ℓ*exp(-π*η/2)*(abs(gamma(ℓ+1+1im*η))/(factorial(2*ℓ+1)))
 end
 
