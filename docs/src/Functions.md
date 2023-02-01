@@ -24,7 +24,7 @@ x = range(0,15,1000)
 plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
-savefig("a-plot.svg") nothing # hide
+savefig("a-plot.svg"); nothing # hide
 ```
 ![](a-plot.svg)
 
