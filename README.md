@@ -1,6 +1,6 @@
 # FewSpecialFunctions
-[![Build Status](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/)
 
 
 Very quick implementation of a few different (special) functions. This includes 
