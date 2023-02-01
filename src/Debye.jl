@@ -2,7 +2,9 @@
     Debye_function(n,x,min_tol=1e-5)
 
 The Debye function(n,x) given by
-``D_n(x) = \frac{n}{x^n} int_0^x \frac{t^n}{e^{t}-1} dx``
+    
+``D_n(x) = \frac{n}{x^n} \int_0^x \frac{t^n}{e^{t}-1} dx``
+
 Returns the value ``D(n,x)``
 """
 function Debye_function(n,x,min_tol=1e-5)

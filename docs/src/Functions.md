@@ -24,9 +24,13 @@ x = range(0,15,1000)
 plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
-savefig("a-plot.svg"); nothing # hide
+savefig("a-plot.svg") nothing # hide
 ```
 ![](a-plot.svg)
+
+```@docs
+Clausen
+```
 
 ## Debye functions
 
@@ -58,7 +62,11 @@ title!("Debye Functions")
 xlabel!(L"x")
 savefig("b-plot.svg"); nothing # hide
 ```
-![](a-plot.svg)
+![](b-plot.svg)
+
+```@docs
+Debye_function
+```
 ## Regular Coulomb wave functions
 
 The Coulomb wave equation for a charged particle with arbitrary angular momentum and charge is given by 
@@ -176,7 +184,9 @@ plot!(x,Struve.(5,x),label=L"H_5(x)")
 xlabel!(L"x")
 title!("Struve Functions")
 ```
-
+```@docs
+Struve
+```
 ## Fresnel functions
 
 ```@example overview

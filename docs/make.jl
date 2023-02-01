@@ -1,6 +1,6 @@
 using Documenter, FewSpecialFunctions
 
-makedocs(sitename="FewSpecialFunctions.jl", pages = ["Home" => "index.md",
+makedocs(sitename="FewSpecialFunctions.jl", pages = ["Home" => "index.md",modules = [FewSpecialFunctions],
 "Functions" => "Functions.md"])
 
 deploydocs(
