@@ -17,6 +17,7 @@ TODO
 2. Other functions
 3. Better tests
 
+![CombinedPlot](combinedplot.png)
 
 ```yaml
 cff-version: 1.2.0
