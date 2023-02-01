@@ -21,12 +21,10 @@ default(
 
 
 x = range(0,15,1000)
-plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
-savefig("a-plot.svg"); nothing # hide
+plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 ```
-![](a-plot.svg)
 
 ```@docs
 Clausen
