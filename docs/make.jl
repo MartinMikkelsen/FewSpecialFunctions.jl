@@ -1,4 +1,4 @@
-using Documenter, FewSpecialFunctions
+using Documenter, FewSpecialFunctions, Plots
 
 makedocs(sitename="FewSpecialFunctions.jl", pages = ["Home" => "index.md",
 "Functions" => "Functions.md"])
