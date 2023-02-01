@@ -25,10 +25,6 @@ plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
 xlabel!(L"ϕ")
 title!("Clausen function")
 ```
-```@docs
-Clausen
-```
-
 ## Debye functions
 
 The Debye functions are given by
@@ -57,9 +53,6 @@ plot!(x,Debye_function.(2,x),label=L"D_2(x)")
 plot!(x,Debye_function.(3,x), label=L"D_3(x)")
 title!("Debye Functions")
 xlabel!(L"x")
-```
-```@docs
-Debye_function
 ```
 ## Regular Coulomb wave functions
 
@@ -137,9 +130,6 @@ plot!(x,regular_coulomb.(2,5,x), label=L"F_2(5,ρ)")
 plot!(x,regular_coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
-```
-```@docs
-regular_coulomb
 ```
 ## Struve functions
 The Struve functions are solutions of the non-homogeneous Bessel's differential equation
