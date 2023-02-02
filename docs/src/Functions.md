@@ -6,7 +6,7 @@ The Clausen function is given by
 Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
 ```
 
-```@example overview
+```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
@@ -38,8 +38,8 @@ The Debye functions are given by
     D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}x
 ```
 And
-```@example overview
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -60,7 +60,6 @@ title!("Debye Functions")
 xlabel!(L"x")
 savefig("b-plot.svg"); nothing # hide
 ```
-![](b-plot.svg)
 
 ```@docs
 Debye_function
@@ -93,9 +92,8 @@ where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to 
 ```
 
 This implementation need the gamma function from [SpecialFunctions.jl](https://github.com/JuliaMath/SpecialFunctions.jl)
-```@example overview
-
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -106,7 +104,6 @@ default(
     grid=true,
     palette=:tab10,
 )
-
 
 x = range(0,25,1000)
 
@@ -118,9 +115,8 @@ title!("Regular Coulomb Wave Functions")
 
 Use a similar approach to plot the regular Coulomb functions for different a ``\ell``
 
-```@example overview
-
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -132,7 +128,6 @@ default(
     palette=:tab10,
 )
 
-
 x = range(0,25,1000)
 
 plot(x,regular_coulomb.(1e-5,5,x), label=L"F_0(5,ρ)")
@@ -142,6 +137,10 @@ plot!(x,regular_coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
+```@docs
+regular_coulomb
+```
+
 ## Struve functions
 The Struve functions are solutions of the non-homogeneous Bessel's differential equation
 ```math
@@ -156,9 +155,8 @@ And
     \mathbf{H}_\nu(z) = \frac{2(z/2)^\nu}{\sqrt{\pi}\Gamma(\nu+1/2)} \int_0^{\pi/2} \sin(z\cos(\theta)) \sin^{2\nu}(\theta) \, \text{d}\theta
 ```
 Here is an example
-```@example overview
-
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -169,7 +167,6 @@ default(
     grid=true,
     palette=:tab10,
 )
-
 
 x = range(-5,5,1000)
 
@@ -187,9 +184,8 @@ Struve
 ```
 ## Fresnel functions
 
-```@example overview
-
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -207,13 +203,11 @@ plot(x,Fresnel_C_integral.(x),label=L"C(x)")
 plot!(x,Fresnel_C_err.(x), ls=:dash, lw=1.5, label=L"\tilde{C}(x)")
 title!("Fresnel Integral")
 xlabel!(L"x")
-
 ```
 and
 
-```@example overview
-
-using Plots, FewSpecialFunctions
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings
 
 plot_font = "Computer Modern"
 default(
@@ -232,20 +226,28 @@ plot!(x,Fresnel_S_err.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
 title!("Fresnel Integral")
 xlabel!(L"x")
 ```
+```@docs
+Fresnel_S_integral_pi
+Fresnel_C_integral_pi
+Fresnel_S_integral
+Fresnel_C_integral
+Fresnel_S_err
+Fresnel_C_err
+```
+
 ### Benchmarks
 
 Using the integral approach
 
-```@example overview
-
+```@example bench 
 using FewSpecialFunctions,BenchmarkTools
 
-@benchmark Fresnel_C_err.($x)
+x = range(0,150,1000)
 
+@benchmark Fresnel_C_err.($x)
 ```
 Using the error function
-```@example overview
-
+```@example bench
 using FewSpecialFunctions,BenchmarkTools
 
 @benchmark Fresnel_C_integral.($x)

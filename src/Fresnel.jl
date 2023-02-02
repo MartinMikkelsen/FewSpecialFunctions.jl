@@ -6,7 +6,7 @@ using SpecialFunctions
 The Fresnel function S(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
 
 ```math
-    S(z) = ∫_0^x cos(pi/2t^2) dt
+    S(z) = ∫_0^x \cos(\pi t^2/2) dt
 ```
 """
 function Fresnel_S_integral_pi(x)
@@ -14,10 +14,12 @@ function Fresnel_S_integral_pi(x)
     return S    
 end
 """
+    Fresnel_C_integral_pi(x)
+
 The Fresnel function C(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
 
 ```math
-    C(z) = ∫_0^x sin(π/2t^2) dt
+    C(z) = ∫_0^x sin(pi t^2/2) dt
 ```
 """
 function Fresnel_C_integral_pi(x)
@@ -25,9 +27,11 @@ function Fresnel_C_integral_pi(x)
     return C    
 end
 """
+    Fresnel_S_integral(x)
+
 The Fresnel function S(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral
 ```math
-    S(z) = ∫_0^x sin(t^2) dt
+    S(z) = ∫_0^x \sin(t^2) dt
 ```
 """
 function Fresnel_S_integral(x)
@@ -35,6 +39,8 @@ function Fresnel_S_integral(x)
     return S    
 end
 """
+    Fresnel_C_integral(x)
+
 The Fresnel function C(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral
 ```math
     C(z) = ∫_0^x cos(t^2) dt
@@ -45,14 +51,24 @@ function Fresnel_C_integral(x)
     return C    
 end
 """
+    Fresnel_S_err(x)
+
 The Fresnel function S(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral and the error function.
+```math
+S(z) = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \text{erf} \left(\frac{1+i}{\sqrt{2}}z \right) - i \text{erf} \left(\frac{1-i}{\sqrt{2}}z \right]
+```
 """
 function Fresnel_S_err(x)
     S = sqrt(π/2).*(1+1im)/4*(erf.((1+1im)/(sqrt(2))*x)-1im*erf.((1-1im)*x/(sqrt(2))))
     return real(S)    
 end
 """
+    Fresnel_C_err(x)
+
 The Fresnel function C(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral and the error function.
+```math
+C(z) = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ \text{erf}\left(\frac{1+i}{\sqrt{2}}z \right) + i \text{erf}\left(\frac{1-i}{\sqrt{2}}z\right]
+```
 """
 function Fresnel_C_err(x)
     C = sqrt(π/2)*(1-1im)/4*(erf((1+1im)/(sqrt(2))*x)+1im*erf((1-1im)/(sqrt(2))*x))
