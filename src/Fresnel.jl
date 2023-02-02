@@ -1,12 +1,10 @@
 using SpecialFunctions 
-#using the following representation to test the implementation
 """
     Fresnel_S_integral_pi(x)
 
 The Fresnel function S(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
-
 ```math
-    S(z) = ∫_0^x \cos(\pi t^2/2) dt
+    S(z) = \int_0^x \cos(\pi t^2/2) dt
 ```
 """
 function Fresnel_S_integral_pi(x)
@@ -19,7 +17,7 @@ end
 The Fresnel function C(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
 
 ```math
-    C(z) = ∫_0^x sin(pi t^2/2) dt
+    C(z) = \int_0^x \sin(pi t^2/2) dt
 ```
 """
 function Fresnel_C_integral_pi(x)
@@ -31,7 +29,7 @@ end
 
 The Fresnel function S(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral
 ```math
-    S(z) = ∫_0^x \sin(t^2) dt
+    S(z) = \int_0^x \sin(t^2) dt
 ```
 """
 function Fresnel_S_integral(x)
@@ -43,7 +41,7 @@ end
 
 The Fresnel function C(z) using the definition https://en.wikipedia.org/wiki/Fresnel_integral
 ```math
-    C(z) = ∫_0^x cos(t^2) dt
+    C(z) = \int_0^x \cos(t^2) dt
 ```
 """
 function Fresnel_C_integral(x)
