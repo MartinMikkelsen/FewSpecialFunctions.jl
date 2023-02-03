@@ -1,7 +1,7 @@
 name = "FewSpecialFunctions"
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
 authors = ["Martin Mikkelsen"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
