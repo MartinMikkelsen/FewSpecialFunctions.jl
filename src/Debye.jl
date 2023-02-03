@@ -1,5 +1,5 @@
 @doc raw"""
-    Debye_function(n,x,min_tol=1e-5)
+    Debye_function(n,x,min_tol=1e-15)
 
 The Debye function(n,x) given by
     
