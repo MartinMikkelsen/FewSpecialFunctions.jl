@@ -23,8 +23,8 @@ julia ] add FewSpecialFunctions
 
 Here is how to generate an Euler spiral using [FewSpecialFunctions.jl](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl). 
 
-```@example overview
-using Plots, FewSpecialFunctions, LaTeXStrings
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings 
 
 plot_font = "Computer Modern"
 default(

@@ -24,7 +24,9 @@ x = range(0,15,1000)
 xlabel!(L"ϕ")
 title!("Clausen function")
 plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
+savefig("clausen.svg"); nothing # hide
 ```
+![Clausen function](clausen.svg)
 
 ```@docs
 Clausen
@@ -58,8 +60,10 @@ plot!(x,Debye_function.(2,x),label=L"D_2(x)")
 plot!(x,Debye_function.(3,x), label=L"D_3(x)")
 title!("Debye Functions")
 xlabel!(L"x")
-savefig("b-plot.svg"); nothing # hide
+savefig("debye.svg"); nothing # hide
 ```
+![](debye.svg)
+
 
 ```@docs
 Debye_function
