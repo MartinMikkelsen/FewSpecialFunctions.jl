@@ -44,4 +44,4 @@ ylabel!(L"S(x)")
 title!("Euler Spiral")
 savefig("EulerSpiral.svg"); nothing # hide
 ```
-![Euler Spiral](EulerSpiral.svg)
+![Euler Spiral](./EulerSpiral.svg)

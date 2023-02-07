@@ -62,7 +62,7 @@ title!("Debye Functions")
 xlabel!(L"x")
 savefig("debye.svg"); nothing # hide
 ```
-![](debye.svg)
+![](./debye.svg)
 
 
 ```@docs
