@@ -55,31 +55,31 @@ function Fresnel_C_integral(x)
     return C    
 end
 @doc raw"""
-    Fresnel_S_err(x)
+    Fresnel_S_erf(x)
 
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
+The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the erfor function.
 ```math
-S(z) = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \text{erf} \left(\frac{1+i}{\sqrt{2}}z \right) - i \text{erf} \left(\frac{1-i}{\sqrt{2}}z \right]
+S(z) = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ {erf} \left(\frac{1+i}{\sqrt{2}}z \right) - i {erf} \left(\frac{1-i}{\sqrt{2}}z \right]
 ```
 Returns the value ``S(x)``
 """
-function Fresnel_S_err(x)
+function Fresnel_S_erf(x)
     S = sqrt(π/2).*(1+1im)/4*(erf.((1+1im)/(sqrt(2))*x)-1im*erf.((1-1im)*x/(sqrt(2))))
     return real(S)    
 end
 @doc raw"""
-    Fresnel_C_err(x)
+    Fresnel_C_erf(x)
 
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
+The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the erfor function.
 ```math
 C(z) = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ {erf}\left(\frac{1+i}{\sqrt{2}}z \right) + i {erf}\left(\frac{1-i}{\sqrt{2}}z\right]
 ```
 Returns the value ``C(x)``
 """
-function Fresnel_C_err(x)
+function Fresnel_C_erf(x)
     C = sqrt(π/2)*(1-1im)/4*(erf((1+1im)/(sqrt(2))*x)+1im*erf((1-1im)/(sqrt(2))*x))
     return real(C)
 end
 
-export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_err, Fresnel_C_err
+export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_erf, Fresnel_C_erf
 
