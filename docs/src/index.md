@@ -38,10 +38,10 @@ default(
 
 x = range(-25,25,5000)
 
-plot(Fresnel_C_err.(x),Fresnel_S_err.(x))
+plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
 xlabel!(L"C(x)")
 ylabel!(L"S(x)")
 title!("Euler Spiral")
 savefig("EulerSpiral.svg"); nothing # hide
 ```
-![Euler Spiral](./EulerSpiral.svg)
+![Euler Spiral](EulerSpiral.svg)

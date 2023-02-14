@@ -204,7 +204,7 @@ default(
 x = range(-25,25,5000)
 
 plot(x,Fresnel_C_integral.(x),label=L"C(x)")
-plot!(x,Fresnel_C_err.(x), ls=:dash, lw=1.5, label=L"\tilde{C}(x)")
+plot!(x,Fresnel_C_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{C}(x)")
 title!("Fresnel Integral")
 xlabel!(L"x")
 ```
@@ -226,7 +226,7 @@ default(
 x = range(-25,25,5000)
 
 plot(x,Fresnel_S_integral.(x),label=L"S(x)")
-plot!(x,Fresnel_S_err.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
+plot!(x,Fresnel_S_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
 title!("Fresnel Integral")
 xlabel!(L"x")
 ```
@@ -235,8 +235,8 @@ Fresnel_S_integral_pi
 Fresnel_C_integral_pi
 Fresnel_S_integral
 Fresnel_C_integral
-Fresnel_S_err
-Fresnel_C_err
+Fresnel_S_erf
+Fresnel_C_erf
 ```
 
 ### Benchmarks
@@ -248,7 +248,7 @@ using FewSpecialFunctions,BenchmarkTools
 
 x = range(0,150,1000)
 
-@benchmark Fresnel_C_err.($x)
+@benchmark Fresnel_C_erf.($x)
 ```
 Using the error function
 ```@example bench
