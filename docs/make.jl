@@ -4,5 +4,5 @@ makedocs(source  = "src", build="build", sitename="FewSpecialFunctions.jl", page
 "Functions" => "Functions.md"])
 
 deploydocs(
-    repo = "github.com/MartinMikkelsen/FewSpecialFunctions.jl.git", target = "build",
+    repo = "github.com/MartinMikkelsen/FewSpecialFunctions.jl.git",
 )

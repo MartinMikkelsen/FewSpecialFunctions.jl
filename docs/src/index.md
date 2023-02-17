@@ -27,14 +27,7 @@ Here is how to generate an Euler spiral using [FewSpecialFunctions.jl](https://g
 using Plots, FewSpecialFunctions, LaTeXStrings 
 
 plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+default()
 
 x = range(-25,25,5000)
 
