@@ -28,10 +28,6 @@ savefig("clausen.svg"); nothing # hide
 ```
 ![Clausen function](clausen.svg)
 
-```@docs
-Clausen
-```
-
 ## Debye functions
 
 The Debye functions are given by
@@ -65,9 +61,6 @@ savefig("debye.svg"); nothing # hide
 ![](./debye.svg)
 
 
-```@docs
-Debye_function
-```
 ## Regular Coulomb wave functions
 
 The Coulomb wave equation for a charged particle with arbitrary angular momentum and charge is given by 
@@ -141,9 +134,6 @@ plot!(x,regular_coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
-```@docs
-regular_coulomb
-```
 
 ## Struve functions
 The Struve functions are solutions of the non-homogeneous Bessel's differential equation
@@ -182,9 +172,6 @@ plot!(x,Struve.(4,x),label=L"H_4(x)")
 plot!(x,Struve.(5,x),label=L"H_5(x)")
 xlabel!(L"x")
 title!("Struve Functions")
-```
-```@docs
-Struve
 ```
 ## Fresnel functions
 
@@ -229,14 +216,6 @@ plot(x,Fresnel_S_integral.(x),label=L"S(x)")
 plot!(x,Fresnel_S_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
 title!("Fresnel Integral")
 xlabel!(L"x")
-```
-```@docs
-Fresnel_S_integral_pi
-Fresnel_C_integral_pi
-Fresnel_S_integral
-Fresnel_C_integral
-Fresnel_S_erf
-Fresnel_C_erf
 ```
 
 ### Benchmarks

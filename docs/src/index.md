@@ -36,5 +36,6 @@ xlabel!(L"C(x)")
 ylabel!(L"S(x)")
 title!("Euler Spiral")
 savefig("EulerSpiral.svg"); nothing # hide
+plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
 ```
 ![Euler Spiral](EulerSpiral.svg)

@@ -1,0 +1,12 @@
+```@docs
+Clausen
+Debye_function
+regular_coulomb
+Struve
+Fresnel_S_integral_pi
+Fresnel_C_integral_pi
+Fresnel_S_integral
+Fresnel_C_integral
+Fresnel_S_erf
+Fresnel_C_erf
+```
