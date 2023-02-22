@@ -34,7 +34,11 @@ end
 @doc raw"""
     Coulomb_H_minus(ℓ,η,ρ)
 
-Complex Coulomb wave function. Infinity handled using the substitution f(t) -> f(u/(1-u)*1/(1-u)^2)
+Complex Coulomb wave function. Infinity handled using the substitution f(t) -> f(u/(1-u)*1/(1-u)^2).
+Returns Coulomb wave function 
+```math
+    H^{+}_\ell = G_\ell + iF_\ell
+```
 """
 function Coulomb_H_minus(ℓ,η,ρ)
     return (exp(-1im.*ρ)*ρ.^(-ℓ))/(factorial(2*ℓ+1).*C(ℓ,η)).*complex_quadrature(t -> exp(-t)*t.^(ℓ-1im*η)*(t+2*1im*ρ).^(ℓ+1im*η),0,Inf)
@@ -47,7 +51,13 @@ Irregular Coulomb wave function G_ℓ(η,ρ)
 function irregular_Coulomb(ℓ,η,ρ)
     return real(Coulomb_H_minus(ℓ,η,ρ))
 end
+@doc raw"""
 
+Returns Coulomb wave function 
+```math
+    H^{+}_\ell = G_\ell + iF_\ell
+```
+"""
 function Coulomb_H_plus(ℓ,η,ρ)
     return irregular_Coulomb(ℓ,η,ρ) .+ 1im*regular_coulomb(ℓ,η,ρ)
 end
