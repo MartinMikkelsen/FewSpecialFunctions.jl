@@ -10,7 +10,7 @@ Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
+plot_font = "Computer Modern" # hide
 default(
     fontfamily=plot_font,
     linewidth=2.5, 
@@ -18,7 +18,7 @@ default(
     label=nothing, 
     grid=true,
     palette=:tab10,
-)
+) # hide
 
 
 x = range(0,15,1000)
