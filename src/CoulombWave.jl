@@ -1,6 +1,6 @@
 export complex_quadrature, regular_coulomb, irregular_coulomb, C, θ, Coulomb_H_minus, Coulomb_H_plus, Coulomb_cross, regular_Coulomb_approx, irregular_Coulomb_approx, regular_Coulomb_limit, irregular_Coulomb_limit
 
-using SpecialFunctions #For gamma function
+using SpecialFunctions
 
 @doc raw"""
     regular_coulomb(ℓ,η,ρ)
@@ -10,8 +10,8 @@ Regular Coulomb wave function ℓ is the order(non-negative integer), η is the 
 returns the value F_ℓ(η,ρ) given by 
 
 ```math
-    F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, \text{d}t
-````
+    F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, dt
+```
 """
 function regular_coulomb(ℓ,η,ρ)
     First = ρ.^(ℓ+1)*2^ℓ*exp(1im.*ρ-(π.*η/2))/(abs(gamma(ℓ+1+1im*η)))

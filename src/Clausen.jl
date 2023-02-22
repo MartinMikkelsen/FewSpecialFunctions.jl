@@ -3,7 +3,9 @@
 
 Computes the Clausen function  
 
-``Cl_2(\phi) = - \int_0^\phi \log|2\sin(x/2)| dx``
+```math
+    Cl_2(\phi) = - \int_0^\phi \log|2\sin(x/2)| dx
+```
 
 Returns ``Cl_2(\phi)``.
 """
