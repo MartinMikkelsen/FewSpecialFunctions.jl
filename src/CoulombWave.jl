@@ -7,7 +7,11 @@ using SpecialFunctions #For gamma function
 
 Regular Coulomb wave function ℓ is the order(non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (non-negative real variable).
 
-returns the value F_ℓ(η,ρ)
+returns the value F_ℓ(η,ρ) given by 
+
+```math
+    F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, \text{d}t
+````
 """
 function regular_coulomb(ℓ,η,ρ)
     First = ρ.^(ℓ+1)*2^ℓ*exp(1im.*ρ-(π.*η/2))/(abs(gamma(ℓ+1+1im*η)))
@@ -20,7 +24,7 @@ end
 
 Returns Coulomb normalization constant given by
 ```math
-    C_\ell(\eta) = \frac{2^\ell \exp{-\pi \eta/2} |\Gamma(\ell+1+i \eta)|}{(2\ell+1)!}
+    C_\ell(\eta) = \frac{2^\ell \exp(-\pi \eta/2) |\Gamma(\ell+1+i \eta)|}{(2\ell+1)!}
 ```
 """
 function C(ℓ,η)

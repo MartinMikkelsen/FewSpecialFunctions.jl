@@ -1,5 +1,10 @@
 @doc raw"""
-    Struve(ν::Number,z::Number,min_tol=1e-15)
+    Struve(ν,z,min_tol=1e-15)
+
+Returns the Struve function given by
+```math
+    \mathbf{H}_\nu(z) = \frac{2(z/2)^\nu}{\sqrt{\pi}\Gamma(\nu+1/2)} \int_0^1 (1-t)^{{\nu-1/2}}\sin(zt) \, \text{d}t
+```
 """
 function Struve(ν::Number,z::Number,min_tol=1e-15)
     if ν >= 1

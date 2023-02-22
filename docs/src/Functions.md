@@ -67,7 +67,7 @@ where ``{}_1F_1(kr)`` is a confluent hypergeometric function and ``C_\ell(\eta)`
 ```math
 	C_\ell(\eta) = \frac{2^\ell \text{e}^{-\pi\eta/2}|\Gamma(\ell+1+i\eta)|}{(2\ell+1)!},
 ```
-where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to use the integral [representation of the regular Coulomb wave function](https://dlmf.nist.gov/33.7)
+where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to use the [integral representation of the regular Coulomb wave function](https://dlmf.nist.gov/33.7)
 ```math
 	F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, \text{d}t.
 ```
@@ -77,7 +77,7 @@ This implementation need the gamma function from [SpecialFunctions.jl](https://g
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern" # hide 
+plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0,25,1000)
 plot(x,regular_coulomb.(0,0.3,x), label=L"F_0(0.3,ρ)")
@@ -134,7 +134,16 @@ xlabel!(L"x")
 title!("Struve Functions")
 ```
 ## Fresnel functions
+The Fresnel functions are both implemented using the trigonometric functions and the error function.
 
+```math
+    S(z) = \int_0^x \sin(t^2) \, dt = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) - i \erf \left(\frac{1-i}{\sqrt{2}}z \right]
+```
+And 
+```math
+    C(z) = \int_0^x \cos(t^2) \, dt = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) + i \erf \left(\frac{1-i}{\sqrt{2}}z\right]
+```
+The two implementations are shown in the examples below
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
@@ -164,7 +173,7 @@ xlabel!(L"x")
 
 ### Benchmarks
 
-Using the integral approach
+Comparison between the two implementations
 
 ```@example bench 
 using FewSpecialFunctions, BenchmarkTools

@@ -3,7 +3,9 @@
 
 The Debye function(n,x) given by
     
-``D_n(x) = \frac{n}{x^n} \int_0^x \frac{t^n}{e^{t}-1} dx``
+```math
+    D_n(x) = \frac{n}{x^n} \int_0^x \frac{t^n}{e^{t}-1} dx
+```
 
 Returns the value ``D(n,x)``
 """

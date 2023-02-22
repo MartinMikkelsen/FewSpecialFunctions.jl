@@ -57,9 +57,9 @@ end
 @doc raw"""
     Fresnel_S_erf(x)
 
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the erfor function.
+The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
 ```math
-S(z) = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) - i \erf \left(\frac{1-i}{\sqrt{2}}z \right]
+    S(z) = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) - i \erf \left(\frac{1-i}{\sqrt{2}}z \right]
 ```
 Returns the value ``S(x)``
 """
@@ -70,9 +70,9 @@ end
 @doc raw"""
     Fresnel_C_erf(x)
 
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the erfor function.
+The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
 ```math
-C(z) = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ {erf}\left(\frac{1+i}{\sqrt{2}}z \right) + i {erf}\left(\frac{1-i}{\sqrt{2}}z\right]
+    C(z) = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ {erf}\left(\frac{1+i}{\sqrt{2}}z \right) + i {erf}\left(\frac{1-i}{\sqrt{2}}z\right]
 ```
 Returns the value ``C(x)``
 """
