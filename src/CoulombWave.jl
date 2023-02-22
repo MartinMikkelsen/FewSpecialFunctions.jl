@@ -18,7 +18,10 @@ end
 @doc raw"""
     C(ℓ,η)
 
-Returns Coulomb normalization constant C(ℓ,η)
+Returns Coulomb normalization constant given by
+```math
+    C_\ell(\eta) = \frac{2^\ell \exp{-\pi \eta/2} |\Gamma(\ell+1+i \eta)|}{(2\ell+1)!}
+```
 """
 function C(ℓ,η)
     return 2^ℓ*exp(-π*η/2).*(abs(gamma(ℓ+1+1im*η))/(factorial(2*ℓ+1)))
@@ -26,7 +29,10 @@ end
 @doc raw"""
     θ(ℓ,η,ρ)
 
-Returns Coulomb phase 
+Returns the phase of the Coulomb functions given by
+```math
+    \theta_\ell(\eta,\rho) = \rho - \eta \ln(2\rho) - \frac{1}{2}\ell \pi + \sigma_\ell(\eta)
+```
 """
 function θ(ℓ,η,ρ)
     return ρ - η.*log(2*ρ)-0.5*ℓ*π+angle.(gamma(ℓ+1+1im*η))
@@ -37,16 +43,18 @@ end
 Complex Coulomb wave function. Infinity handled using the substitution f(t) -> f(u/(1-u)*1/(1-u)^2).
 Returns Coulomb wave function 
 ```math
-    H^{+}_\ell = G_\ell + iF_\ell
+    H^{-}_\ell = G_\ell - iF_\ell
 ```
 """
 function Coulomb_H_minus(ℓ,η,ρ)
     return (exp(-1im.*ρ)*ρ.^(-ℓ))/(factorial(2*ℓ+1).*C(ℓ,η)).*complex_quadrature(t -> exp(-t)*t.^(ℓ-1im*η)*(t+2*1im*ρ).^(ℓ+1im*η),0,Inf)
 end 
 @doc raw"""
-    irregular_Coulomb(ℓ,η,ρ)
+    irregular_coulomb(ℓ,η,ρ)
 
-Irregular Coulomb wave function G_ℓ(η,ρ)
+Irregular Coulomb wave function ℓ is the order(non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (non-negative real variable).
+
+returns the value G_ℓ(η,ρ)
 """
 function irregular_Coulomb(ℓ,η,ρ)
     return real(Coulomb_H_minus(ℓ,η,ρ))
@@ -65,6 +73,10 @@ end
     Coulomb_cross(ℓ,η)
 
 Wronskian relation / cross product.
+
+```math
+    F_{\ell-1}G_{\ell}-F_{\ell}G_{\ell-1} = \ell/(\ell^2+\eta^2)^{1/2}
+```
 """
 function Coulomb_cross(ℓ,η)
     if ℓ >= 1
@@ -77,7 +89,10 @@ end
 @doc raw"""
     regular_Coulomb_approx(ℓ,η,ρ)
 
-For ρ -> 0 and η fixed approximate the regular Coulomb wave function
+For ρ -> 0 and η fixed approximate the regular Coulomb wave function as
+```math
+    F_\ell(\eta,\rho) \simeq C_\ell(\eta)^{\ell+1}
+```
 """
 function regular_Coulomb_approx(ℓ,η,ρ)
     return C(ℓ,η)*ρ^(ℓ+1)
@@ -85,7 +100,10 @@ end
 @doc raw"""
     irregular_Coulomb_approx(ℓ,η,ρ)
 
-For ρ -> 0 and η fixed approximate the irregular Coulomb wave function
+For ρ -> 0 and η fixed approximate the irregular Coulomb wave function as
+```math
+    G_\ell(\eta,\rho) \simeq \frac{\rho^{-\ell}}{(2\ell+1)C_\ell(\eta)}
+```
 """
 function irregular_Coulomb_approx(ℓ,η,ρ)
     return ρ^(-ℓ)/((2*ℓ+1)*C(ℓ,η))
@@ -93,7 +111,10 @@ end
 @doc raw"""
     regular_Coulomb_limit(ℓ,η,ρ)
 
-In the limit ρ -> ∞ with η fixed, returns the regular Coulomb wave 
+In the limit ρ -> ∞ with η fixed, returns the regular Coulomb wave as 
+```math
+    F_{\ell}(\eta,\rho) \simeq \sin(\theta_\ell(\eta,\rho))
+```
 """
 function regular_Coulomb_limit(ℓ,η,ρ)
     return sin.(θ(ℓ,η,ρ))
@@ -101,7 +122,10 @@ end
 @doc raw"""
     irregular_Coulomb_limit(ℓ,η,ρ)
 
-In the limit ρ -> ∞ with η fixed, returns the irregular Coulomb wave 
+In the limit ρ -> ∞ with η fixed, returns the irregular Coulomb wave as
+```math
+    G_{\ell}(\eta,\rho) \simeq \cos(\theta_\ell(\eta,\rho))
+```
 """
 function irregular_Coulomb_limit(ℓ,η,ρ)
     return cos.(θ(ℓ,η,ρ))
