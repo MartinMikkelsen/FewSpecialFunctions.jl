@@ -12,8 +12,6 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(0,15,1000)
 xlabel!(L"ϕ")
 title!("Clausen function")
@@ -36,10 +34,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(0,25,1000)
-
 plot(x,Debye_function.(1,x),label=L"D_1(x)")
 plot!(x,Debye_function.(2,x),label=L"D_2(x)")
 plot!(x,Debye_function.(3,x), label=L"D_3(x)")
@@ -84,10 +79,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide 
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(0,25,1000)
-
 plot(x,regular_coulomb.(0,0.3,x), label=L"F_0(0.3,ρ)")
 plot!(x,regular_coulomb.(0,-0.3,x), label=L"F_0(-0.3,ρ)")
 xlabel!(L"ρ")
@@ -102,10 +94,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(0,25,1000)
-
 plot(x,regular_coulomb.(1e-5,5,x), label=L"F_0(5,ρ)")
 plot!(x,regular_coulomb.(1,5,x), label=L"F_1(5,ρ)")
 plot!(x,regular_coulomb.(2,5,x), label=L"F_2(5,ρ)")
@@ -134,9 +123,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
 x = range(-5,5,1000)
-
 plot(x,Struve.(0,x),label=L"H_0(x)")
 plot!(x,Struve.(1,x),label=L"H_1(x)")
 plot!(x,Struve.(2,x),label=L"H_2(x)")
@@ -154,10 +141,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(-25,25,5000)
-
 plot(x,Fresnel_C_integral.(x),label=L"C(x)")
 plot!(x,Fresnel_C_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{C}(x)")
 title!("Fresnel Integral")
@@ -171,10 +155,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-
 x = range(-25,25,5000)
-
 plot(x,Fresnel_S_integral.(x),label=L"S(x)")
 plot!(x,Fresnel_S_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
 title!("Fresnel Integral")
