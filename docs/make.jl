@@ -9,7 +9,5 @@ makedocs(
 )
 
 deploydocs(
-    target = "build",
-    repo = "https://github.com/MartinMikkelsen/FewSpecialFunctions.jl", 
-    branch = "gh-pages",
+    repo = "https://github.com/MartinMikkelsen/FewSpecialFunctions.jl",
 )
