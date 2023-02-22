@@ -8,7 +8,7 @@ Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
-ENV["GKSwstype"] = "100"
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -39,6 +39,7 @@ The Debye functions are given by
 And
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -92,6 +93,7 @@ where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to 
 This implementation need the gamma function from [SpecialFunctions.jl](https://github.com/JuliaMath/SpecialFunctions.jl)
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -115,6 +117,7 @@ Use a similar approach to plot the regular Coulomb functions for different a ``\
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -152,6 +155,7 @@ And
 Here is an example
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -178,6 +182,7 @@ title!("Struve Functions")
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
@@ -200,6 +205,7 @@ and
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern"
 default(
