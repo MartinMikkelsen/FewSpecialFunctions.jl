@@ -9,5 +9,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "https://github.com/MartinMikkelsen/FewSpecialFunctions.jl",
+    repo = "github.com/MartinMikkelsen/FewSpecialFunctions.jl",
 )
