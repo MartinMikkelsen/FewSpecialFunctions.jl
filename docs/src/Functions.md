@@ -11,14 +11,7 @@ using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-) # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 
 
 x = range(0,15,1000)
@@ -41,15 +34,9 @@ And
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+
 
 x = range(0,25,1000)
 
@@ -95,15 +82,9 @@ This implementation need the gamma function from [SpecialFunctions.jl](https://g
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide 
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+
 
 x = range(0,25,1000)
 
@@ -119,15 +100,9 @@ Use a similar approach to plot the regular Coulomb functions for different a ``\
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+
 
 x = range(0,25,1000)
 
@@ -157,15 +132,8 @@ Here is an example
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 
 x = range(-5,5,1000)
 
@@ -184,15 +152,9 @@ title!("Struve Functions")
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+
 
 x = range(-25,25,5000)
 
@@ -207,15 +169,9 @@ and
 using Plots, FewSpecialFunctions, LaTeXStrings
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=true,
-    palette=:tab10,
-)
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+
 
 x = range(-25,25,5000)
 
@@ -230,7 +186,7 @@ xlabel!(L"x")
 Using the integral approach
 
 ```@example bench 
-using FewSpecialFunctions,BenchmarkTools
+using FewSpecialFunctions, BenchmarkTools
 
 x = range(0,150,1000)
 
@@ -238,7 +194,7 @@ x = range(0,150,1000)
 ```
 Using the error function
 ```@example bench
-using FewSpecialFunctions,BenchmarkTools
+using FewSpecialFunctions, BenchmarkTools
 
 @benchmark Fresnel_C_integral.($x)
 ```
