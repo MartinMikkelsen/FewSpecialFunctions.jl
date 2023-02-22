@@ -8,6 +8,7 @@ Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings
+ENV["GKSwstype"] = "100"
 
 plot_font = "Computer Modern"
 default(
