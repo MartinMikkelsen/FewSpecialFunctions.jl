@@ -188,3 +188,5 @@ using FewSpecialFunctions, BenchmarkTools
 
 @benchmark Fresnel_C_integral.($x)
 ```
+
+## Hypergeometric functions
