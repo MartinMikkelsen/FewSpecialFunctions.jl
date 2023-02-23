@@ -10,10 +10,11 @@ Very quick implementation of a few different (special) functions. This includes
 3. Debye function
 4. Fresnel functions
 5. Struve functions
+6. Hypergeometric functions
+7. Confluent Hypergeometric functions
 
 TODO
 
-1. Irregular Coulomb wave functions (Normalization)
 2. Other functions
 3. Better tests
 

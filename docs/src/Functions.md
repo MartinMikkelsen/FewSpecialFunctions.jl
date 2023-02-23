@@ -137,11 +137,11 @@ title!("Struve Functions")
 The Fresnel functions are both implemented using the trigonometric functions and the error function.
 
 ```math
-    S(z) = \int_0^x \sin(t^2) \, dt = \sqrt{\frac{\pi}{2}} \frac{1+i}{4} \left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) - i \erf \left(\frac{1-i}{\sqrt{2}}z \right]
+    S(z) = \sqrt{\frac{\pi}{2}}\frac{1+i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) - i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
 ```
 And 
 ```math
-    C(z) = \int_0^x \cos(t^2) \, dt = \sqrt{\frac{\pi}{2}} \frac{1-i}{4}\left[ \erf \left(\frac{1+i}{\sqrt{2}}z \right) + i \erf \left(\frac{1-i}{\sqrt{2}}z\right]
+    C(z) = \sqrt{\frac{\pi}{2}}\frac{1-i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) + i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
 ```
 The two implementations are shown in the examples below
 ```@example
