@@ -32,6 +32,6 @@ authors:
     email: MartinMikkelsen@proton.me
 repository-code: 'https://github.com/MartinMikkelsen/FewSpecialFunctions.jl'
 license: MIT
-version: 0.1.2
+version: 1.2
 date-released: '2023-01-26'
 ```
