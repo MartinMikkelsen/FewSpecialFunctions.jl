@@ -7,7 +7,7 @@ Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
 ```
 
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
@@ -29,7 +29,7 @@ The Debye functions are given by
 ```
 And
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
@@ -74,14 +74,14 @@ where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to 
 
 This implementation need the gamma function from [SpecialFunctions.jl](https://github.com/JuliaMath/SpecialFunctions.jl)
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0,25,1000)
-plot(x,regular_coulomb.(0,0.3,x), label=L"F_0(0.3,ρ)")
-plot!(x,regular_coulomb.(0,-0.3,x), label=L"F_0(-0.3,ρ)")
+plot(x,regular_Coulomb.(0,0.3,x), label=L"F_0(0.3,ρ)")
+plot!(x,regular_Coulomb.(0,-0.3,x), label=L"F_0(-0.3,ρ)")
 xlabel!(L"ρ")
 title!("Regular Coulomb Wave Functions")
 ```
@@ -89,16 +89,16 @@ title!("Regular Coulomb Wave Functions")
 Use a similar approach to plot the regular Coulomb functions for different a ``\ell``
 
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0,25,1000)
-plot(x,regular_coulomb.(1e-5,5,x), label=L"F_0(5,ρ)")
-plot!(x,regular_coulomb.(1,5,x), label=L"F_1(5,ρ)")
-plot!(x,regular_coulomb.(2,5,x), label=L"F_2(5,ρ)")
-plot!(x,regular_coulomb.(3,5,x), label=L"F_3(5,ρ)")
+plot(x,regular_Coulomb.(1e-5,5,x), label=L"F_0(5,ρ)")
+plot!(x,regular_Coulomb.(1,5,x), label=L"F_1(5,ρ)")
+plot!(x,regular_Coulomb.(2,5,x), label=L"F_2(5,ρ)")
+plot!(x,regular_Coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
@@ -118,7 +118,7 @@ And
 ```
 Here is an example
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
@@ -145,7 +145,7 @@ And
 ```
 The two implementations are shown in the examples below
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
@@ -159,7 +159,7 @@ xlabel!(L"x")
 and
 
 ```@example
-using Plots, FewSpecialFunctions, LaTeXStrings
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
@@ -190,3 +190,16 @@ using FewSpecialFunctions, BenchmarkTools
 ```
 
 ## Hypergeometric functions
+
+The confluent hypergeometric functions are solutions of Kummer’s equation
+```math
+    z \frac{d^2 F}{dz^2} +(b-z)\frac{dF}{dz}-a F = 0.
+```
+Kummer's equations has two linearly independent solutions given by
+```math
+    {}_1 F_{1}(a;b;z) 
+```
+and 
+```math
+    z^{1-b}{}_1F_1(a-b+1;2-b;z).
+```
