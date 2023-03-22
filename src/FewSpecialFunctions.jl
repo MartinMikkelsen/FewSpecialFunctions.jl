@@ -20,4 +20,7 @@ include("Clausen.jl")
 
 export hypergeometric_0F1, confluent_hypergeometric_1F1, confluent_hypergeometric_U
 include("Hypergeometric.jl")
+
+export FermiDiracIntegral
+include("FermiDirac.jl")
 end
