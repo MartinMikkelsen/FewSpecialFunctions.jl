@@ -203,3 +203,13 @@ and
 ```math
     z^{1-b}{}_1F_1(a-b+1;2-b;z).
 ```
+
+## Fermi-Dirac and Bose-Einstein integrals
+
+In solid state physics the Fermi-Dirac integral is given by
+
+```math
+    F_j(x) = \frac{1}{\Gamma(j+1)} \int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt.
+```
+With the special cases and approximations given by
+
