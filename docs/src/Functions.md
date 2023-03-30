@@ -215,15 +215,17 @@ Approximations to this and the normalized case for ``j=-1/2``, ``j=1/2``, ``j=3/
 
 Here is an example
 
-```@FermiDirac
+```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0.0,100.0,5000)
-plot(x,FermiDiracIntegral(1/2,x),label=L"F_{1/2}(x)")
-plot!(x,FermiDiracIntegral.(1/2,x), ls=:dash, lw=1.5, label=L"\tilde{F}_{1/2}(x)")
+x = range(0,100,10000)
+plot(x,FermiDiracIntegralNorm.(-1/2,x),label=L"F_{-1/2}(x)")
+plot!(x,FermiDiracIntegralNorm.(1/2,x),label=L"F_{1/2}(x)")
+plot!(x,FermiDiracIntegralNorm.(3/2,x),label=L"F_{3/2}(x)")
+plot!(x,FermiDiracIntegralNorm.(5/2,x),label=L"F_{5/2}(x)")
 title!("Fermi-Dirac Integral")
 xlabel!(L"x")
 ```
