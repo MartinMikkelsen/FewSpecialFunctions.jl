@@ -50,32 +50,34 @@ using Test
     @test FewSpecialFunctions.Clausen(π / 3 + 2 * π) ≈ 1.01494160 atol = 1e-4
     @test FewSpecialFunctions.Clausen(-π / 3 + 2 * π) ≈ -1.01494160 atol = 1e-4
 
-    # Test the output for j = 0 and various values of x
-    #@test FewSpecialFunctions.FermiDiracIntegral(0, 0) ≈ 0.6931471805599453
-    #@test FewSpecialFunctions.FermiDiracIntegral(0, 1) ≈ 1.313261687518223
-    #@test FewSpecialFunctions.FermiDiracIntegral(0, 2) ≈ 2.1269280110429727
+    # Test the output for j = -1/2
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 0.0) ≈ 1.0721549299400754 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 1.0) ≈ 1.8204113571471041 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 1.2) ≈ 1.9785617633438695 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 4.1) ≈ 3.928454737099184 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 5.2) ≈ 4.477432715418454 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(-1 / 2, 6.6) ≈ 5.082787981164429 atol = 1e-12
 
-    # Test the output for j = -1 and various values of x
-    #@test FewSpecialFunctions.FermiDiracIntegral(-1, 0) ≈ 0.5
-    #@test FewSpecialFunctions.FermiDiracIntegral(-1, 1) ≈ 0.7310585786300049
-    #@test FewSpecialFunctions.FermiDiracIntegral(-1, 2) ≈ 0.8807970779778823
-
-    # Test the output for j = 1/2 and x < 1.3
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 0) ≈ 2/(sqrt(π))*0.6780938951530457 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1) ≈ 2/(sqrt(π))*1.3963752806666279 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1.2) ≈ 2/(sqrt(π))*1.5863233997463857 atol = 1e-2
-
-    # Test the output for j = 1/2 and x >= 1.3
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 4.1) ≈ 2/(sqrt(π))*5.965800008889902 atol = 1e-1
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 5.2) ≈ 2/(sqrt(π))*8.733390315588004 atol = 1e-1
-    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 6.6) ≈ 2/(sqrt(π))*11.632113406633252 atol = 1e-1
+    # Test the output for j = 1/2 
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 0.0) ≈ 0.6780938951530457 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1.0) ≈ 1.3963752806666279 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1.2) ≈ 1.5863233997463857 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 4.1) ≈ 5.965800008889902 atol = 1e-5
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 5.2) ≈ 8.28102917922544 atol = 1e-6
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 6.6) ≈ 11.632113406633252 atol = 1e-7
 
     # Test the output for j = 3/2
-    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 0.0) ≈ 4/(3*sqrt(π))*1.15280383708879 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 1) ≈ 4/(3*sqrt(π))*2.6616826247307124 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 1.2) ≈ 4/(3*sqrt(π))*3.10869199517456 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.5) ≈ 4/(3*sqrt(π))*0.1075808743944384 atol = 1e-2
-    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.0) ≈ 4/(3*sqrt(π))*0.175800988853926 atol = 1e-2
+    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 0.0) ≈ 1.15280383708879 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 1.0) ≈ 2.6616826247307124 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 1.2) ≈ 3.10869199517456 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.5) ≈ 0.1075808743944384 atol = 1e-12
+    @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.0) ≈ 0.175800988853926 atol = 1e-12
 
-    #Better tests are needed. Compared to https://npplus.readthedocs.io/en/latest/fermi.html
+    # Test the output for j = 5/2
+    @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, 0.0) ≈ 3.0825860828379246 atol = 1e-13
+    @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, 1.0) ≈ 7.626535355004442 atol = 1e-13
+    @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, 1.2) ≈ 9.066754659807005 atol = 1e-13
+    @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, -2.5) ≈ 0.27085618652992494 atol = 1e-13
+    @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, -2.0) ≈ 0.4445544534586879 atol = 1e-13
+
 end
