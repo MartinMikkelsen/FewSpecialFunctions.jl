@@ -209,7 +209,21 @@ and
 In solid state physics the Fermi-Dirac integral is given by
 
 ```math
-    F_j(x) = \frac{1}{\Gamma(j+1)} \int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt.
+    F_j(x) = \int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt.
 ```
-With the special cases and approximations given by
+Approximations to this and the normalized case for ``j=-1/2``, ``j=1/2``, ``j=3/2`` and ``j=5/2`` are implemented to varying accuacy. Most are of the order of ``10^{-12}``.
 
+Here is an example
+
+```@FermiDirac
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+x = range(0.0,100.0,5000)
+plot(x,FermiDiracIntegral(1/2,x),label=L"F_{1/2}(x)")
+plot!(x,FermiDiracIntegral.(1/2,x), ls=:dash, lw=1.5, label=L"\tilde{F}_{1/2}(x)")
+title!("Fermi-Dirac Integral")
+xlabel!(L"x")
+```
