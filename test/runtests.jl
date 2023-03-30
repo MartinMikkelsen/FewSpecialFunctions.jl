@@ -66,9 +66,9 @@ using Test
     @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1.2) ≈ 2/(sqrt(π))*1.5863233997463857 atol = 1e-2
 
     # Test the output for j = 1/2 and x >= 1.3
-    #@test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 1.3) ≈ 2/(sqrt(π))*1.0056522092269615
-    #@test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 2) ≈ 2/(sqrt(π))*1.6678511889373662
-    #@test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 3) ≈ 2/(sqrt(π))*2.6101147713212985
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 4.1) ≈ 2/(sqrt(π))*5.965800008889902 atol = 1e-1
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 5.2) ≈ 2/(sqrt(π))*8.733390315588004 atol = 1e-1
+    @test FewSpecialFunctions.FermiDiracIntegral(1 / 2, 6.6) ≈ 2/(sqrt(π))*11.632113406633252 atol = 1e-1
 
     # Test the output for j = 3/2
     @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, 0.0) ≈ 4/(3*sqrt(π))*1.15280383708879 atol = 1e-2
@@ -77,5 +77,5 @@ using Test
     @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.5) ≈ 4/(3*sqrt(π))*0.1075808743944384 atol = 1e-2
     @test FewSpecialFunctions.FermiDiracIntegral(3 / 2, -2.0) ≈ 4/(3*sqrt(π))*0.175800988853926 atol = 1e-2
 
-    #for some reason the tolerance must be high?
+    #Better tests are needed. Compared to https://npplus.readthedocs.io/en/latest/fermi.html
 end
