@@ -28,13 +28,18 @@ Returns the Kummer confluent hypergeometric function
 ```
 """
 function confluent_hypergeometric_1F1(a,b,z)
-    if real(b)>real(a)>0
-        return gamma(b)/(gamma(a)*gamma(b-a))*quadgk(t -> exp(z*t)*t^(a-1)*(1-t)^(-a+b-1),0,1)[1]
+    result = 1.0
+    term = 1.0
+    for n = 1:100
+        term *= (a+n-1) / ((b+n-1)*n) * z
+        result += term
+        if abs(term) < 1e-12 # check if the term is negligible
+            break
+        end
     end
-    if real(a)>0 
-        return 1/(gamma(a))*quadgk(u -> exp(-u/(1-u))*(u/(1-u))^(a-1)*hypergeometric_0F1(b,z*u/(1-u))*u/(1-u)^2,0,1)[1]
-    end
+    return result
 end
+
 @doc raw"""
     confluent_hypergeometric_U(a,b,z)
     
@@ -44,10 +49,11 @@ Returns the Kummer confluent hypergeometric function
     U(a,b,z) = \frac{\Gamma(b-1)}{\Gamma(a)}z^{1-b} {}_1 F_1(a-b+1,2-b,z)+\frac{\Gamma(1-b)}{\Gamma(a-b+1)} {}_1F_1(a,b,z)
 ```
 """
-function confluent_hypergeometric_U(a,b,z)
-    if real(z)>0 && real(a) > 0 
-        return 1/gamma(a)*quadgk(u -> exp(-z*u/(1-u))*(u/(1-u))^(a-1)*(u/(1-u)+1)^(-a+b-1)*u/(1-u).^2,0,1)[1]
-    end
+function confluent_hypergeometric_U(a::Float64, b::Float64, z::Float64)
+    f1 = F(a, b, z)
+    f2 = F(1+a-2, 2-b, z)
+    return gamma(1-b)/(gamma(1+a-b))*f1 + gamma(b-1)/(gamma(a))*f2
 end
+
 
 export hypergeometric_0F1, confluent_hypergeometric_1F1, confluent_hypergeometric_U
