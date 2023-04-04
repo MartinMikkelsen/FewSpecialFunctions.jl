@@ -45,7 +45,7 @@ savefig("debye.svg"); nothing # hide
 ![](./debye.svg)
 
 
-## Regular Coulomb wave functions
+## Coulomb wave functions
 
 The Coulomb wave equation for a charged particle with arbitrary angular momentum and charge is given by 
 ```math	
@@ -171,24 +171,6 @@ title!("Fresnel Integral")
 xlabel!(L"x")
 ```
 
-### Benchmarks
-
-Comparison between the two implementations
-
-```@example bench 
-using FewSpecialFunctions, BenchmarkTools
-
-x = range(0,150,1000)
-
-@benchmark Fresnel_C_erf.($x)
-```
-Using the error function
-```@example bench
-using FewSpecialFunctions, BenchmarkTools
-
-@benchmark Fresnel_C_integral.($x)
-```
-
 ## Hypergeometric functions
 
 The confluent hypergeometric functions are solutions of Kummer’s equation
@@ -203,9 +185,15 @@ and
 ```math
     z^{1-b}{}_1F_1(a-b+1;2-b;z).
 ```
-
-Here is an example
-
+The numerical implementation in based on the following series expansion 
+```math
+    {}_1 F_1 (a,b,z) = 1+\frac{a}{b}z+\frac{a(a+1)}{b(b+1)2!}z^2 + \frac{a(a+1)(a+2)}{b(b+1)b(b+2)3!}z^3 + \cdots
+```
+Using this expansion the terms can be computed as
+```math
+    t(n) = \frac{(a+n-1)z}{(b+n-1)n}t(n-1),
+```
+and a cumulative product is produced. The errors are quite small; approximately ``10^{-12}-10^{-13}``. The figure below shows four examples of ``{}_1F_1``.
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
@@ -221,7 +209,7 @@ title!("Confluent hypergeometric function")
 xlabel!(L"x")
 ```
 
-## Fermi-Dirac and Bose-Einstein integrals
+## Fermi-Dirac integrals
 
 In solid state physics the Fermi-Dirac integral is given by
 
