@@ -13,6 +13,11 @@
 6. [Hypergeometric functions] (@ref)
 7. [Fermi-Dirac integrals] (@ref)
 
+Future ideas
+
+- [] Inverse Fermi-Dirac integrals
+- [] Parabolic cylinder function
+
 ## Installation
 
 Get the latest stable release with Julia's package manager:
