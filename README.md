@@ -14,8 +14,8 @@ Implementation of a few special functions. So far this includes
 7. Confluent Hypergeometric functions
 8. Fermi-Dirac Integrals
 
-- [] Inverse Fermi-Dirac integrals
-- [] Parabolic cylinder function
+- Inverse Fermi-Dirac integrals
+- Parabolic cylinder function
 
 ### Install 
 
