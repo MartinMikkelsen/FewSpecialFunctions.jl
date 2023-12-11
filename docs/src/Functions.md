@@ -25,7 +25,7 @@ savefig("clausen.svg"); nothing # hide
 The Debye functions are given by
 
 ```math
-    D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}x
+    D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}t
 ```
 And
 ```@example
