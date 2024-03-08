@@ -10,7 +10,7 @@ The Debye function(n,x) given by
 Returns the value ``D(n,x)``
 """
 function Debye_function(n,x,min_tol=1e-5)
-    D = n./(x.^n).*quadgk(t -> (t.^n)/(exp.(t)-1),min_tol,x)[1]
+    D = n./(x.^n).*quadgk(t -> (t.^n)/(expm1.(t)),min_tol,x)[1]
     return D    
 end
 export Debye_function
