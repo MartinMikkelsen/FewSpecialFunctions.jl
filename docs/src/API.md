@@ -24,5 +24,6 @@ confluent_hypergeometric_1F1
 confluent_hypergeometric_U
 FermiDiracIntegral
 FermiDiracIntegralNorm
+marcum_Q
 ```
 

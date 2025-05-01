@@ -65,7 +65,7 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-bs = collect(range(0.0,10,100))
+bs = collect(range(0.0,10,length=100))
 M1 = marcum_Q(1, 0.2, bs)
 M2 = marcum_Q(1, 1.3, bs)
 M3 = marcum_Q(1, 2.5, bs)
