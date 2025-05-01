@@ -1,49 +1,4 @@
 # Functions
-## Clausen functions
-The Clausen function is given by
-
-```math
-Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
-```
-
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=15,length=1000)
-xlabel!(L"ϕ")
-title!("Clausen function")
-plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
-savefig("clausen.svg"); nothing # hide
-```
-![Clausen function](clausen.svg)
-
-## Debye functions
-
-The Debye functions are given by
-
-```math
-    D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}t
-```
-And
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=25,length=1000)
-plot(x,Debye_function.(1,x),label=L"D_1(x)")
-plot!(x,Debye_function.(2,x),label=L"D_2(x)")
-plot!(x,Debye_function.(3,x), label=L"D_3(x)")
-title!("Debye Functions")
-xlabel!(L"x")
-savefig("debye.svg"); nothing # hide
-```
-![](./debye.svg)
-
 
 ## Coulomb wave functions
 
@@ -102,6 +57,75 @@ plot!(x,regular_Coulomb.(3,5,x), label=L"F_3(5,ρ)")
 title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
+## Marcum Q-function
+
+```@example MarcumQ
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+bs = collect(range(0.0,10,100))
+M1 = marcum_Q(1, 0.2, bs)
+M2 = marcum_Q(1, 1.3, bs)
+M3 = marcum_Q(1, 2.5, bs)
+M4 = marcum_Q(1, 4.7, bs)
+
+plot(bs, M1, label="a=0.2")
+plot!(bs, M2, label="a=1.3")
+plot!(bs, M3, label="a=2.5")
+plot!(bs, M4, label="a=4.7")
+plot!(xlabel="b", ylabel="Q(1,a,b)", title="Marcum Q-function")
+
+```
+
+## Clausen functions
+The Clausen function is given by
+
+```math
+Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
+```
+
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+x = range(0,stop=15,length=1000)
+xlabel!(L"ϕ")
+title!("Clausen function")
+plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
+savefig("clausen.svg"); nothing # hide
+```
+![Clausen function](clausen.svg)
+
+## Debye functions
+
+The Debye functions are given by
+
+```math
+    D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}t
+```
+And
+```@example
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+x = range(0,stop=25,length=1000)
+plot(x,Debye_function.(1,x),label=L"D_1(x)")
+plot!(x,Debye_function.(2,x),label=L"D_2(x)")
+plot!(x,Debye_function.(3,x), label=L"D_3(x)")
+title!("Debye Functions")
+xlabel!(L"x")
+savefig("debye.svg"); nothing # hide
+```
+![](./debye.svg)
+
+
+
 
 ## Struve functions
 The Struve functions are solutions of the non-homogeneous Bessel's differential equation
