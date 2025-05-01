@@ -13,11 +13,6 @@
 6. [Hypergeometric functions] (@ref)
 7. [Fermi-Dirac integrals] (@ref)
 
-Future ideas
-
-- [] Inverse Fermi-Dirac integrals
-- [] Parabolic cylinder function
-
 ## Installation
 
 Get the latest stable release with Julia's package manager:
@@ -43,7 +38,7 @@ default(
     palette=:tab10,
 )
 
-x = range(-25,25,5000)
+x = range(-25,25,length=5000)
 
 plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
 xlabel!(L"C(x)")
