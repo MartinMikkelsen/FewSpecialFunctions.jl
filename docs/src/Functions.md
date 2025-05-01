@@ -60,7 +60,7 @@ xlabel!(L"ρ")
 ## Marcum Q-function
 
 ```@example MarcumQ
-using Plots, FewSpecialFunctions, LaTeXStrings,  # hide
+using Plots, FewSpecialFunctions, LaTeXStrings  # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
