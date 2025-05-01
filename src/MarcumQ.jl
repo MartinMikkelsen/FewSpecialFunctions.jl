@@ -1,5 +1,6 @@
 using QuanticsTCI
 using SpecialFunctions: besseli
+using Base: allequal
 
 export marcum_Q
 
