@@ -38,7 +38,7 @@ default(
     palette=:tab10,
 )
 
-x = range(-25,25,5000)
+x = range(-25,25,length=5000)
 
 plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
 xlabel!(L"C(x)")
