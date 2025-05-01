@@ -2,17 +2,6 @@
 
 *Some special functions.*
 
-## Overview
-
-[FewSpecialFunctions.jl](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl) provides implementations of a few special functions. So far this includes
-1. [Clausen functions](@ref)
-2. [Debye functions](@ref)
-3. [Coulomb wave functions](@ref)
-4. [Struve functions](@ref)
-5. [Fresnel functions](@ref)
-6. [Hypergeometric functions] (@ref)
-7. [Fermi-Dirac integrals] (@ref)
-
 ## Installation
 
 Get the latest stable release with Julia's package manager:
