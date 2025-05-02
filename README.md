@@ -3,19 +3,7 @@
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/)
 [![CI](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml)
 
-Implementation of a few special functions. So far this includes
-
-1. Clausen function 
-2. Coulomb wave functions
-3. Debye function
-4. Fresnel functions
-5. Struve functions
-6. Hypergeometric functions
-7. Confluent Hypergeometric functions
-8. Fermi-Dirac Integrals
-
-- Inverse Fermi-Dirac integrals
-- Parabolic cylinder function
+A Julia package collecting a few special functions.
 
 ### Install 
 
@@ -37,11 +25,8 @@ julia> FermiDiracIntegral(3 / 2, 1.0)
 2.6616826247307124
 ```
 
+### Some other examples
 ![CombinedPlot](combinedplot.png)
-
-### Contribute
-
-If you find a problem with the functions or docs, please open an issue. If you want to implement a function please make a PR.
 
 ### Cite
 
