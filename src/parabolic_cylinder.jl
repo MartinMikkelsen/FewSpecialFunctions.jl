@@ -269,15 +269,15 @@ end
 
 function W(a::Float64, x::Float64)::Float64
     ε = 1e-15
-
-    if abs(x) ≤ 5
+    if abs(x) ≤ 8
+        # --- Series expansion (pw) for small |x| ---
         p₀ = 2^(-3/4)
-
         g₁ = abs(gamma(Complex(1/4, a/2)))
         g₃ = abs(gamma(Complex(3/4, a/2)))
         f₁ = sqrt(g₁ / g₃)
         f₂ = sqrt(2 * g₃ / g₁)
 
+        # Compute coefficients for y₁
         c = zeros(Float64, 100)
         c[1] = a
         c₀, c₁ = 1.0, a
@@ -289,7 +289,7 @@ function W(a::Float64, x::Float64)::Float64
 
         y₁ = 1.0
         term = 1.0
-        @inbounds for k in 1:100
+        for k in 1:100
             term *= 0.5 * x^2 / (k * (2k - 1))
             Δ = c[k] * term
             y₁ += Δ
@@ -298,6 +298,7 @@ function W(a::Float64, x::Float64)::Float64
             end
         end
 
+        # Compute coefficients for y₂
         d = zeros(Float64, 100)
         d[1], d[2] = 1.0, a
         d₁, d₂ = 1.0, a
@@ -309,7 +310,7 @@ function W(a::Float64, x::Float64)::Float64
 
         y₂ = 1.0
         term = 1.0
-        @inbounds for k in 1:100
+        for k in 1:100
             term *= 0.5 * x^2 / (k * (2k + 1))
             Δ = d[k + 1] * term
             y₂ += Δ
@@ -320,30 +321,31 @@ function W(a::Float64, x::Float64)::Float64
         y₂ *= x
 
         return p₀ * (f₁ * y₁ - f₂ * y₂)
+
     else
+        # --- Asymptotic expansion (pwlx) for large |x| ---
         u = zeros(Float64, 21)
         v = zeros(Float64, 21)
 
-        g0 = gamma(Complex(1/2, a))
-        φ₂ = imag(g0)
+        g₀ = gamma(Complex(1/2, a))
+        ϕ₂ = imag(g₀)
 
         gref = gamma(Complex(1/2, a))
-        gr0, gi0 = real(gref), imag(gref)
-        den = gr0^2 + gi0^2
+        gr₀, gi₀ = real(gref), imag(gref)
+        den = gr₀^2 + gi₀^2
 
         for k in 2:2:40
             m = k ÷ 2
             g = gamma(Complex(k + 0.5, a))
             gr, gi = real(g), imag(g)
-            u[m] = (gr * gr0 + gi * gi0) / den
-            v[m] = (gr0 * gi - gr * gi0) / den
+            u[m] = (gr * gr₀ + gi * gi₀) / den
+            v[m] = (gr₀ * gi - gr * gi₀) / den
         end
 
-        x2 = x^2
-        sv₁ = v[1] / (2x2)
-        su₂ = u[1] / (2x2)
+        x² = x^2
+        sv₁ = v[1] / (2x²)
+        su₂ = u[1] / (2x²)
         fac = 1.0
-
         for k in 3:2:19
             fac *= -k * (k - 1)
             denom = fac * 2^k * x^(2k)
@@ -365,11 +367,11 @@ function W(a::Float64, x::Float64)::Float64
         s₂ = -sv₂ - su₂
 
         ea = exp(pi * a)
-        √S = sqrt(1 + ea^2)
-        f₊ = √S + ea
-        f₋ = √S - ea
+        S = sqrt(1 + ea^2)
+        f₊ = S + ea
+        f₋ = S - ea
 
-        ϕ = x^2 / 4 - a * log(abs(x)) + pi / 4 + φ₂ / 2
+        ϕ = x^2 / 4 - a * log(abs(x)) + pi / 4 + ϕ₂ / 2
 
         if x > 0
             return sqrt(2 * f₋ / abs(x)) * (s₁ * cos(ϕ) - s₂ * sin(ϕ))
@@ -450,7 +452,3 @@ W(a::AbstractArray{<:Real}, x::Real) = [W(ai, x) for ai in a]
 dW(a::Real, x::AbstractArray{<:Real}) = [dW(a, xi) for xi in x]
 dW(a::AbstractArray{<:Real}, x::Real) = [dW(ai, x) for ai in a]
 
-
-using Plots 
-xs = -10:0.1:10
-plot(xs,dU(0.5, xs), label="U(0.5, x)")
