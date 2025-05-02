@@ -1,1 +1,0 @@
-If you spot a problem with the functions or docs, please open an issue. If you want to implement a function please make a PR.

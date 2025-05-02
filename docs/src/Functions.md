@@ -27,7 +27,7 @@ where ``\Gamma`` is the gamma function. For numerical purposes, it is useful to 
 	F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, \text{d}t.
 ```
 
-This implementation need the gamma function from [SpecialFunctions.jl](https://github.com/JuliaMath/SpecialFunctions.jl)
+This implementation requires the gamma function from [SpecialFunctions.jl](https://github.com/JuliaMath/SpecialFunctions.jl)
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
@@ -58,6 +58,11 @@ title!("Regular Coulomb Wave Functions")
 xlabel!(L"ρ")
 ```
 ## Marcum Q-function
+The generalized [Marcum Q-function](https://en.wikipedia.org/wiki/Marcum_Q-function#) is defined as
+```math
+    Q_\nu (a,b) = \int_b^\infty x^\nu \exp\left(-\frac{x^2+a^2}{2}\right) I_{\nu-1}(ax) \, \text{d}x,
+```
+where ``b \geq 0``, ``a,\nu>0`` and ``I_{\nu-1}`` is the modified Bessel function of the first kind. 
 
 ```@example MarcumQ
 using Plots, FewSpecialFunctions, LaTeXStrings  # hide
@@ -80,29 +85,35 @@ plot!(xlabel="b", ylabel=L"Q(1,a,b)", title="Marcum Q-function")
 ```
 ## Parabolic cylinder functions
 
-```@example Cylinder
-using Plots, FewSpecialFunctions, LaTeXStrings  # hide
+The parabolic cylinder functions `U(a, x)` and `V(a, x)` are fundamental solutions to the second-order linear differential equation
+```math
+    \frac{\text{d}^2 w}{\text{d}x^2} + \left( ax^2+bx+c \right)w = 0.
+```
+
+### `U(a, x)`
+The function `U(a, x)` is defined via the integral representation
+```math
+    U(a,x) = \frac{\text{e}^{-\frac{1}{4}x^2}}{\Gamma\left(\frac{1}{2}+a\right)} \int_0^\infty t^{a-\frac{1}{2}} \text{e}^{-\frac{1}{2}t^2-xt} \, \text{d}t,
+```
+This representation is valid for all real values of `a` and `x`. 
+```@example U
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-xs = collect(range(-2.5,2.5,length=100))
-U1 = U(0.5, xs)
-U2 = U(2.0, xs)
-U3 = U(3.5, xs)
-U4 = U(5.0, xs)
-U5 = U(8.0, xs)
-
-plot(xs, U1, label=L"a=0.5")
-plot!(xs, U2, label=L"a=2.0")
-plot!(xs, U3, label=L"a=3.5")
-plot!(xs, U4, label=L"a=5.0")
-plot!(xs, U5, label=L"a=8.0")
-
-plot!(xlabel="x", ylabel=L"U(a,x)", title="Parabolic cylinder function U(a,x)")
+xs = collect(-2.5:0.05:2.5)
+plot(xs, U(0.5, xs), label=L"a=0.5")
+plot!(xs, U(2.0, xs), label=L"a=2.0")
+plot!(xs, U(3.5, xs), label=L"a=3.5")
+plot!(xs, U(5.0, xs), label=L"a=5.0")
+plot!(xs, U(8.0, xs), label=L"a=8.0")
+plot!(xlabel="x", ylabel=L"U(a,x)", title="Parabolic Cylinder Function U(a,x)")
 ```
 
-And for the $V$ function
+### `V(a, x)`
+The function `V(a, x)` is a second, linearly independent solution to the same differential equation satisfied by `U(a, x)`. The implementation of `V(a, x)` in `FewSpecialFunctions.jl` uses a combination of convergent series and asymptotic expansions adapted from standard references.
+
 ```@example Cylinder
 using Plots, FewSpecialFunctions, LaTeXStrings  # hide
 ENV["GKSwstype"] = "100" # hide
