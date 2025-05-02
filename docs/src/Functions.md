@@ -71,12 +71,56 @@ M2 = marcum_Q(1, 1.3, bs)
 M3 = marcum_Q(1, 2.5, bs)
 M4 = marcum_Q(1, 4.7, bs)
 
-plot(bs, M1, label="a=0.2")
-plot!(bs, M2, label="a=1.3")
-plot!(bs, M3, label="a=2.5")
-plot!(bs, M4, label="a=4.7")
-plot!(xlabel="b", ylabel="Q(1,a,b)", title="Marcum Q-function")
+plot(bs, M1, label=L"a=0.2")
+plot!(bs, M2, label=L"a=1.3")
+plot!(bs, M3, label=L"a=2.5")
+plot!(bs, M4, label=L"a=4.7")
+plot!(xlabel="b", ylabel=L"Q(1,a,b)", title="Marcum Q-function")
 
+```
+## Parabolic cylinder functions
+
+```@example Cylinder
+using Plots, FewSpecialFunctions, LaTeXStrings  # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+xs = collect(range(-2.5,2.5,length=100))
+U1 = U(0.5, xs)
+U2 = U(2.0, xs)
+U3 = U(3.5, xs)
+U4 = U(5.0, xs)
+U5 = U(8.0, xs)
+
+plot(xs, U1, label=L"a=0.5")
+plot!(xs, U2, label=L"a=2.0")
+plot!(xs, U3, label=L"a=3.5")
+plot!(xs, U4, label=L"a=5.0")
+plot!(xs, U5, label=L"a=8.0")
+
+plot!(xlabel="x", ylabel=L"U(a,x)", title="Parabolic cylinder function U(a,x)")
+```
+
+And for the $V$ function
+```@example Cylinder
+using Plots, FewSpecialFunctions, LaTeXStrings  # hide
+ENV["GKSwstype"] = "100" # hide
+
+plot_font = "Computer Modern" # hide
+default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
+xs = collect(range(-2.5,2.5,length=100))
+V1 = V(0.5, xs)
+V2 = V(2.0, xs)
+V3 = V(3.5, xs)
+V4 = V(5.0, xs)
+
+plot(xs, V1, label=L"a=0.5")
+plot!(xs, V2, label=L"a=2.0")
+plot!(xs, V3, label=L"a=3.5")
+plot!(xs, V4, label=L"a=5.0")
+ylims!(-3.0, 3.0)  
+plot!(xlabel="x", ylabel=L"V(a,x)", title="Parabolic cylinder function V(a,x)")
 ```
 
 ## Clausen functions

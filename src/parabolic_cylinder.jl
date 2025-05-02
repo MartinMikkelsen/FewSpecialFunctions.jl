@@ -1,5 +1,4 @@
 using SpecialFunctions: gamma
-using Base: allequal
 
 export U, V, W, dU, dV, dW
 
@@ -7,7 +6,8 @@ export U, V, W, dU, dV, dW
     U(a::Float64, x::Float64)::Float64
 
 Compute the parabolic cylinder function U(a,x) of the first kind for real parameters.
-
+    
+S. Zhang and J. Jin, 'Computation of Special functions' (Wiley, 1966), E. Cojocaru, January 2009
 """
 function U(a::Float64, x::Float64)::Float64
     ε = 1e-15
@@ -337,6 +337,11 @@ function dU(a::Float64, x::Float64)::Float64
     return du
 end
 
+"""
+    dV(a::Float64, x::Float64)::Float64
+
+Compute the derivative of the parabolic cylinder function V(a,x) for real parameters.
+"""
 function dV(a::Float64, x::Float64)::Float64
     ε = 1e-15
 
