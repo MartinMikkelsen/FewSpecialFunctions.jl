@@ -2,8 +2,6 @@
 
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/)
 [![CI](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml)
-[![license-img]]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
-
 
 A Julia package collecting a few special functions.
 
