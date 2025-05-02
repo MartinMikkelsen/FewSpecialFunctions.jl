@@ -26,4 +26,7 @@ include("FermiDirac.jl")
 
 export marcum_Q
 include("MarcumQ.jl")
+
+export U, V, W, dU, dV, dW
+include("parabolic_cylinder.jl")
 end

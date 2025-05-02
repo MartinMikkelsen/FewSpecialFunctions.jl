@@ -11,7 +11,8 @@ using Test
     include("test_hypergeometric.jl")          
     include("test_MarcumQ.jl")          
     include("test_Struve.jl")          
-
+    include("test_parabolic_cylinder.jl")
+    
 end
 
 

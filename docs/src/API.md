@@ -25,5 +25,11 @@ confluent_hypergeometric_U
 FermiDiracIntegral
 FermiDiracIntegralNorm
 marcum_Q
+U
+V
+W
+dU
+dV
+dW
 ```
 
