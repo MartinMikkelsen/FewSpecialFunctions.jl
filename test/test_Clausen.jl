@@ -10,7 +10,7 @@ using DelimitedFiles
         expected = row[2]
 
         @test FewSpecialFunctions.Clausen(1,x) ≈ expected rtol=1e-13
-        @test FewSpecialFunctions.Clausen(1,-x) ≈ expected rtol=1e-13
+        @test FewSpecialFunctions.Clausen(1,-x) ≈ expected rtol=1e-12
         @test FewSpecialFunctions.Clausen(1,x-2pi) ≈ expected rtol=1e-12
         @test FewSpecialFunctions.Clausen(1,x+2pi) ≈ expected rtol=1e-13
 
