@@ -71,10 +71,10 @@ ENV["GKSwstype"] = "100" # hide
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 bs = collect(range(0.0,10,length=100))
-M1 = marcum_Q(1, 0.2, bs)
-M2 = marcum_Q(1, 1.3, bs)
-M3 = marcum_Q(1, 2.5, bs)
-M4 = marcum_Q(1, 4.7, bs)
+M1 = MarcumQ(1, 0.2, bs)
+M2 = MarcumQ(1, 1.3, bs)
+M3 = MarcumQ(1, 2.5, bs)
+M4 = MarcumQ(1, 4.7, bs)
 
 plot(bs, M1, label=L"a=0.2")
 plot!(bs, M2, label=L"a=1.3")
@@ -133,27 +133,6 @@ plot!(xs, V4, label=L"a=5.0")
 ylims!(-3.0, 3.0)  
 plot!(xlabel="x", ylabel=L"V(a,x)", title="Parabolic cylinder function V(a,x)")
 ```
-
-## Clausen functions
-The Clausen function is given by
-
-```math
-Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
-```
-
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=15,length=1000)
-xlabel!(L"ϕ")
-title!("Clausen function")
-plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
-savefig("clausen.svg"); nothing # hide
-```
-![Clausen function](clausen.svg)
 
 ## Debye functions
 
