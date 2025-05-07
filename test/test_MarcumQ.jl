@@ -46,3 +46,41 @@
     @test FewSpecialFunctions.MarcumQ(4, 0.95, 4.75) ≈ 0.00899422673877906 atol = 1e-9
 
 end
+@testset "MarcumQ overloads" begin
+    # Test for array inputs
+    @testset "Array inputs" begin
+        # Test when b is an array
+        b_arr = [0.6, 1.6, 2.6]
+        q_b_arr = FewSpecialFunctions.MarcumQ(1, 0.2, b_arr)
+        @test q_b_arr isa Vector
+        @test length(q_b_arr) == length(b_arr)
+        @test q_b_arr[1] ≈ FewSpecialFunctions.MarcumQ(1, 0.2, 0.6) atol = 1e-9
+        @test q_b_arr[2] ≈ FewSpecialFunctions.MarcumQ(1, 0.2, 1.6) atol = 1e-9
+        @test q_b_arr[3] ≈ FewSpecialFunctions.MarcumQ(1, 0.2, 2.6) atol = 1e-9
+        
+        # Test when a is an array
+        a_arr = [0.2, 1.2, 2.2]
+        q_a_arr = FewSpecialFunctions.MarcumQ(1, a_arr, 0.6)
+        @test q_a_arr isa Vector
+        @test length(q_a_arr) == length(a_arr)
+        @test q_a_arr[1] ≈ FewSpecialFunctions.MarcumQ(1, 0.2, 0.6) atol = 1e-9
+        @test q_a_arr[2] ≈ FewSpecialFunctions.MarcumQ(1, 1.2, 0.6) atol = 1e-9
+        @test q_a_arr[3] ≈ FewSpecialFunctions.MarcumQ(1, 2.2, 0.6) atol = 1e-9
+        
+        # Test when μ is an array
+        μ_arr = [1.0, 5.0, 7.7]
+        q_μ_arr = FewSpecialFunctions.MarcumQ(μ_arr, 0.2, 0.6)
+        @test q_μ_arr isa Vector
+        @test length(q_μ_arr) == length(μ_arr)
+        @test q_μ_arr[1] ≈ FewSpecialFunctions.MarcumQ(1.0, 0.2, 0.6) atol = 1e-9
+        @test q_μ_arr[2] ≈ FewSpecialFunctions.MarcumQ(5.0, 0.2, 0.6) atol = 1e-9
+        @test q_μ_arr[3] ≈ FewSpecialFunctions.MarcumQ(7.7, 0.2, 0.6) atol = 1e-9
+    end
+    
+    # Test for the default μ=1 case
+    @testset "Default μ=1" begin
+        @test FewSpecialFunctions.MarcumQ(0.2, 0.6) ≈ FewSpecialFunctions.MarcumQ(1, 0.2, 0.6) atol = 1e-9
+        @test FewSpecialFunctions.MarcumQ(1.2, 1.6) ≈ FewSpecialFunctions.MarcumQ(1, 1.2, 1.6) atol = 1e-9
+        @test FewSpecialFunctions.MarcumQ(2.2, 2.6) ≈ FewSpecialFunctions.MarcumQ(1, 2.2, 2.6) atol = 1e-9
+    end
+end
