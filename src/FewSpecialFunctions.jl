@@ -24,7 +24,7 @@ include("Hypergeometric.jl")
 export FermiDiracIntegral, FermiDiracIntegralNorm
 include("FermiDirac.jl")
 
-export marcum_Q
+export MarcumQ
 include("MarcumQ.jl")
 
 export U, V, W, dU, dV, dW
