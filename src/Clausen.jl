@@ -179,34 +179,42 @@ const γ = Base.MathConstants.γ
         - θ * z * (θ^4 * z^4 - 6 * θ^2 * z^2) * cos(θ * z)
     )
 
-function Clausen(n::Int, θ::Float64; N::Int=20, m::Int=20)
+function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
     if n < 1 || n > 6
         throw(ArgumentError("Only n = 1 to 6 are supported."))
     end
     if N != 10 && N != 20
         throw(ArgumentError("Only N = 10 or N = 20 is implemented."))
     end
-
-    θmod = mod(θ, 2π)
-
+    
+    negative_input = θ < 0
+    θabs = abs(θ)
+    θmod = mod(θabs, 2π)
+    
     if n == 1
         if isapprox(θmod, 0.0; atol=1e-14) || isapprox(θmod, 2π; atol=1e-14)
             return Inf
         end
-        return -log(abs(2sin(θmod / 2)))
+        return -log(abs(2*sin(θmod/2)))
     end
-
+    
     ξ = N == 10 ? ξ10 : ξ20
     A = N == 10 ? A10 : A20
-
+    
     S1 = sum(f_n(n, k, θmod) for k in 1:m-1)
-
+    
     S2 = 0.0
     for ν in 1:N
         z = (m - 0.5) + 0.5im * sqrt(ξ[ν])
         S2 += A[ν] * real(F(n, z, θmod))
     end
-
-    return S1 - (π / 4) * S2
+    
+    result = S1 - (π/4) * S2
+    
+    if negative_input && iseven(n)
+        return -result  
+    else
+        return result  
+    end
 end
 
