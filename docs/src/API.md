@@ -24,6 +24,7 @@ confluent_hypergeometric_U
 FermiDiracIntegral
 FermiDiracIntegralNorm
 MarcumQ
+dQdb
 U
 V
 W

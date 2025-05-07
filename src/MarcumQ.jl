@@ -1,6 +1,6 @@
 using SpecialFunctions: besseli, gamma_inc, loggamma, erfc
 
-export MarcumQ
+export MarcumQ, dQdb
 
 Q(μ::T, x::T) where {T<:Number} = gamma_inc(μ, x)[2]
 
@@ -172,4 +172,17 @@ end
 
 function MarcumQ(a::Real, b::Real)
     return MarcumQ(1, a, b)
+end
+
+"""
+    dQdb(M, a, b)
+
+Derivative ∂Q_M(a,b)/∂b of the (standard) Marcum Q-function of order `M`.
+Requires `M` integer ≥1 and `a>0`.
+"""
+function dQdb(M::Integer, a::T, b::T) where {T<:Number}
+    @assert M ≥ 1 "order M must be ≥1"
+    @assert a != zero(a) "a must be nonzero"
+    coeff = b^M / a^(M-1)
+    return -coeff * exp( -(a^2 + b^2)/T(2) ) * besseli(M-1, a*b)
 end

@@ -84,3 +84,34 @@ end
         @test FewSpecialFunctions.MarcumQ(2.2, 2.6) ≈ FewSpecialFunctions.MarcumQ(1, 2.2, 2.6) atol = 1e-9
     end
 end
+
+@testset "dQdb - Marcum Q derivative" begin
+    # Basic functionality tests
+    @test FewSpecialFunctions.dQdb(1, 1.0, 2.0) < 0  # Derivative should be negative for these values
+    
+    # Test numerical approximation using finite differences
+    function numerical_dQdb(M, a, b, h=1e-6)
+        return (FewSpecialFunctions.MarcumQ(M, a, b + h) - FewSpecialFunctions.MarcumQ(M, a, b - h)) / (2h)
+    end
+    
+    test_cases = [
+        (1, 1.0, 2.0), 
+        (2, 1.5, 2.5), 
+        (3, 0.5, 1.5),
+        (4, 2.0, 3.0)
+    ]
+    
+    for (M, a, b) in test_cases
+        analytical = FewSpecialFunctions.dQdb(M, a, b)
+        numerical = numerical_dQdb(M, a, b)
+        @test analytical ≈ numerical rtol = 1e-4
+    end
+    
+    # Edge cases
+    @test FewSpecialFunctions.dQdb(1, 0.1, 0.1) ≈ numerical_dQdb(1, 0.1, 0.1) rtol = 1e-4  # Small values
+    @test FewSpecialFunctions.dQdb(10, 5.0, 5.0) ≈ numerical_dQdb(10, 5.0, 5.0) rtol = 1e-3  # Larger order
+    
+    # Error conditions
+    @test_throws AssertionError FewSpecialFunctions.dQdb(0, 1.0, 2.0)  # M must be ≥ 1
+    @test_throws AssertionError FewSpecialFunctions.dQdb(1, 0.0, 2.0)  # a must be nonzero
+end
