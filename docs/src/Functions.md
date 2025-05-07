@@ -134,26 +134,6 @@ ylims!(-3.0, 3.0)
 plot!(xlabel="x", ylabel=L"V(a,x)", title="Parabolic cylinder function V(a,x)")
 ```
 
-## Clausen functions
-The Clausen function is given by
-
-```math
-Cl_2(\phi)=-\int_0^\phi \log|2\sin(x/2)| \, \text{d}x
-```
-
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=15,length=1000)
-xlabel!(L"ϕ")
-title!("Clausen function")
-plot(x,Clausen.(x), label=L"Cl_2(ϕ)")
-savefig("clausen.svg"); nothing # hide
-```
-![Clausen function](clausen.svg)
 
 ## Debye functions
 
