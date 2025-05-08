@@ -1,5 +1,4 @@
 ```@docs
-Clausen
 Debye_function
 regular_Coulomb
 irregular_Coulomb
@@ -24,7 +23,8 @@ confluent_hypergeometric_1F1
 confluent_hypergeometric_U
 FermiDiracIntegral
 FermiDiracIntegralNorm
-marcum_Q
+MarcumQ
+dQdb
 U
 V
 W
