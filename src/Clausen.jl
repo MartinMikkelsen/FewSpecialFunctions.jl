@@ -83,8 +83,14 @@ Compute the Clausen series summand fₙ(k, θ):
     sin(kθ)/kⁿ for even n,
     cos(kθ)/kⁿ for odd n.
 """
-function f_n(n::Int, k::Int, θ::Float64)
-    iseven(n) ? sin(k * θ) / k^n : cos(k * θ) / k^n
+function f_n(n::Int, k::Int, θ::Real)
+    θ_float = Float64(θ)
+
+    if iseven(n)
+        return sin(k*θ_float) / k^n
+    else
+        return cos(k*θ_float) / k^n
+    end
 end
 
 """
@@ -111,40 +117,19 @@ function F(n::Int, z::ComplexF64, θ::Float64)
 end
 
 function Ci_complex(z::ComplexF64)
-    iz  = im * z        
-    miz = -im * z       
-    v = 0.5 * (expint(iz) + expint(miz)) 
+    iz = im * z        
+    v = 0.5 * (expint(iz) + expint(-iz))
 
-    zre = real(z)
-    zim = imag(z)
+    zre, zim = real(z), imag(z)
 
     if isinf(z)
-        if z == Inf
-            return 0.0
-        elseif z == -Inf
-            return π * im
-        end
+        return z == Inf ? 0.0 : π * im
     end
 
-    if zre == 0
-        if zim > 0
-            v += 0.5π * im
-        elseif zim < 0
-            v -= 0.5π * im
-        end
-    elseif zre < 0
-        if zim >= 0
-            v += π * im
-        else
-            v -= π * im
-        end
-    end
+    v += (zre == 0) ? (zim > 0 ? 0.5π * im : (zim < 0 ? -0.5π * im : 0)) :
+         (zre < 0)  ? (zim >= 0 ? π * im : -π * im) : 0
 
-    if isreal(z) && zre > 0
-        return real(v)
-    end
-
-    return v
+    return isreal(z) && zre > 0 ? real(v) : v
 end
 
 const γ = Base.MathConstants.γ
@@ -184,42 +169,45 @@ const γ = Base.MathConstants.γ
 
 Compute the Clausen function of order `n` at angle `θ`.
 
+References:
+- [Clausen function](https://en.wikipedia.org/wiki/Clausen_function)
+- [Implementation paper](https://doi.org/10.1007/s10543-023-00944-4)
 """
 function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
-if n < 1 || n > 6
-    throw(ArgumentError("Only n = 1 to 6 are supported."))
-end
-if N != 10 && N != 20
-    throw(ArgumentError("Only N = 10 or N = 20 is implemented."))
-end
-
-negative_input = θ < 0
-θabs = abs(θ)
-θmod = mod(θabs, 2π)
-
-if n == 1
-    if isapprox(θmod, 0.0; atol=1e-14) || isapprox(θmod, 2π; atol=1e-14)
-        return Inf
+    if n < 1 || n > 6
+        throw(ArgumentError("Only n = 1 to 6 are supported."))
     end
-    return -log(abs(2*sin(θmod/2)))
-end
+    if N != 10 && N != 20
+        throw(ArgumentError("Only N = 10 or N = 20 is implemented."))
+    end
 
-ξ = N == 10 ? ξ10 : ξ20
-A = N == 10 ? A10 : A20
+    negative_input = θ < 0
+    θabs = abs(θ)
+    θmod = mod(θabs, 2π)
 
-S1 = sum(f_n(n, k, θmod) for k in 1:m-1)
+    if n == 1
+        if isapprox(θmod, 0.0; atol=1e-14) || isapprox(θmod, 2π; atol=1e-14)
+            return Inf
+        end
+        return -log(abs(2*sin(θmod/2)))
+    end
 
-S2 = 0.0
-for ν in 1:N
-    z = (m - 0.5) + 0.5im * sqrt(ξ[ν])
-    S2 += A[ν] * real(F(n, z, θmod))
-end
+    ξ = N == 10 ? ξ10 : ξ20
+    A = N == 10 ? A10 : A20
 
-result = S1 - (π/4) * S2
+    S1 = sum(f_n(n, k, θmod) for k in 1:m-1)
 
-if negative_input && iseven(n)
-    return -result  
-else
-    return result  
-end
+    S2 = 0.0
+    for ν in 1:N
+        z = (m - 0.5) + 0.5im * sqrt(ξ[ν])
+        S2 += A[ν] * real(F(n, z, θmod))
+    end
+
+    result = S1 - (π/4) * S2
+
+    if negative_input && iseven(n)
+        return -result
+    else
+        return result
+    end
 end
