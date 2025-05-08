@@ -1,3 +1,4 @@
+using SpecialFunctions
 @testset "Marcum Q-function" begin
 
     # assume marcumq_test.txt lives in test/data/
@@ -114,4 +115,36 @@ end
     # Error conditions
     @test_throws AssertionError FewSpecialFunctions.dQdb(0, 1.0, 2.0)  # M must be ≥ 1
     @test_throws AssertionError FewSpecialFunctions.dQdb(1, 0.0, 2.0)  # a must be nonzero
+end
+
+@testset "Helper functions for MarcumQ" begin
+    @testset "Q function (regularized incomplete gamma)" begin
+        # Test against known values
+        @test FewSpecialFunctions.Q(1.0, 0.0) ≈ 1.0 atol = 1e-14
+        @test FewSpecialFunctions.Q(1.0, 1.0) ≈ exp(-1.0) atol = 1e-14
+        @test FewSpecialFunctions.Q(2.0, 2.0) ≈ exp(-2.0) * (1.0 + 2.0) atol = 1e-14
+        @test FewSpecialFunctions.Q(3.0, 3.0) ≈ exp(-3.0) * (1.0 + 3.0 + 9.0/2.0) atol = 1e-14
+        
+        # Compare with direct computation for large values
+        μ, x = 5.0, 10.0
+        @test FewSpecialFunctions.Q(μ, x) ≈ gamma_inc(μ, x)[2] atol = 1e-14
+    end
+
+    @testset "c_μ function (Bessel I ratio)" begin
+        # Test specific values
+        for μ in [0.5, 1.0, 1.5, 2.0]
+            for ξ in [0.1, 0.5, 1.0, 2.0, 5.0]
+                direct_ratio = besseli(μ, ξ) / besseli(μ-1, ξ)
+                @test FewSpecialFunctions.c_μ(μ, ξ) ≈ direct_ratio atol = 1e-14
+            end
+        end
+        
+        # Test limit behavior for large ξ
+        # For large ξ, c_μ(μ, ξ) ≈ 1 - (μ-0.5)/ξ
+        large_ξ = 100.0
+        for μ in [1.0, 2.0, 3.0]
+            approx = 1.0 - (μ-0.5)/large_ξ
+            @test FewSpecialFunctions.c_μ(μ, large_ξ) ≈ approx rtol = 1e-3
+        end
+    end
 end

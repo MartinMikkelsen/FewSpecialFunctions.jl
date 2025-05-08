@@ -180,18 +180,13 @@ end
 Derivative ∂Q_M(a,b)/∂b of the (standard) Marcum Q-function of order `M`.
 Requires `M` integer ≥1 and `a>0`.
 """
-function dQdb(M::Integer, a::T, b::T) where {T<:Number}
+function dQdb(M::T1, a::T2, b::T2) where {T1<:Real, T2<:Real}
     @assert M ≥ 1 "order M must be ≥1"
     @assert a != zero(a) "a must be nonzero"
     coeff = b^M / a^(M-1)
-    return -coeff * exp( -(a^2 + b^2)/T(2) ) * besseli(M-1, a*b)
+    return -coeff * exp( -(a^2 + b^2)/T2(2) ) * besseli(M-1, a*b)
 end
 
-function dQdb(M::Real, a::Real, b::Real)
-    return dQdb(Float64(M), Float64(a), Float64(b))
-end
-
-# Array handling for b parameter
 function dQdb(M::Real, a::Real, b::AbstractArray{<:Real})
     return [dQdb(M, a, bᵢ) for bᵢ in b]
 end
