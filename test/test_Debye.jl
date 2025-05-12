@@ -23,3 +23,36 @@ using Test
     @test FewSpecialFunctions.debye_function(30.0, 1.0, 3.42) ≈ 0.1258426106590655660781 atol=1e-13
 
 end
+
+@testset "Debye function method variants" begin
+    # Test real number conversion
+    @test FewSpecialFunctions.debye_function(2, 1, 5) ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 5.0)
+    @test FewSpecialFunctions.debye_function(Int8(3), Float32(1.0), 2) ≈ FewSpecialFunctions.debye_function(3.0, 1.0, 2.0)
+    
+    # Test array input for x
+    x_array = [1.0, 2.0, 3.0]
+    result = FewSpecialFunctions.debye_function(2.0, 1.0, x_array)
+    @test length(result) == length(x_array)
+    @test result[1] ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 1.0)
+    @test result[2] ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 2.0)
+    @test result[3] ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 3.0)
+    
+    # Test array input for β
+    β_array = [1.0, 1.5, 2.0]
+    result = FewSpecialFunctions.debye_function(2.0, β_array, 3.0)
+    @test length(result) == length(β_array)
+    @test result[1] ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 3.0)
+    @test result[2] ≈ FewSpecialFunctions.debye_function(2.0, 1.5, 3.0)
+    @test result[3] ≈ FewSpecialFunctions.debye_function(2.0, 2.0, 3.0)
+    
+    # Test array input for n
+    n_array = [1.0, 2.0, 3.0]
+    result = FewSpecialFunctions.debye_function(n_array, 1.0, 3.0)
+    @test length(result) == length(n_array)
+    @test result[1] ≈ FewSpecialFunctions.debye_function(1.0, 1.0, 3.0)
+    @test result[2] ≈ FewSpecialFunctions.debye_function(2.0, 1.0, 3.0)
+    @test result[3] ≈ FewSpecialFunctions.debye_function(3.0, 1.0, 3.0)
+    
+    # Test default n=1.0
+    @test FewSpecialFunctions.debye_function(1.5, 2.0) ≈ FewSpecialFunctions.debye_function(1.0, 1.5, 2.0)
+end
