@@ -13,6 +13,7 @@
 /source-dist.tmp1
 /test/results_*.json
 /test/results_*.dat
+docs/build/
 
 *.expmap
 *.exe

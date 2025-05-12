@@ -156,7 +156,6 @@ const γ = Base.MathConstants.γ
     - θ * z * (θ^2 * z^2 - 2) * sin(θ * z)
 )
 
-
 @inline F6(z::ComplexF64, θ::Float64) =
     1 / (120 * z^5) * (
         θ^5 * z^5 * Ci_complex(z * θ)

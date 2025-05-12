@@ -230,44 +230,6 @@ title!("Fresnel Integral")
 xlabel!(L"x")
 ```
 
-## Hypergeometric functions
-
-The confluent hypergeometric functions are solutions of Kummer’s equation
-```math
-    z \frac{d^2 F}{dz^2} +(b-z)\frac{dF}{dz}-a F = 0.
-```
-Kummer's equations has two linearly independent solutions given by
-```math
-    {}_1 F_{1}(a;b;z) 
-```
-and 
-```math
-    z^{1-b}{}_1F_1(a-b+1;2-b;z).
-```
-The numerical implementation in based on the following series expansion 
-```math
-    {}_1 F_1 (a,b,z) = 1+\frac{a}{b}z+\frac{a(a+1)}{b(b+1)2!}z^2 + \frac{a(a+1)(a+2)}{b(b+1)b(b+2)3!}z^3 + \cdots
-```
-Using this expansion the terms can be computed as
-```math
-    t(n) = \frac{(a+n-1)z}{(b+n-1)n}t(n-1),
-```
-and a cumulative product is produced. The errors are quite small; approximately ``10^{-12}-10^{-13}``. The figure below shows four examples of ``{}_1F_1``.
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=3.5,length=100)
-plot(x,confluent_hypergeometric_1F1.(2,0.5,x),label=L"{}_1F_1(2,0.5,x)")
-plot!(x,confluent_hypergeometric_1F1.(3,0.7,x),label=L"{}_1F_1(3,0.7,x)")
-plot!(x,confluent_hypergeometric_1F1.(2,1.1,x),label=L"{}_1F_1(2,1.1,x)")
-plot!(x,confluent_hypergeometric_1F1.(3,1.3,x),label=L"{}_1F_1(3,1.3,x)")
-title!("Confluent hypergeometric function")
-xlabel!(L"x")
-```
-
 ## Fermi-Dirac integrals
 
 In solid state physics the Fermi-Dirac integral is given by
