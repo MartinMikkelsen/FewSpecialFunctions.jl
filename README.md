@@ -2,7 +2,7 @@
 
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/)
 [![CI](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/MartinMikkelsen/FewSpecialFunctions.jl/badge.svg?branch=coverage)](https://coveralls.io/github/MartinMikkelsen/FewSpecialFunctions.jl?branch=coverage)
+[![Coverage Status](https://coveralls.io/repos/github/MartinMikkelsen/FewSpecialFunctions.jl/badge.svg)](https://coveralls.io/github/MartinMikkelsen/FewSpecialFunctions.jl)
 
 A Julia package collecting a few special functions.
 
