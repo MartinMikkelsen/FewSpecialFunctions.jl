@@ -10,7 +10,7 @@ Compute the generalized Debye function with parameters `n`, `β`, and `x`.
 
 References:
 - [Debye function](https://en.wikipedia.org/wiki/Debye_function)    
-- [Calculation of Integer and Noninteger n-Dimensional Debye Functions Using Binomial Coefficients and Incomplete Gamma Functions](10.1007/s10765-007-0256-1)
+- [Paper](https://doi.org/10.1007/s10765-007-0256-1)
 """
 function debye_function(n::Float64, β::Float64, x::Float64; tol=1e-35, max_terms=2000)
     sum = 0.0
@@ -33,5 +33,25 @@ function debye_function(n::Float64, β::Float64, x::Float64; tol=1e-35, max_term
     end
 
     return n * sum / x^n
+end
+
+function debye_function(n::Real, β::Real, x::Real; tol=1e-35, max_terms=2000)
+    return debye_function(Float64(n), Float64(β), Float64(x); tol=tol, max_terms=max_terms)
+end
+
+function debye_function(n::Real, β::Real, x::AbstractArray{<:Real}; tol=1e-35, max_terms=2000)
+    return [debye_function(n, β, xᵢ; tol=tol, max_terms=max_terms) for xᵢ in x]
+end
+
+function debye_function(n::Real, β::AbstractArray{<:Real}, x::Real; tol=1e-35, max_terms=2000)
+    return [debye_function(n, βᵢ, x; tol=tol, max_terms=max_terms) for βᵢ in β]
+end
+
+function debye_function(n::AbstractArray{<:Real}, β::Real, x::Real; tol=1e-35, max_terms=2000)
+    return [debye_function(nᵢ, β, x; tol=tol, max_terms=max_terms) for nᵢ in n]
+end
+
+function debye_function(β::Real, x::Real; tol=1e-35, max_terms=2000)
+    return debye_function(1.0, β, x; tol=tol, max_terms=max_terms)
 end
 

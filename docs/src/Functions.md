@@ -140,7 +140,7 @@ plot!(xlabel="x", ylabel=L"V(a,x)", title="Parabolic cylinder function V(a,x)")
 The Debye functions are given by
 
 ```math
-    D_n(x)= \frac{n}{x^n} \int_0^x \frac{t^n}{\text{e}^t-1} \, \text{d}t
+    D_n(\beta,x)= \frac{n}{x^n} \int_0^x \frac{t^n}{(\text{e}^t-1)^\beta} \, \text{d}t
 ```
 And
 ```@example
@@ -150,9 +150,9 @@ ENV["GKSwstype"] = "100" # hide
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0,stop=25,length=1000)
-plot(x,Debye_function.(1,x),label=L"D_1(x)")
-plot!(x,Debye_function.(2,x),label=L"D_2(x)")
-plot!(x,Debye_function.(3,x), label=L"D_3(x)")
+plot(x,debye_function(1.0,1.0,x),label=L"D_1(x)")
+plot!(x,debye_function(2.0,1.0,x),label=L"D_2(x)")
+plot!(x,debye_function(3.0,1.0,x), label=L"D_3(x)")
 title!("Debye Functions")
 xlabel!(L"x")
 savefig("debye.svg"); nothing # hide
