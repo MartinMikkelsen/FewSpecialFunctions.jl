@@ -7,7 +7,7 @@ type: software
 authors:
   - given-names: Martin
     family-names: Mikkelsen
-    email: MartinMikkelsen@proton.me
+    email: martin.mikkelsen@di.ku.dk
 repository-code: 'https://github.com/MartinMikkelsen/FewSpecialFunctions.jl'
 license: MIT
 version: 0.1.3

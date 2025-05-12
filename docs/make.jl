@@ -7,9 +7,8 @@ makedocs(
     format = Documenter.HTML()
 )
 
-
 deploydocs(
-    repo = "https://github.com/MartinMikkelsen/FewSpecialFunctions.jl",
+    repo = "github.com/MartinMikkelsen/FewSpecialFunctions.jl",
     target = "build",       
     branch = "gh-pages",
     devbranch = "main"
