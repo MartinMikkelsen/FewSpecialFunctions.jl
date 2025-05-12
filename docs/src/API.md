@@ -1,5 +1,5 @@
 ```@docs
-Debye_function
+debye_function
 regular_Coulomb
 irregular_Coulomb
 C
