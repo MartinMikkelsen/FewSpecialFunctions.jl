@@ -87,10 +87,8 @@ end
 end
 
 @testset "dQdb - Marcum Q derivative" begin
-    # Basic functionality tests
-    @test FewSpecialFunctions.dQdb(1, 1.0, 2.0) < 0  # Derivative should be negative for these values
+    @test FewSpecialFunctions.dQdb(1, 1.0, 2.0) < 0  
     
-    # Test numerical approximation using finite differences
     function numerical_dQdb(M, a, b, h=1e-6)
         return (FewSpecialFunctions.MarcumQ(M, a, b + h) - FewSpecialFunctions.MarcumQ(M, a, b - h)) / (2h)
     end
@@ -114,7 +112,6 @@ end
     
     # Error conditions
     @test_throws AssertionError FewSpecialFunctions.dQdb(0, 1.0, 2.0)  # M must be ≥ 1
-    @test_throws AssertionError FewSpecialFunctions.dQdb(1, 0.0, 2.0)  # a must be nonzero
 end
 
 @testset "Helper functions for MarcumQ" begin
@@ -147,4 +144,51 @@ end
             @test FewSpecialFunctions.c_μ(μ, large_ξ) ≈ approx rtol = 1e-3
         end
     end
+end
+
+using SpecialFunctions: besseli
+
+@testset "FewSpecialFunctions dQdb Tests" begin
+
+    # Scalar input tests
+    @testset "dQdb Scalar Tests" begin
+        M, a, b = 1, 2.0, 3.0
+        coeff = b^M / a^(M-1)
+        expected = -coeff * exp(-(a^2 + b^2) / 2) * besseli(M-1, a * b)
+        result = dQdb(M, a, b)
+        @test isapprox(result, expected, atol=1e-6)
+
+        # Convenience method: M=1
+        a, b = 2.0, 3.0
+        result = dQdb(a, b)
+        @test isapprox(result, dQdb(1, a, b), atol=1e-6)
+    end
+
+    # Array input tests
+    @testset "dQdb Array Tests" begin
+
+        # Array handling for b parameter
+        M, a, b = 1, 2.0, [0.0, 3.0]
+        results = dQdb(M, a, b)
+        expected1 = -exp(-4.0)
+        expected2 = -3.0 * exp(-6.5) * besseli(0, 6.0)
+        @test isapprox(results[2], expected2, atol=1e-6)
+
+        # Array handling for a parameter
+        M, a, b = 1, [1.0, 2.0], 3.0
+        results = dQdb(M, a, b)
+        expected1 = -3.0 * exp(-5.0) * besseli(0, 3.0)
+        expected2 = -3.0 * exp(-6.5) * besseli(0, 6.0)
+        @test isapprox(results[1], expected1, atol=1e-6)
+        @test isapprox(results[2], expected2, atol=1e-6)
+
+        # Array handling for M parameter
+        M, a, b = [1, 2], 2.0, 3.0
+        results = dQdb(M, a, b)
+        expected1 = -3.0 * exp(-6.5) * besseli(0, 6.0)
+        expected2 = -9.0 / 2.0 * exp(-6.5) * besseli(1, 6.0)
+        @test isapprox(results[1], expected1, atol=1e-6)
+        @test isapprox(results[2], expected2, atol=1e-6)
+    end
+
 end

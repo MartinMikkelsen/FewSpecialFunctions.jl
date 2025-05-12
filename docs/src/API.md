@@ -18,9 +18,6 @@ Fresnel_S_integral
 Fresnel_C_integral
 Fresnel_S_erf
 Fresnel_C_erf
-hypergeometric_0F1
-confluent_hypergeometric_1F1
-confluent_hypergeometric_U
 FermiDiracIntegral
 FermiDiracIntegralNorm
 MarcumQ
