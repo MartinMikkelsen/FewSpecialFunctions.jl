@@ -1,5 +1,28 @@
 @testset "Parabolic Cylinder function" begin
     
+
+    @testset "Clausen" begin
+
+        data_U = open(readdlm, joinpath(@__DIR__, "data", "U_data.txt"))
+        data_V = open(readdlm, joinpath(@__DIR__, "data", "V_data.txt"))
+
+        @testset "U vs MATLAB reference" begin
+            for r in 1:size(data_U, 1)
+                a, x, Q_ref = data_U[r, :]
+    
+                @test FewSpecialFunctions.U(a, x) ≈ Q_ref atol = 1e-5
+            end
+        end
+        @testset "V vs MATLAB reference" begin
+            for r in 1:size(data_V, 1)
+                a, x, Q_ref = data_V[r, :]
+    
+                @test FewSpecialFunctions.V(a, x) ≈ Q_ref atol = 1e-3
+            end
+        end
+    
+    end
+
     # https://link.springer.com/content/pdf/10.1007/s00211-004-0517-x.pdf
     @test FewSpecialFunctions.U(10.1, 2*1.2*sqrt(10.1)) ≈ 8.7742145116891e-17 atol = 1e-9
     @test FewSpecialFunctions.U(20.1, 2*1.2*sqrt(20.1)) ≈ 2.8991030051243e-35 atol = 1e-9
