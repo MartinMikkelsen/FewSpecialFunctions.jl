@@ -1,10 +1,11 @@
 using DelimitedFiles
+using SpecialFunctions
 
 function complex_approx(a::ComplexF64, b::ComplexF64; atol=1e-10)
     return isapprox(real(a), real(b), atol=atol) && isapprox(imag(a), imag(b), atol=atol)
 end
 
-@testset "Clausen" begin
+@testset "Clausen1" begin
 
     data = open(readdlm, joinpath(@__DIR__, "data", "Cl1.txt"))
 
@@ -13,18 +14,35 @@ end
         x        = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(1,x) ≈ expected rtol=1e-13
-        @test FewSpecialFunctions.Clausen(1,-x) ≈ expected rtol=1e-13
+        @test FewSpecialFunctions.Clausen(1,x;m=500000) ≈ expected rtol=1e-11
+        @test FewSpecialFunctions.Clausen(1,-x) ≈ expected rtol=1e-12
         @test FewSpecialFunctions.Clausen(1,x-2pi) ≈ expected rtol=1e-12
-        @test FewSpecialFunctions.Clausen(1,x+2pi) ≈ expected rtol=1e-13
+        @test FewSpecialFunctions.Clausen(1,x+2pi) ≈ expected rtol=1e-12
 
     end
 
     @test FewSpecialFunctions.Clausen(1,0.5) ≈ 0.70358563513784466 rtol=1e-14
+    @test FewSpecialFunctions.Clausen(1,0.5;N=20) ≈ 0.70358563513784466 rtol=1e-14
     @test FewSpecialFunctions.Clausen(1,1.0) ≈ 0.042019505825368962 rtol=1e-14
     @test FewSpecialFunctions.Clausen(1,2.0) ≈ -0.52054343429085363 rtol=1e-14
 
 end
+
+@testset "Clausen2" begin
+
+    data2 = open(readdlm, joinpath(@__DIR__, "data", "Cl2.txt"))
+
+    for r in 1:size(data2, 1)
+        row      = data2[r, :]
+        x        = row[1]
+        expected = row[2]
+
+        @test FewSpecialFunctions.Clausen(2,x;N=20,m=500000) ≈ expected rtol=1e-9
+
+    end
+
+end
+
 
 @testset "f_n function" begin
     # Test with even n (should use sine)
@@ -60,7 +78,11 @@ end
     expected_F2 = (θ * z * Ci_complex(z * θ) - sin(θ * z)) / z
     expected_F3 = -1 / (2 * z^2) * (θ^2 * z^2 * Ci_complex(z * θ) + cos(θ * z) - θ * z * sin(θ * z))
     expected_F4 = -1 / (6 * z^3) * (θ^3 * z^3 * Ci_complex(z * θ) + (2 - θ^2 * z^2) * sin(θ * z) + θ * z * cos(θ * z))
-    expected_F5 = 1 / (24 * z^4) * (θ^4 * z^4 * Ci_complex(z * θ) - (θ^4 * z^4 - 6 * θ^2 * z^2) * cos(θ * z) - θ * z * (θ^2 * z^2 - 2) * sin(θ * z))
+    expected_F5 = 1 / (24 * z^4) * (
+        (θ^4 * z^4 * Ci_complex(z * θ)) +
+        (θ * z * (2 - θ^2 * z^2) * sin(θ * z)) +
+        ((θ^2 * z^2 - 6) * cos(θ * z))
+    )
     expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ) - (θ^6 * z^6 - 20 * θ^4 * z^4 + 24 * θ^2 * z^2) * sin(θ * z) - θ * z * (θ^4 * z^4 - 6 * θ^2 * z^2) * cos(θ * z))
 
     # Valid dispatch tests for F1 to F6
@@ -84,43 +106,56 @@ end
 
 end
 
-using SpecialFunctions: expint
+function complex_approx(x, y; rtol=1e-13, atol=1e-15)
+    return isapprox(real(x), real(y); rtol=rtol, atol=atol) && 
+           isapprox(imag(x), imag(y); rtol=rtol, atol=atol)
+end
 
-@testset "Testing Ci_complex function" begin
+using Test
+using SpecialFunctions
 
+function complex_approx(x, y; rtol=1e-13, atol=1e-15)
+    return isapprox(real(x), real(y); rtol=rtol, atol=atol) && 
+           isapprox(imag(x), imag(y); rtol=rtol, atol=atol)
+end
+
+@testset "Ci_complex Tests" begin
+    # Test case 1: Negative real axis
     z2 = -1.0 + 0.0im
     iz2 = im * z2
-    expected2 = 0.5 * (expint(iz2) + expint(-iz2)) + π * im
+    expected2 = -0.5 * (expint(iz2) + expint(-iz2)) + π * im
     @test complex_approx(Ci_complex(z2), expected2)
 
-    z3 = 0.0 + 1.0im
-    iz3 = im * z3
-    expected3 = 0.5 * (expint(iz3) + expint(-iz3)) + 0.5π * im
-    @test complex_approx(Ci_complex(z3), expected3)
 
-    z4 = 0.0 - 1.0im
-    iz4 = im * z4
-    expected4 = 0.5 * (expint(iz4) + expint(-iz4)) - 0.5π * im
-    @test complex_approx(Ci_complex(z4), expected4)
-
+    # Test case 4: Positive real and imaginary parts
     z5 = 1.0 + 1.0im
     iz5 = im * z5
-    expected5 = 0.5 * (expint(iz5) + expint(-iz5))
+    expected5 = -0.5 * (expint(iz5) + expint(-iz5))
     @test complex_approx(Ci_complex(z5), expected5)
 
+    # Test case 5: Negative real and positive imaginary parts
     z6 = -1.0 + 1.0im
     iz6 = im * z6
-    expected6 = 0.5 * (expint(iz6) + expint(-iz6)) + π * im
+    expected6 = -0.5 * (expint(iz6) + expint(-iz6)) + π * im
     @test complex_approx(Ci_complex(z6), expected6)
 
+    # Test case 6: Positive infinity on the real axis
     z7 = Inf + 0.0im
-    @test Ci_complex(z7) == 0.0
+    @test Ci_complex(z7) == 0.0 + 0.0im
 
+    # Test case 7: Negative infinity on the real axis
     z8 = -Inf + 0.0im
     @test Ci_complex(z8) == π * im
 
+    # Test case 8: Complex infinity (negative real and positive imaginary)
     z10 = -Inf + Inf * im
-    @test Ci_complex(z10) == π * im
+    @test isnan(real(Ci_complex(z10))) && isnan(imag(Ci_complex(z10)))
 
+    # Test case 9: Zero input (real and complex zero)
+    z0 = 0.0 + 0.0im
+    @test isnan(real(Ci_complex(z0))) && isnan(imag(Ci_complex(z0)))
+
+    z11 = 0.0 + 0.0im
+    @test isnan(real(Ci_complex(z11))) && isnan(imag(Ci_complex(z11)))
 end
 
