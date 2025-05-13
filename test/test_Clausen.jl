@@ -43,6 +43,20 @@ end
 
 end
 
+@testset "Clausen3" begin
+
+    data3 = open(readdlm, joinpath(@__DIR__, "data", "Cl3.txt"))
+
+    for r in 1:size(data3, 1)
+        row      = data3[r, :]
+        x        = row[1]
+        expected = row[2]
+
+        @test FewSpecialFunctions.Clausen(3,x;N=20,m=500000) ≈ expected rtol=1e-9
+
+    end
+
+end
 
 @testset "f_n function" begin
     # Test with even n (should use sine)
@@ -104,19 +118,6 @@ end
     # Test negative n (should throw ArgumentError)
     @test_throws ArgumentError F(-1, z, θ)
 
-end
-
-function complex_approx(x, y; rtol=1e-13, atol=1e-15)
-    return isapprox(real(x), real(y); rtol=rtol, atol=atol) && 
-           isapprox(imag(x), imag(y); rtol=rtol, atol=atol)
-end
-
-using Test
-using SpecialFunctions
-
-function complex_approx(x, y; rtol=1e-13, atol=1e-15)
-    return isapprox(real(x), real(y); rtol=rtol, atol=atol) && 
-           isapprox(imag(x), imag(y); rtol=rtol, atol=atol)
 end
 
 @testset "Ci_complex Tests" begin

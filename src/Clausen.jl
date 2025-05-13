@@ -185,7 +185,7 @@ function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
     (N==10 || N==20) || throw(ArgumentError("Only N=10 or N=20 supported"))
 
     if θ == 0.0
-        return 0.0
+        return iseven(n) ? 0.0 : zeta(n)
     end
 
     θmod = mod(θ, 2π)
