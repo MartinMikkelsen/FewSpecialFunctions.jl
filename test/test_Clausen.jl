@@ -51,8 +51,25 @@ end
         row      = data3[r, :]
         x        = row[1]
         expected = row[2]
-
+        
+        @test FewSpecialFunctions.Clausen(3,x;N=10,m=500000) ≈ expected rtol=1e-9
         @test FewSpecialFunctions.Clausen(3,x;N=20,m=500000) ≈ expected rtol=1e-9
+
+    end
+
+end
+
+@testset "Clausen4" begin
+
+    data4 = open(readdlm, joinpath(@__DIR__, "data", "Cl4.txt"))
+
+    for r in 1:size(data4, 1)
+        row      = data4[r, :]
+        x        = row[1]
+        expected = row[2]
+
+        @test FewSpecialFunctions.Clausen(4,x;N=10,m=500000) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(4,x;N=20,m=500000) ≈ expected rtol=1e-8
 
     end
 

@@ -1,7 +1,7 @@
 name = "FewSpecialFunctions"
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
 authors = ["Martin Mikkelsen"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
