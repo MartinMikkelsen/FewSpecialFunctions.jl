@@ -12,7 +12,7 @@ Aqua = "0.8.12"
 DelimitedFiles = "1.9.1"
 QuadGK = "2.4.2"
 SpecialFunctions = "2.1.2"
-Test = "1.11.0"
+Test = "1.10.0"
 julia = "1.10"
 
 [docs]
