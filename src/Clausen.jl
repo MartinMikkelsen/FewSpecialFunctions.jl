@@ -112,30 +112,24 @@ function F(n::Int, z::ComplexF64, θ::Float64)
 end
 
 function Ci_complex(z::ComplexF64)
-    # Handle purely infinite inputs on the real axis
     if isinf(real(z)) && imag(z) == 0
         return real(z) > 0 ? (0.0 + 0im) : (π * im)
     end
 
-    # Handle complex infinity
     if isinf(z)
         return NaN + NaN * im
     end
 
-    # Handle the zero input explicitly
     if z == 0.0 + 0.0im
         return NaN + NaN * im
     end
 
-    # Base definition via E₁
     v = -0.5 * (expint(im * z) + expint(-im * z))
 
-    # Handle branch cut on the negative real axis
     if real(z) < 0
         v += π * im
     end
 
-    # Ensure a consistent return type (ComplexF64)
     return ComplexF64(v)
 end
 

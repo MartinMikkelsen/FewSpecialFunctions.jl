@@ -1,10 +1,37 @@
 @testset "Coulomb" begin
     
-    @test FewSpecialFunctions.regular_Coulomb(0.0, 0.3, 1e-6) ≈ 0.0 atol = 1e-5
-    @test FewSpecialFunctions.regular_Coulomb(0.0, -0.3, 1e-6) ≈ 0.0 atol = 1e-5
-    @test FewSpecialFunctions.regular_Coulomb(0.0, 2.0, 5.0) ≈ 1.1433 atol = 1e-4
-    @test FewSpecialFunctions.regular_Coulomb(1.0, 2.0, 5.0) ≈ 0.99347 atol = 1e-4
-    @test FewSpecialFunctions.regular_Coulomb(2.0, 2.0, 5.0) ≈ 0.72125 atol = 1e-4
-    @test FewSpecialFunctions.regular_Coulomb(3.0, 2.0, 5.0) ≈ 0.4313 atol = 1e-4
+@testset "CoulombF" begin
+
+    data = open(readdlm, joinpath(@__DIR__, "data", "CoulombF.txt"))
+
+    for r in 1:size(data, 1)
+        row      = data[r, :]
+        ℓ        = row[1]
+        η        = row[2]
+        ρ        = row[3]
+        expected = row[4]
+
+        @test real.(FewSpecialFunctions.F(ℓ,η,ρ)) ≈ expected atol=1e-8
+
+    end
+
+end
+
+@testset "CoulombG" begin
+
+    data = open(readdlm, joinpath(@__DIR__, "data", "CoulombG.txt"))
+
+    for r in 1:size(data, 1)
+        row      = data[r, :]
+        ℓ        = row[1]
+        η        = row[2]
+        ρ        = row[3]
+        expected = row[4]
+
+        @test real.(FewSpecialFunctions.G(ℓ,η,ρ)) ≈ expected atol=1e-5
+
+    end
+
+end
     
 end
