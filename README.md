@@ -2,9 +2,10 @@
 
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/)
 [![CI](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/MartinMikkelsen/FewSpecialFunctions.jl/badge.svg)](https://coveralls.io/github/MartinMikkelsen/FewSpecialFunctions.jl)
+[![Coverage Status](https://coveralls.io/repos/github/MartinMikkelsen/FewSpecialFunctions.jl/badge.svg?branch=main)](https://coveralls.io/github/MartinMikkelsen/FewSpecialFunctions.jl?branch=main)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-A Julia package collecting a few special functions.
+A Julia package collecting a few special functions. Now includes over 13000 tests.
 
 ### Install 
 
