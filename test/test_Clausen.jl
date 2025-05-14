@@ -70,9 +70,21 @@ end
 
         @test FewSpecialFunctions.Clausen(4,x;N=10,m=500000) ≈ expected rtol=1e-8
         @test FewSpecialFunctions.Clausen(4,x;N=20,m=500000) ≈ expected rtol=1e-8
-
     end
+end
 
+@testset "Clausen5" begin
+
+    data5 = open(readdlm, joinpath(@__DIR__, "data", "Cl5.txt"))
+
+    for r in 1:size(data5, 1)
+        row      = data5[r, :]
+        x        = row[1]
+        expected = row[2]
+
+        @test FewSpecialFunctions.Clausen(5,x;N=10,m=500000) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(5,x;N=20,m=500000) ≈ expected rtol=1e-8
+    end
 end
 
 @testset "f_n function" begin
