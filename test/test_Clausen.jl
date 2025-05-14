@@ -40,6 +40,7 @@ end
         expected = row[2]
 
         @test FewSpecialFunctions.Clausen(2,x;N=20,m=500000) ≈ expected rtol=1e-9
+        @test FewSpecialFunctions.Clausen(2,x;N=10,m=500000) ≈ expected rtol=1e-9
 
     end
 

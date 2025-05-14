@@ -1,8 +1,10 @@
 using FewSpecialFunctions
 using Test
+using DelimitedFiles  
 
 @testset "FewSpecialFunctions.jl" begin
 
+    include("Aqua.jl")
     include("test_Clausen.jl")
     include("test_Coulomb.jl")
     include("test_Debye.jl")          
@@ -11,6 +13,7 @@ using Test
     include("test_MarcumQ.jl")          
     include("test_Struve.jl")          
     include("test_parabolic_cylinder.jl")
+
     
 end
 

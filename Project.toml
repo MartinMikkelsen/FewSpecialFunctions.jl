@@ -4,14 +4,15 @@ authors = ["Martin Mikkelsen"]
 version = "0.1.8"
 
 [deps]
-DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
+Aqua = "0.8.12"
 DelimitedFiles = "1.9.1"
 QuadGK = "2.4.2"
 SpecialFunctions = "2.1.2"
+Test = "1.10.0"
 julia = "1.10"
 
 [docs]
@@ -19,7 +20,9 @@ branch = "gh-pages"
 repo = "https://github.com/MartinMikkelsen/FewSpecialFunctions.jl"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Aqua", "Test", "DelimitedFiles"]
