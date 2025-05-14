@@ -1,6 +1,8 @@
 using DelimitedFiles
 using SpecialFunctions
 
+# some tests from https://github.com/Expander/ClausenFunctions.jl
+
 function complex_approx(a::ComplexF64, b::ComplexF64; atol=1e-10)
     return isapprox(real(a), real(b), atol=atol) && isapprox(imag(a), imag(b), atol=atol)
 end
@@ -87,6 +89,20 @@ end
     end
 end
 
+@testset "Clausen6" begin
+
+    data6 = open(readdlm, joinpath(@__DIR__, "data", "Cl6.txt"))
+
+    for r in 1:size(data6, 1)
+        row      = data6[r, :]
+        x        = row[1]
+        expected = row[2]
+
+        @test FewSpecialFunctions.Clausen(6,x) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(6,x) ≈ expected rtol=1e-8
+    end
+end
+
 @testset "f_n function" begin
     # Test with even n (should use sine)
     @test FewSpecialFunctions.f_n(2, 1, π/4) ≈ sin(π/4) rtol=1e-15
@@ -126,7 +142,7 @@ end
         (θ * z * (2 - θ^2 * z^2) * sin(θ * z)) +
         ((θ^2 * z^2 - 6) * cos(θ * z))
     )
-    expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ) - (θ^6 * z^6 - 20 * θ^4 * z^4 + 24 * θ^2 * z^2) * sin(θ * z) - θ * z * (θ^4 * z^4 - 6 * θ^2 * z^2) * cos(θ * z))
+    expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ)+ θ*z*(θ^2*z^2-6)*cos(θ*z)-(θ^4*z^4-2*θ^2*z^2+24)*sin(θ*z))
 
     # Valid dispatch tests for F1 to F6
     @test complex_approx(F(1, z, θ), expected_F1)

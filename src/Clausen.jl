@@ -167,9 +167,8 @@ const γ = Base.MathConstants.γ
 @inline F6(z::ComplexF64, θ::Float64) =
     1 / (120 * z^5) * (
         θ^5 * z^5 * Ci_complex(z * θ)
-        - (θ^6 * z^6 - 20 * θ^4 * z^4 + 24 * θ^2 * z^2) * sin(θ * z)
-        - θ * z * (θ^4 * z^4 - 6 * θ^2 * z^2) * cos(θ * z)
-    )
+        + θ*z*(θ^2*z^2-6)*cos(θ*z)-(θ^4*z^4-2*θ^2*z^2+24)*sin(θ*z)
+        )
 
 """
     Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
