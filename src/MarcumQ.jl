@@ -81,7 +81,7 @@ function MarcumQ_large_xy(M::T, x::T, y::T, ξ::T) where {T<:Number}
     δ = sqrt(y) - sqrt(x); σ = δ^2/ξ; ρ0 = sqrt(y/x)
     ρfac = (y/x)^(M/T(2))/sqrt(T(8)*π); ef = exp(-δ^2)*sqrt(ξ)
     Φ = abs(δ)<T(1e-5) ? (σ==zero(T) ? zero(T) : sqrt(π/σ)-T(2)*sqrt(ξ)) : sqrt(π/σ)*erfc(abs(δ))
-    Ψ = ρ0==one(T) ? half(T) : copysign(ρ0^(M-T(0.5))/T(2)*erfc(abs(δ)), ρ0-one(T))
+    Ψ = ρ0==one(T) ? one(T) / T(2) : copysign(ρ0^(M-T(0.5))/T(2)*erfc(abs(δ)), ρ0-one(T))
     s = x>y ? one(T) : zero(T); n = 0; ρt = ρfac
     while true
         s += Ψ; abs(Ψ) <= eps(T)*abs(s) && break
