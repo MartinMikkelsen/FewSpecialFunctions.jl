@@ -77,9 +77,55 @@ function w(ℓ::Number, η::Number)
     end
 end
 
+function F(ℓ::Real, η::Real, ρ::Real)
+    return real(F(complex(ℓ), complex(η), complex(ρ)))
+end
+
+function G(ℓ::Real, η::Real, ρ::Real)
+    return real(G(complex(ℓ), complex(η), complex(ρ)))
+end
+
 function F(ℓ::Number, η::Number, ρ::AbstractArray{<:Real})
     return [F(ℓ, η, ρᵢ) for ρᵢ in ρ]
 end
 
+function w_plus(ℓ::Number, η::Number)
+    return gamma(ℓ+1+im*η)/( (im*η)^(2*ℓ+1) * gamma(-ℓ+im*η) )
+end
 
+function w_minus(ℓ::Number, η::Number)
+    return gamma(ℓ+1-im*η)/( (-im*η)^(2*ℓ+1) * gamma(-ℓ-im*η) )
+end
+
+function h_plus(ℓ::Number, η::Number)
+    return (digamma(ℓ+1+im*η) + digamma(-ℓ+im*η))/2 - log(im*η)
+end
+
+function h_minus(ℓ::Number, η::Number)
+    return (digamma(ℓ+1-im*η) + digamma(-ℓ-im*η))/2 - log(-im*η)
+end
+
+function g(ℓ::Number, η::Number)
+    x = (digamma(ℓ+1+im*η) + digamma(ℓ+1-im*η)) / 2 - log(abs(η))
+    return real(x)
+end
+
+function Φ_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return (Φ(ℓ+h, η, ρ) - Φ(ℓ-h, η, ρ))/(2h)
+end
+
+function F_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return (F(ℓ+h, η, ρ) - F(ℓ-h, η, ρ))/(2h)
+end
+
+function Ψ(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return w(ℓ,η)*Φ_dot(ℓ,η,ρ;h=h)/2 + Φ_dot(-ℓ-1,η,ρ;h=h)/2
+end
+
+function I(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return C(ℓ,η)*gamma(2*ℓ+2)/((2*η)^(ℓ+1)) * Ψ(ℓ,η,ρ;h=h)
+end
+
+
+export w_plus, w_minus, h_plus, h_minus, g, Φ_dot, F_dot, Ψ, I
 export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w
