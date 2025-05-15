@@ -1,3 +1,4 @@
+using QuadGK
 @doc raw"""
     Struve(ν,z,min_tol=1e-15)
 

@@ -1,9 +1,6 @@
 module FewSpecialFunctions
 
-export complex_quadrature
-include("Complex_quad.jl")
-
-export regular_Coulomb, irregular_Coulomb, θ, Coulomb_H_minus, Coulomb_H_plus, Coulomb_cross, regular_Coulomb_approx, irregular_Coulomb_approx, regular_Coulomb_limit, irregular_Coulomb_limit
+export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w
 include("CoulombWave.jl")
 
 export debye_function
