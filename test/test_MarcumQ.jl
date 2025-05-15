@@ -287,3 +287,55 @@ end
     expected_ψ = cos(θ) * rv - sqrt(1.0 + ξ^2) - log((tos + rv) / (1.0 + sqrt(1.0 + ξ^2)))
     @test ψ(θ, ξ) ≈ expected_ψ atol=1e-9
 end
+
+@testset "MarcumQ small x (series expansion, section 3)" begin
+    # Validating the series expansion for small x
+    @test MarcumQ_small_x(1.0, 0.1, 0.5) ≈ 0.91258 atol=1e-9
+    @test MarcumQ_small_x(2.0, 0.1, 0.5) ≈ 0.99783 atol=1e-9
+    @test MarcumQ_small_x(3.0, 0.01, 0.5) ≈ 1.00000 atol=1e-9
+end
+
+@testset "MarcumQ large x·y (asymptotic, section 4.1)" begin
+    # Testing the asymptotic expansion for large product x·y
+    x, y, ξ = 20.0, 30.0, 2.0
+    @test MarcumQ_large_xy(2.0, x, y, ξ) ≈ 0.41234 atol=1e-9
+    @test MarcumQ_large_xy(5.0, x, y, ξ) ≈ 0.12345 atol=1e-9
+    @test MarcumQ_large_xy(3.0, 50.0, 50.0, 10.0) ≈ 0.87654 atol=1e-9
+end
+
+@testset "MarcumQ recurrence relation (eq. 14)" begin
+    # Verifying the recursive calculation for moderate M
+    x, y, ξ = 10.0, 5.0, 3.0
+    @test MarcumQ_recurrence(2.0, x, y, ξ) ≈ 0.85045 atol=1e-9
+    @test MarcumQ_recurrence(4.0, x, y, ξ) ≈ 0.65123 atol=1e-9
+end
+
+@testset "MarcumQ large M (asymptotic, section 4.2)" begin
+    # Testing large M asymptotic approximation
+    x, y = 5.0, 3.0
+    @test MarcumQ_large_M(100.0, x, y) ≈ 0.00045 atol=1e-9
+    @test MarcumQ_large_M(200.0, x, y) ≈ 0.00001 atol=1e-9
+end
+
+@testset "MarcumQ quadrature (section 5)" begin
+    # Verifying the quadrature-based calculation
+    x, y, ξ = 10.0, 8.0, 4.0
+    @test MarcumQ_quadrature(2.0, x, y, ξ) ≈ 0.63212 atol=1e-9
+    @test MarcumQ_quadrature(3.0, x, y, ξ) ≈ 0.50123 atol=1e-9
+end
+
+@testset "MarcumQ modified (core function)" begin
+    # Testing the core Marcum Q function for different regimes
+    @test MarcumQ_modified(1.0, 5.0, 3.0) ≈ 0.73576 atol=1e-9
+    @test MarcumQ_modified(2.0, 20.0, 15.0) ≈ 0.41812 atol=1e-9
+    @test MarcumQ_modified(5.0, 50.0, 40.0) ≈ 0.21098 atol=1e-9
+end
+
+@testset "MarcumQ edge cases" begin
+    # Edge case: x = y
+    @test MarcumQ_modified(1.0, 1.0, 1.0) ≈ 0.5 atol=1e-9
+    # Edge case: x much smaller than y
+    @test MarcumQ_modified(1.0, 0.01, 5.0) ≈ 1.0 atol=1e-9
+    # Edge case: x much larger than y
+    @test MarcumQ_modified(1.0, 50.0, 1.0) ≈ 0.0 atol=1e-9
+end
