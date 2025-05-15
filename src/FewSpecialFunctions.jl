@@ -1,8 +1,5 @@
 module FewSpecialFunctions
 
-export complex_quadrature
-include("Complex_quad.jl")
-
 export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w
 include("CoulombWave.jl")
 
