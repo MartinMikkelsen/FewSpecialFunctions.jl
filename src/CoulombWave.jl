@@ -127,5 +127,4 @@ function I(ℓ::Number, η::Number, ρ::Number; h=1e-6)
 end
 
 
-export w_plus, w_minus, h_plus, h_minus, g, Φ_dot, F_dot, Ψ, I
-export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w
+export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w, w_plus, w_minus, h_plus, h_minus, g, Φ_dot, F_dot, Ψ, I
