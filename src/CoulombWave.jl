@@ -20,9 +20,11 @@ function θ(ℓ::Number, η::Number, ρ::Number)
 end
 
 function F(ℓ::Number, η::Number, ρ::Number)
-    return C(ℓ, η) * ρ^(ℓ+1) * exp(-im*ρ) * _₁F₁(ℓ+1-im*η, 2*ℓ+2, 2*im*ρ)
+    ℓ = complex(float(ℓ))
+    η = complex(float(η))
+    ρ = complex(float(ρ))
+    return C(ℓ, η) * ρ^(ℓ+1) * exp(-im*ρ) * _₁F₁(complex(ℓ+1-im*η), complex(2*ℓ+2), complex(2*im*ρ))
 end
-
 function D⁺(ℓ::Number, η::Number)
     return (-2*im)^(2*ℓ+1) * gamma(ℓ+1+im*η) / (C(ℓ,η) * gamma(2*ℓ+2))
 end
