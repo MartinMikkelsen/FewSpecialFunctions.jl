@@ -111,6 +111,11 @@ function F_clausen(n::Int, z::ComplexF64, θ::Float64)
     end
 end
 
+"""
+    Ci_complex(z::ComplexF64)
+
+Complex cosine integral function used in Clausen function calculations.
+"""
 function Ci_complex(z::ComplexF64)
     if isinf(real(z)) && imag(z) == 0
         return real(z) > 0 ? (0.0 + 0im) : (π * im)
