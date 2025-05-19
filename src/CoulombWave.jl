@@ -41,10 +41,15 @@ end
 Regular Coulomb wave function.
 """
 function F(ℓ::Number, η::Number, ρ::Number)
-    ℓ = complex(float(ℓ))
-    η = complex(float(η))
-    ρ = complex(float(ρ))
-    return C(ℓ, η) * ρ^(ℓ+1) * exp(-im*ρ) * _₁F₁(complex(ℓ+1-im*η), complex(2*ℓ+2), complex(2*im*ρ))
+    ℓc = complex(float(ℓ))
+    ηc = complex(float(η))
+    ρc = complex(float(ρ))
+    return C(ℓc, ηc) * ρc^(ℓc+1) * exp(-im*ρc) * _₁F₁(complex(ℓc+1-im*ηc), complex(2*ℓc+2), complex(2*im*ρc))
+end
+
+# Explicit real-valued overload to guarantee real output and avoid complex issues in downstream code
+function F(ℓ::Real, η::Real, ρ::Real)
+    return real(F(complex(ℓ), complex(η), complex(ρ)))
 end
 
 """
@@ -99,6 +104,11 @@ Irregular Coulomb wave function.
 """
 function G(ℓ::Number, η::Number, ρ::Number)
     return (H⁺(ℓ, η, ρ) + H⁻(ℓ, η, ρ)) / 2
+end
+
+# Explicit real-valued overload to guarantee real output and avoid complex issues in downstream code
+function G(ℓ::Real, η::Real, ρ::Real)
+    return real(G(complex(ℓ), complex(η), complex(ρ)))
 end
 
 """
