@@ -35,10 +35,9 @@ ENV["GKSwstype"] = "100" # hide
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0, stop=25, length=1000)
-plot(x, F.(0.0, 0.3, x), label=L"F_0(0.3,ρ)")
-plot!(x, F.(0.0, -0.3, x), label=L"F_0(-0.3,ρ)")
+plot(x, real(F.(0.0, 0.3, x)), label=L"F_0(0.3,ρ)")
+plot!(x, real(F.(0.0, -0.3, x)), label=L"F_0(-0.3,ρ)")
 xlabel!(L"ρ")
-title!("Regular Coulomb Wave Functions")
 title!("Regular Coulomb Wave Functions")
 ```
 
@@ -51,10 +50,10 @@ ENV["GKSwstype"] = "100" # hide
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
 x = range(0, stop=25, length=1000)
-plot(x, F.(1e-5, 5, x), label=L"F_0(5,ρ)", linewidth=2)
-plot!(x, F.(1.0, 5, x), label=L"F_1(5,ρ)", linewidth=2)
-plot!(x, F.(2.0, 5, x), label=L"F_2(5,ρ)", linewidth=2)
-plot!(x, F.(3.0, 5, x), label=L"F_3(5,ρ)", linewidth=2)
+plot(x, real(F.(1e-5, 5, x)), label=L"F_0(5,ρ)", linewidth=2)
+plot!(x, real(F.(1.0, 5, x)), label=L"F_1(5,ρ)", linewidth=2)
+plot!(x, real(F.(2.0, 5, x)), label=L"F_2(5,ρ)", linewidth=2)
+plot!(x, real(F.(3.0, 5, x)), label=L"F_3(5,ρ)", linewidth=2)
 title!("Regular Coulomb Wave Functions for Different ℓ")
 xlabel!(L"ρ")
 ```
