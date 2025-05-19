@@ -1,27 +1,57 @@
 ```@docs
-debye_function
-regular_Coulomb
-irregular_Coulomb
+# Coulomb wave functions
+η
 C
 θ
-Coulomb_H_minus
-Coulomb_H_plus
-Coulomb_cross
-regular_Coulomb_approx
-irregular_Coulomb_approx
-regular_Coulomb_limit
-irregular_Coulomb_limit
-Struve
+F
+D⁺
+D⁻
+H⁺
+H⁻
+F_imag
+G
+M_regularized
+Φ
+w
+w_plus
+w_minus
+h_plus
+h_minus
+g
+Φ_dot
+F_dot
+Ψ
+I
+
+# Debye functions
+debye_function
+
+# Fresnel integrals
 Fresnel_S_integral_pi
 Fresnel_C_integral_pi
 Fresnel_S_integral
 Fresnel_C_integral
 Fresnel_S_erf
 Fresnel_C_erf
+
+# Struve function
+Struve
+
+# Clausen functions
+Clausen
+Ci_complex
+f_n
+F_clausen
+
+# Fermi-Dirac integrals
 FermiDiracIntegral
 FermiDiracIntegralNorm
+
+# Marcum Q-function
 MarcumQ
 dQdb
+
+# Parabolic cylinder functions
 U
 V
 W

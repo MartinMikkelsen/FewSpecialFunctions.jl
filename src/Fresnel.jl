@@ -1,4 +1,6 @@
 using SpecialFunctions 
+using QuadGK
+
 @doc raw"""
     Fresnel_S_integral_pi(x)
 

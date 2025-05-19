@@ -1,137 +1,243 @@
-export complex_quadrature, regular_Coulomb, irregular_Coulomb, C, θ, Coulomb_H_minus, Coulomb_H_plus, Coulomb_cross, regular_Coulomb_approx, irregular_Coulomb_approx, regular_Coulomb_limit, irregular_Coulomb_limit
-
 using SpecialFunctions
+using HypergeometricFunctions
 
-@doc raw"""
-    regular_coulomb(ℓ,η,ρ)
-
-Regular Coulomb wave function ℓ is the order(non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (non-negative real variable).
-
-returns the value F_ℓ(η,ρ) given by 
-
-```math
-    F_\ell(\eta,\rho) = \frac{\rho^{\ell+1}2^\ell e^{i\rho-(\pi\eta/2)}}{|\Gamma(\ell+1+i\eta)|} \int_0^1 e^{-2i\rho t}t^{\ell+i\eta}(1-t)^{\ell-i\eta} \, dt
-```
 """
-function regular_Coulomb(ℓ,η,ρ)
-    First = ρ.^(ℓ+1)*2^ℓ*exp(1im.*ρ-(π.*η/2))/(abs(gamma(ℓ+1+1im*η)))
-    Integral_value = complex_quadrature(t -> exp(-2*1im.*ρ*t).*t.^(ℓ+1im*η)*(1-t).^(ℓ-1im*η),1e-5,1)
-    return real(First.*Integral_value)
+    η(a::Number, k::Number)
+    η(ϵ::Number)
+
+Coulomb parameter. For two arguments, returns 1/(a*k). For one argument, returns 1/sqrt(ϵ).
+"""
+function η(a::Number, k::Number)
+    return 1/(a*k)
 end
 
-@doc raw"""
-    C(ℓ,η)
-
-Returns Coulomb normalization constant given by
-```math
-    C_\ell(\eta) = \frac{2^\ell \exp(-\pi \eta/2) |\Gamma(\ell+1+i \eta)|}{(2\ell+1)!}
-```
-"""
-function C(ℓ,η)
-    return 2^ℓ*exp(-π*η/2).*(abs(gamma(ℓ+1+1im*η))/(factorial(2*ℓ+1)))
-end
-@doc raw"""
-    θ(ℓ,η,ρ)
-
-Returns the phase of the Coulomb functions given by
-```math
-    \theta_\ell(\eta,\rho) = \rho - \eta \ln(2\rho) - \frac{1}{2}\ell \pi + \sigma_\ell(\eta)
-```
-"""
-function θ(ℓ,η,ρ)
-    return ρ - η.*log(2*ρ)-0.5*ℓ*π+angle.(gamma(ℓ+1+1im*η))
-end
-@doc raw"""
-    Coulomb_H_minus(ℓ,η,ρ)
-
-Complex Coulomb wave function. Infinity handled using the substitution f(t) -> f(u/(1-u)*1/(1-u)^2).
-Returns Coulomb wave function 
-```math
-    H^{-}_\ell = G_\ell - iF_\ell
-```
-"""
-function Coulomb_H_minus(ℓ,η,ρ)
-    return (exp(-1im.*ρ)*ρ.^(-ℓ))/(factorial(2*ℓ+1).*C(ℓ,η)).*complex_quadrature(t -> exp(-t)*t.^(ℓ-1im*η)*(t+2*1im*ρ).^(ℓ+1im*η),0,Inf)
-end 
-@doc raw"""
-    irregular_Coulomb(ℓ,η,ρ)
-
-Regular Coulomb wave function ℓ is the order(non-negative integer), η is the charge (real parameter) and ρ is the radial coordinate (non-negative real variable).
-
-returns the value G_ℓ(η,ρ)
-"""
-function irregular_Coulomb(ℓ,η,ρ)
-    return real(Coulomb_H_minus(ℓ,η,ρ))
+function η(ϵ::Number)
+    return 1/sqrt(ϵ)
 end
 
-@doc raw"""
-
-Returns Coulomb wave function 
-```math
-    H^{+}_\ell = G_\ell + iF_\ell
-```
 """
-function Coulomb_H_plus(ℓ,η,ρ)
-    return irregular_Coulomb(ℓ,η,ρ) .+ 1im*regular_coulomb(ℓ,η,ρ)
+    C(ℓ::Number, η::Number)
+
+Coulomb normalization constant.
+"""
+function C(ℓ::Number, η::Number)
+    logg = loggamma(ℓ+1+im*η)
+    return 2^ℓ * exp(-π*η/2) * exp(real(logg)) / gamma(2*ℓ+2)
 end
-@doc raw"""
-    Coulomb_cross(ℓ,η)
 
-Wronskian relation / cross product.
-
-```math
-    F_{\ell-1}G_{\ell}-F_{\ell}G_{\ell-1} = \ell/(\ell^2+\eta^2)^{1/2}
-```
 """
-function Coulomb_cross(ℓ,η)
-    if ℓ >= 1
-        return ℓ/(ℓ^2+η^2)^(0.5)
+    θ(ℓ::Number, η::Number, ρ::Number)
+
+Coulomb phase function.
+"""
+function θ(ℓ::Number, η::Number, ρ::Number)
+    logg = loggamma(ℓ+1+im*η)
+    return ρ - ℓ*π*0.5 - η*log(2*ρ) + imag(logg)
+end
+
+"""
+    F(ℓ::Number, η::Number, ρ::Number)
+
+Regular Coulomb wave function.
+"""
+function F(ℓ::Number, η::Number, ρ::Number)
+    ℓc = complex(float(ℓ))
+    ηc = complex(float(η))
+    ρc = complex(float(ρ))
+    return C(ℓc, ηc) * ρc^(ℓc+1) * exp(-im*ρc) * _₁F₁(complex(ℓc+1-im*ηc), complex(2*ℓc+2), complex(2*im*ρc))
+end
+
+# Explicit real-valued overload to guarantee real output and avoid complex issues in downstream code
+function F(ℓ::Real, η::Real, ρ::Real)
+    return real(F(complex(ℓ), complex(η), complex(ρ)))
+end
+
+"""
+    D⁺(ℓ::Number, η::Number)
+
+Coulomb D⁺ normalization factor.
+"""
+function D⁺(ℓ::Number, η::Number)
+    return (-2*im)^(2*ℓ+1) * gamma(ℓ+1+im*η) / (C(ℓ,η) * gamma(2*ℓ+2))
+end
+
+"""
+    D⁻(ℓ::Number, η::Number)
+
+Coulomb D⁻ normalization factor.
+"""
+function D⁻(ℓ::Number, η::Number)
+    return (2*im)^(2*ℓ+1) * gamma(ℓ+1-im*η) / (C(ℓ,η) * gamma(2*ℓ+2))
+end
+
+"""
+    H⁺(ℓ::Number, η::Number, ρ::Number)
+
+Outgoing Coulomb wave function.
+"""
+function H⁺(ℓ::Number, η::Number, ρ::Number)
+    return D⁺(ℓ,η) * ρ^(ℓ+1) * exp(+im*ρ) * HypergeometricFunctions.U(ℓ+1+im*η, 2*ℓ+2, -2*im*ρ)
+end
+
+"""
+    H⁻(ℓ::Number, η::Number, ρ::Number)
+
+Incoming Coulomb wave function.
+"""
+function H⁻(ℓ::Number, η::Number, ρ::Number)
+    return D⁻(ℓ,η) * ρ^(ℓ+1) * exp(-im*ρ) * HypergeometricFunctions.U(ℓ+1-im*η, 2*ℓ+2, +2*im*ρ)
+end
+
+"""
+    F_imag(ℓ::Number, η::Number, ρ::Number)
+
+Imaginary part of the regular Coulomb wave function.
+"""
+function F_imag(ℓ::Number, η::Number, ρ::Number)
+    return (H⁺(ℓ, η, ρ) - H⁻(ℓ, η, ρ)) / (2*im)
+end
+
+"""
+    G(ℓ::Number, η::Number, ρ::Number)
+
+Irregular Coulomb wave function.
+"""
+function G(ℓ::Number, η::Number, ρ::Number)
+    return (H⁺(ℓ, η, ρ) + H⁻(ℓ, η, ρ)) / 2
+end
+
+# Explicit real-valued overload to guarantee real output and avoid complex issues in downstream code
+function G(ℓ::Real, η::Real, ρ::Real)
+    return real(G(complex(ℓ), complex(η), complex(ρ)))
+end
+
+"""
+    M_regularized(α::Number, β::Number, γ::Number)
+
+Regularized confluent hypergeometric function.
+"""
+function M_regularized(α::Number, β::Number, γ::Number)
+    return 1/gamma(β) * HypergeometricFunctions._₁F₁(α, β, γ)
+end
+
+"""
+    Φ(ℓ::Number, η::Number, ρ::Number)
+
+Modified Coulomb function Φ.
+"""
+function Φ(ℓ::Number, η::Number, ρ::Number)
+    return (2*η*ρ)^(ℓ+1) * exp(im*ρ) * M_regularized(ℓ+1+im*η, 2*ℓ+2, -2*im*ρ)
+end
+
+"""
+    w(ℓ::Integer, η::Number)
+    w(ℓ::Number, η::Number)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function w(ℓ::Integer, η::Number)
+    result = one(η)
+    for j in 0:ℓ
+        result *= 1 + j^2/η^2
     end
-    if ℓ < 1
-        return println("ℓ must be larger than or equal to 1")
+    return result
+end
+
+function w(ℓ::Number, η::Number)
+    if isapprox(mod(ℓ-0.5, 1.0), 0.0; atol=1e-12)
+        result = one(η)
+        j = 0.5
+        while j <= ℓ
+            result *= 1 + j^2/η^2
+            j += 1
+        end
+        return result
+    else
+        throw(ArgumentError("ℓ must be either an integer or half-integer (1/2, 3/2, 5/2, ...)"))
     end
 end
-@doc raw"""
-    regular_Coulomb_approx(ℓ,η,ρ)
 
-For ρ -> 0 and η fixed approximate the regular Coulomb wave function as
-```math
-    F_\ell(\eta,\rho) \simeq C_\ell(\eta)^{\ell+1}
-```
 """
-function regular_Coulomb_approx(ℓ,η,ρ)
-    return C(ℓ,η)*ρ^(ℓ+1)
-end 
-@doc raw"""
-    irregular_Coulomb_approx(ℓ,η,ρ)
+    w_plus(ℓ::Number, η::Number)
 
-For ρ -> 0 and η fixed approximate the irregular Coulomb wave function as
-```math
-    G_\ell(\eta,\rho) \simeq \frac{\rho^{-\ell}}{(2\ell+1)C_\ell(\eta)}
-```
+Auxiliary function for Coulomb wave functions.
 """
-function irregular_Coulomb_approx(ℓ,η,ρ)
-    return ρ^(-ℓ)/((2*ℓ+1)*C(ℓ,η))
+function w_plus(ℓ::Number, η::Number)
+    return gamma(ℓ+1+im*η)/( (im*η)^(2*ℓ+1) * gamma(-ℓ+im*η) )
 end
-@doc raw"""
-    regular_Coulomb_limit(ℓ,η,ρ)
 
-In the limit ρ -> ∞ with η fixed, returns the regular Coulomb wave as 
-```math
-    F_{\ell}(\eta,\rho) \simeq \sin(\theta_\ell(\eta,\rho))
-```
 """
-function regular_Coulomb_limit(ℓ,η,ρ)
-    return sin.(θ(ℓ,η,ρ))
-end 
-@doc raw"""
-    irregular_Coulomb_limit(ℓ,η,ρ)
+    w_minus(ℓ::Number, η::Number)
 
-In the limit ρ -> ∞ with η fixed, returns the irregular Coulomb wave as
-```math
-    G_{\ell}(\eta,\rho) \simeq \cos(\theta_\ell(\eta,\rho))
-```
+Auxiliary function for Coulomb wave functions.
 """
-function irregular_Coulomb_limit(ℓ,η,ρ)
-    return cos.(θ(ℓ,η,ρ))
-end 
+function w_minus(ℓ::Number, η::Number)
+    return gamma(ℓ+1-im*η)/( (-im*η)^(2*ℓ+1) * gamma(-ℓ-im*η) )
+end
+
+"""
+    h_plus(ℓ::Number, η::Number)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function h_plus(ℓ::Number, η::Number)
+    return (digamma(ℓ+1+im*η) + digamma(-ℓ+im*η))/2 - log(im*η)
+end
+
+"""
+    h_minus(ℓ::Number, η::Number)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function h_minus(ℓ::Number, η::Number)
+    return (digamma(ℓ+1-im*η) + digamma(-ℓ-im*η))/2 - log(-im*η)
+end
+
+"""
+    g(ℓ::Number, η::Number)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function g(ℓ::Number, η::Number)
+    x = (digamma(ℓ+1+im*η) + digamma(ℓ+1-im*η)) / 2 - log(abs(η))
+    return real(x)
+end
+
+"""
+    Φ_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+
+Numerical derivative of Φ with respect to ℓ.
+"""
+function Φ_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return (Φ(ℓ+h, η, ρ) - Φ(ℓ-h, η, ρ))/(2h)
+end
+
+"""
+    F_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+
+Numerical derivative of F with respect to ℓ.
+"""
+function F_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return (F(ℓ+h, η, ρ) - F(ℓ-h, η, ρ))/(2h)
+end
+
+"""
+    Ψ(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function Ψ(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return w(ℓ,η)*Φ_dot(ℓ,η,ρ;h=h)/2 + Φ_dot(-ℓ-1,η,ρ;h=h)/2
+end
+
+"""
+    I(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+
+Auxiliary function for Coulomb wave functions.
+"""
+function I(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    return C(ℓ,η)*gamma(2*ℓ+2)/((2*η)^(ℓ+1)) * Ψ(ℓ,η,ρ;h=h)
+end
+
+
+export η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w, w_plus, w_minus, h_plus, h_minus, g, Φ_dot, F_dot, Ψ, I

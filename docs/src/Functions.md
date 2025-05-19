@@ -34,9 +34,9 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=25,length=1000)
-plot(x,regular_Coulomb.(0,0.3,x), label=L"F_0(0.3,ρ)")
-plot!(x,regular_Coulomb.(0,-0.3,x), label=L"F_0(-0.3,ρ)")
+x = range(0, stop=25, length=1000)
+plot(x, real(F.(0.0, 0.3, x)), label=L"F_0(0.3,ρ)")
+plot!(x, real(F.(0.0, -0.3, x)), label=L"F_0(-0.3,ρ)")
 xlabel!(L"ρ")
 title!("Regular Coulomb Wave Functions")
 ```
@@ -49,12 +49,12 @@ ENV["GKSwstype"] = "100" # hide
 
 plot_font = "Computer Modern" # hide
 default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(0,stop=25,length=1000)
-plot(x,regular_Coulomb.(1e-5,5,x), label=L"F_0(5,ρ)")
-plot!(x,regular_Coulomb.(1,5,x), label=L"F_1(5,ρ)")
-plot!(x,regular_Coulomb.(2,5,x), label=L"F_2(5,ρ)")
-plot!(x,regular_Coulomb.(3,5,x), label=L"F_3(5,ρ)")
-title!("Regular Coulomb Wave Functions")
+x = range(0, stop=25, length=1000)
+plot(x, real(F.(1e-5, 5.0, x)), label=L"F_0(5.0,ρ)", linewidth=2)
+plot!(x, real(F.(1.0, 5.0, x)), label=L"F_1(5.0,ρ)", linewidth=2)
+plot!(x, real(F.(2.0, 5.0, x)), label=L"F_2(5.0,ρ)", linewidth=2)
+plot!(x, real(F.(3.0, 5.0, x)), label=L"F_3(5.0,ρ)", linewidth=2)
+title!("Regular Coulomb Wave Functions for Different ℓ")
 xlabel!(L"ρ")
 ```
 ## Marcum Q-function
@@ -191,43 +191,6 @@ plot!(x,Struve.(4,x),label=L"H_4(x)")
 plot!(x,Struve.(5,x),label=L"H_5(x)")
 xlabel!(L"x")
 title!("Struve Functions")
-```
-## Fresnel functions
-The Fresnel functions are both implemented using the trigonometric functions and the error function.
-
-```math
-    S(z) = \sqrt{\frac{\pi}{2}}\frac{1+i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) - i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-And 
-```math
-    C(z) = \sqrt{\frac{\pi}{2}}\frac{1-i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) + i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-The two implementations are shown in the examples below
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(-25,stop=25,length=5000)
-plot(x,Fresnel_C_integral.(x),label=L"C(x)")
-plot!(x,Fresnel_C_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{C}(x)")
-title!("Fresnel Integral")
-xlabel!(L"x")
-```
-and
-
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(-25,stop=25,length=5000)
-plot(x,Fresnel_S_integral.(x),label=L"S(x)")
-plot!(x,Fresnel_S_erf.(x), ls=:dash, lw=1.5, label=L"\tilde{S}(x)")
-title!("Fresnel Integral")
-xlabel!(L"x")
 ```
 
 ## Fermi-Dirac integrals

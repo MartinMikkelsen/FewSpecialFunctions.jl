@@ -1,5 +1,5 @@
 using SpecialFunctions
-export Clausen, Ci_complex, f_n, F
+export Clausen, Ci_complex, f_n, F_clausen
 
 const ξ10 = [
     1.02058363572825669e-1,
@@ -89,11 +89,11 @@ function f_n(n::Int, k::Int, θ::Real)
 end
 
 """
-    F(n::Int, z::ComplexF64, θ::Float64)
+    F_clausen(n::Int, z::ComplexF64, θ::Float64)
 
 Dispatch to the correct primitive function Fₙ(z, θ) for n = 1..6.
 """
-function F(n::Int, z::ComplexF64, θ::Float64)
+function F_clausen(n::Int, z::ComplexF64, θ::Float64)
     if n == 1
         return F1(z, θ)
     elseif n == 2
@@ -111,31 +111,30 @@ function F(n::Int, z::ComplexF64, θ::Float64)
     end
 end
 
+"""
+    Ci_complex(z::ComplexF64)
+
+Complex cosine integral function used in Clausen function calculations.
+"""
 function Ci_complex(z::ComplexF64)
-    # Handle purely infinite inputs on the real axis
     if isinf(real(z)) && imag(z) == 0
         return real(z) > 0 ? (0.0 + 0im) : (π * im)
     end
 
-    # Handle complex infinity
     if isinf(z)
         return NaN + NaN * im
     end
 
-    # Handle the zero input explicitly
     if z == 0.0 + 0.0im
         return NaN + NaN * im
     end
 
-    # Base definition via E₁
     v = -0.5 * (expint(im * z) + expint(-im * z))
 
-    # Handle branch cut on the negative real axis
     if real(z) < 0
         v += π * im
     end
 
-    # Ensure a consistent return type (ComplexF64)
     return ComplexF64(v)
 end
 
@@ -209,7 +208,7 @@ function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
     S2 = 0.0
     for ν in 1:N
         z = (m - 0.5) + 0.5im * sqrt(ξ[ν])
-        S2 += A[ν] * real(F(n, z, φ))
+        S2 += A[ν] * real(F_clausen(n, z, φ))
     end
 
     result0 = S1 - (π/4)*S2

@@ -128,7 +128,7 @@ end
     @test FewSpecialFunctions.f_n(3, 10, 0.1) ≈ cos(10*0.1)/10^3 rtol=1e-14
 end
 
-@testset "Testing F function dispatch" begin
+@testset "Testing F_clausen function dispatch" begin
     # Test inputs
     z = 1.0 + 2.0im
     θ = π / 4
@@ -146,23 +146,23 @@ end
     expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ)+ θ*z*(θ^2*z^2-6)*cos(θ*z)-(θ^4*z^4-2*θ^2*z^2+24)*sin(θ*z))
 
     # Valid dispatch tests for F1 to F6
-    @test complex_approx(F(1, z, θ), expected_F1)
-    @test complex_approx(F(2, z, θ), expected_F2)
-    @test complex_approx(F(3, z, θ), expected_F3)
-    @test complex_approx(F(4, z, θ), expected_F4)
-    @test complex_approx(F(5, z, θ), expected_F5)
-    @test complex_approx(F(6, z, θ), expected_F6)
+    @test complex_approx(F_clausen(1, z, θ), expected_F1)
+    @test complex_approx(F_clausen(2, z, θ), expected_F2)
+    @test complex_approx(F_clausen(3, z, θ), expected_F3)
+    @test complex_approx(F_clausen(4, z, θ), expected_F4)
+    @test complex_approx(F_clausen(5, z, θ), expected_F5)
+    @test complex_approx(F_clausen(6, z, θ), expected_F6)
 
 
     # Test invalid n (less than 1 and greater than 6)
-    @test_throws ArgumentError F(0, z, θ)
-    @test_throws ArgumentError F(7, z, θ)
+    @test_throws ArgumentError F_clausen(0, z, θ)
+    @test_throws ArgumentError F_clausen(7, z, θ)
 
     # Test non-integer n (should throw MethodError)
-    @test_throws MethodError F(2.5, z, θ)
+    @test_throws MethodError F_clausen(2.5, z, θ)
 
     # Test negative n (should throw ArgumentError)
-    @test_throws ArgumentError F(-1, z, θ)
+    @test_throws ArgumentError F_clausen(-1, z, θ)
 
 end
 

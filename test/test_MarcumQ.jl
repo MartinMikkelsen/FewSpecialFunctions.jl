@@ -1,4 +1,7 @@
 using SpecialFunctions
+
+import FewSpecialFunctions: Q, c_μ, lnA, half_ζ2 ,ζ ,theta_over_sin,theta_prime_sin,ρ,r,r_prime_sin,f,ψ, MarcumQ_small_x, MarcumQ_large_xy, MarcumQ_recurrence, MarcumQ_large_M, MarcumQ_quadrature, MarcumQ_modified, f1_f2
+
 @testset "Marcum Q-function" begin
 
     # assume marcumq_test.txt lives in test/data/
@@ -192,3 +195,134 @@ using SpecialFunctions: besseli
     end
 
 end
+
+@testset "Q (upper incomplete gamma)" begin
+    # Γ(μ,x) for μ=1 is e^{-x}
+    @test Q(1.0, 2.0) ≈ exp(-2.0) atol=1e-9
+    # Γ(2,x) = e^{-x}(x+1)
+    @test Q(2.0, 3.0) ≈ exp(-3.0)*(3.0 + 1.0) atol=1e-9
+    # at x=0, Q(μ,0) == Γ(μ)
+    μ = 3.5
+    @test Q(μ, 0.0) ≈ 1.0 atol=1e-9
+    @test Q(μ, 100.0) ≈ 0.0 atol=1e-9
+end
+
+@testset "c_μ (continued‐fraction ratio for scaled I_μ)" begin
+    for μ in (0.0, 0.5, 1.0, 2.5)
+        for ξ in (0.1, 1.0, 5.0)
+            @test c_μ(μ, ξ) ≈ besseli(μ, ξ)/besseli(μ-1, ξ) atol=1e-9
+        end
+    end
+end
+
+@testset "lnA (log Aₙ from Eq. 32)" begin
+    # n=0 should give lnA=0
+    @test lnA(0, 1.3) ≈ 0.0 atol=1e-9
+    # for n=1, μ=1: A₁ = 3/8
+    val = lnA(1, 1.0)
+    @test val ≈ log(3/8) atol=1e-9
+    # for n=2, μ=0.5: compute expected directly
+    μ, n = 0.5, 2
+    expected = loggamma(μ+0.5+n) - loggamma(μ+0.5-n) - n*log(2.0) - loggamma(n+1)
+    @test lnA(n, μ) ≈ expected atol=1e-9
+end
+
+@testset "half_ζ2 (ζ²/2 from Eq. 84)" begin
+    # small δ branch: δ = y - x - 1 ≈ 0 ⇒ half_ζ2 → 0
+    for x in (0.5, 1.0, 2.0)
+        y = x + 1.0
+        @test half_ζ2(x, y) ≈ 0.0 atol=1e-9
+    end
+    # general branch
+    x, y = 1.2, 3.4
+    δ = y - x - 1.0
+    @test abs(δ) > 1e-3
+    r = sqrt(1 + 4*x*y)
+    expected = x + y - r + log((1 + r)/(2*y))
+    @test half_ζ2(x, y) ≈ expected atol=1e-9
+end
+
+
+@testset "ζ (Eq. 56)" begin
+    @test ζ(0.5, 1.5) ≈ copysign(sqrt(2 * half_ζ2(0.5, 1.5)), 0.5 + 1.0 - 1.5) atol=1e-9
+end
+
+@testset "θ/sin(θ) and θ′sin(θ) for small θ" begin
+    @test theta_over_sin(0.0) ≈ 1.0 atol=1e-9
+    @test theta_over_sin(1e-6) ≈ 1.0 + (1e-6)^2/6 atol=1e-9
+    @test theta_over_sin(0.1) ≈ 0.1/sin(0.1) atol=1e-9
+    @test theta_prime_sin(0.0) ≈ 0.0 atol=1e-9
+    @test theta_prime_sin(1e-6) ≈ (1e-6)^2/3 atol=1e-9
+    @test theta_prime_sin(0.1) ≈ 1.0 - 0.1/tan(0.1) atol=1e-9
+end
+
+@testset "ρ from eq. (98)" begin
+    @test ρ(0.0, 1.0) ≈ 1.0 atol=1e-9
+    @test ρ(1.0, 0.0) ≈ 1.0 atol=1e-9
+    @test ρ(1.0, 1.0) ≈ sqrt(2.0) atol=1e-9
+end
+
+@testset "r and r′sin(θ) from eq. (96)" begin
+    θ, y, ξ = 0.1, 2.0, 0.5
+    tos = theta_over_sin(θ)
+    xs = ξ / tos
+    expected_r = (1.0 + sqrt(1.0 + xs^2)) * tos / (2.0 * y)
+    @test r(θ, y, ξ) ≈ expected_r atol=1e-9
+    expected_r_prime = (1.0 + 1.0 / sqrt(1.0 + xs^2)) * theta_prime_sin(θ) / (2.0 * y)
+    @test r_prime_sin(θ, y, ξ) ≈ expected_r_prime atol=1e-9
+end
+
+@testset "f from eq. (96)" begin
+    θ, y, ξ = 0.1, 2.0, 0.5
+    r0 = r(θ, y, ξ)
+    d = r0 - cos(θ)
+    expected_f = (r_prime_sin(θ, y, ξ) - d * r0) / (d^2 + sin(θ)^2)
+    @test f(θ, y, ξ) ≈ expected_f atol=1e-9
+end
+
+@testset "ψ from eq. (97)" begin
+    θ, ξ = 0.1, 0.5
+    tos = theta_over_sin(θ)
+    rv = ρ(tos, ξ)
+    expected_ψ = cos(θ) * rv - sqrt(1.0 + ξ^2) - log((tos + rv) / (1.0 + sqrt(1.0 + ξ^2)))
+    @test ψ(θ, ξ) ≈ expected_ψ atol=1e-9
+end
+
+@testset "f1_f2 (boundaries for recurrence relation)" begin
+    # Test specific values
+    x, M = 1.0, 2.0
+    f1, f2 = f1_f2(x, M)
+    @test f1 ≈ x + M - sqrt(4*x + 2*M) atol=1e-9
+    @test f2 ≈ x + M + sqrt(4*x + 2*M) atol=1e-9
+    
+    # Test multiple values
+    test_cases = [
+        (0.5, 1.0),
+        (2.0, 3.0),
+        (10.0, 5.0),
+        (0.1, 0.2)
+    ]
+    
+    for (x, M) in test_cases
+        f1, f2 = f1_f2(x, M)
+        expected_f1 = x + M - sqrt(4*x + 2*M)
+        expected_f2 = x + M + sqrt(4*x + 2*M)
+        @test f1 ≈ expected_f1 atol=1e-9
+        @test f2 ≈ expected_f2 atol=1e-9
+        
+        # Verify that f1 < f2
+        @test f1 < f2
+        
+        # Verify that f1, f2 represent a valid interval
+        @test f2 - f1 ≈ 2*sqrt(4*x + 2*M) atol=1e-9
+    end
+    
+    # Test with different numeric types
+    x, M = 1.0f0, 2.0f0  # Float32
+    f1, f2 = f1_f2(x, M)
+    @test typeof(f1) == Float32
+    @test typeof(f2) == Float32
+    @test f1 ≈ x + M - sqrt(4*x + 2*M) atol=1e-6
+    @test f2 ≈ x + M + sqrt(4*x + 2*M) atol=1e-6
+end
+
