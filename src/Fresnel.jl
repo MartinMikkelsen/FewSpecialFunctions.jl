@@ -1,87 +1,47 @@
-using SpecialFunctions 
-using QuadGK
+using SpecialFunctions
+export fresnel, S, C, E
 
-@doc raw"""
-    Fresnel_S_integral_pi(x)
-
-The Fresnel function S(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
-```math
-    S(z) = \int_0^x \cos(\pi t^2/2) dt
-```
-Returns the value ``S(x)``
-"""
-function Fresnel_S_integral_pi(x)
-    S = quadgk(t -> sin(π/2*t^2),0,x)[1]
-    return S    
-end
-@doc raw"""
-    Fresnel_C_integral_pi(x)
-
-The Fresnel function C(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
-
-```math
-    C(z) = \int_0^x \sin(\pi t^2/2) dt
-```
-Returns the value ``C(x)``
 
 """
-function Fresnel_C_integral_pi(x)
-    C = quadgk(t -> cos(π/2*t^2),0,x)[1]
-    return C    
-end
-@doc raw"""
-    Fresnel_S_integral(x)
+    fresnel(z::Number)
 
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral)
-```math
-    S(z) = \int_0^x \sin(t^2) dt
-```
-Returns the value ``S(x)``
+Compute the Fresnel integrals S(z) and C(z), and the auxiliary E(z),
+using the complex error function:
+
+    zp = (√π/2)*(1 - i)*z
+    zm = (√π/2)*(1 + i)*z
+    ep = erf(zp)
+    em = erf(zm)
+
+Then
+    resp = (1 + i)/2 * em
+    resn = (1 - i)/2 * ep
+
+and
+    S = (resp - resn)/(2i),
+    C = (resp + resn)/2,
+    E = (1 + i)/2 - resp.
+
+Returns a named tuple `(S=S, C=C, E=E)`.
 """
-function Fresnel_S_integral(x)
-    S = quadgk(t -> sin(t^2),0,x)[1]
-    return S    
-end
-@doc raw"""
-    Fresnel_C_integral(x)
-
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral)
-```math
-    C(z) = \int_0^x \cos(t^2) dt
-```
-Returns the value ``C(x)``
-
-"""
-function Fresnel_C_integral(x)
-    C = quadgk(t -> cos(t^2),0,x)[1]
-    return C    
-end
-@doc raw"""
-    Fresnel_S_erf(x)
-
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
-```math
-    S(z) = \sqrt{\frac{\pi}{2}}\frac{1+i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) - i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-Returns the value ``S(x)``
-"""
-function Fresnel_S_erf(x)
-    S = sqrt(π/2).*(1+1im)/4*(erf.((1+1im)/(sqrt(2))*x)-1im*erf.((1-1im)*x/(sqrt(2))))
-    return real(S)    
-end
-@doc raw"""
-    Fresnel_C_erf(x)
-
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
-```math
-    C(z) = \sqrt{\frac{\pi}{2}}\frac{1-i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) + i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-Returns the value ``C(x)``
-"""
-function Fresnel_C_erf(x)
-    C = sqrt(π/2)*(1-1im)/4*(erf((1+1im)/(sqrt(2))*x)+1im*erf((1-1im)/(sqrt(2))*x))
-    return real(C)
+function fresnel(z::Number)
+    zc = complex(z)
+    zp = (sqrt(π)/2)*(1 - im)*zc
+    zm = (sqrt(π)/2)*(1 + im)*zc
+    ep = erf(zp)
+    em = erf(zm)
+    resp = (1 + im)/2 * em
+    resn = (1 - im)/2 * ep
+    Sval = (resp - resn)/(2*im)
+    Cval = (resp + resn)/2
+    Eval = (1 + im)/2 - resp
+    return Sval, Cval, Eval
 end
 
-export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_erf, Fresnel_C_erf
+"""S(x) -> Fresnel sine integral."""
+FresnelS(z::Number) = fresnel(z)[1]
+"""C(x) -> Fresnel cosine integral."""
+FresnelC(z::Number) = fresnel(z)[2]
+"""E(z) -> exponential auxiliary function."""
+FresnelE(z::Number) = fresnel(z)[3]
 
