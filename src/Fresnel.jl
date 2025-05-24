@@ -1,6 +1,5 @@
 using SpecialFunctions
-export fresnel, S, C, E
-
+export fresnel, FresnelS, FresnelC, FresnelE
 
 """
     fresnel(z::Number)
