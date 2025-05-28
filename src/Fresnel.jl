@@ -1,87 +1,67 @@
-using SpecialFunctions 
-using QuadGK
-
-@doc raw"""
-    Fresnel_S_integral_pi(x)
-
-The Fresnel function S(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
-```math
-    S(z) = \int_0^x \cos(\pi t^2/2) dt
-```
-Returns the value ``S(x)``
-"""
-function Fresnel_S_integral_pi(x)
-    S = quadgk(t -> sin(π/2*t^2),0,x)[1]
-    return S    
-end
-@doc raw"""
-    Fresnel_C_integral_pi(x)
-
-The Fresnel function C(z) using the definition in Handbook of Mathematical Functions: Abramowitz and Stegun, where
-
-```math
-    C(z) = \int_0^x \sin(\pi t^2/2) dt
-```
-Returns the value ``C(x)``
+using SpecialFunctions
+export fresnel, FresnelS, FresnelC, FresnelE
 
 """
-function Fresnel_C_integral_pi(x)
-    C = quadgk(t -> cos(π/2*t^2),0,x)[1]
-    return C    
-end
-@doc raw"""
-    Fresnel_S_integral(x)
+fresnel(z::Number)
 
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral)
-```math
-    S(z) = \int_0^x \sin(t^2) dt
-```
-Returns the value ``S(x)``
+Compute the Fresnel integrals C(z) and S(z), and the auxiliary E(z),
+using the complex error function, matching the convention:
+
+    S(x) = ∫₀ˣ sin(π/2 t^2) dt
+    C(x) = ∫₀ˣ cos(π/2 t^2) dt
+
+This matches the MATLAB and NIST convention (engineering, not mathematical).
+
+Returns a tuple (C, S, E), where:
+  - C = C(z) = Fresnel cosine integral
+  - S = S(z) = Fresnel sine integral
+  - E = C(z) + i S(z) (auxiliary value)
 """
-function Fresnel_S_integral(x)
-    S = quadgk(t -> sin(t^2),0,x)[1]
-    return S    
+function fresnel(z::Number)
+    # Correct engineering convention (NIST, MATLAB):
+    # C(z) + i S(z) = (1 + i)/2 * erf((sqrt(π)/2) * (1 - i) * z)
+    w = (sqrt(π)/2) * (1 - im) * z
+    F = (1 + im)/2 * erf(w)
+    Cval = real(F)
+    Sval = imag(F)
+    Eval = F
+    return Cval, Sval, Eval
 end
-@doc raw"""
-    Fresnel_C_integral(x)
-
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral)
-```math
-    C(z) = \int_0^x \cos(t^2) dt
-```
-Returns the value ``C(x)``
 
 """
-function Fresnel_C_integral(x)
-    C = quadgk(t -> cos(t^2),0,x)[1]
-    return C    
-end
-@doc raw"""
-    Fresnel_S_erf(x)
+    FresnelC(z::Number) -> Number
 
-The Fresnel function S(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
-```math
-    S(z) = \sqrt{\frac{\pi}{2}}\frac{1+i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) - i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-Returns the value ``S(x)``
+Computes the Fresnel cosine integral C(z) for the given number `z`.
+
+# Arguments
+- `z::Number`: The input value (can be real or complex).
+
+# Returns
+- `Number`: The value of the Fresnel cosine integral at `z`.
 """
-function Fresnel_S_erf(x)
-    S = sqrt(π/2).*(1+1im)/4*(erf.((1+1im)/(sqrt(2))*x)-1im*erf.((1-1im)*x/(sqrt(2))))
-    return real(S)    
-end
-@doc raw"""
-    Fresnel_C_erf(x)
-
-The Fresnel function C(z) using the definition [wiki](https://en.wikipedia.org/wiki/Fresnel_integral) and the error function.
-```math
-    C(z) = \sqrt{\frac{\pi}{2}}\frac{1-i}{4} \bigg( \text{erf}\big(\frac{1+i}{\sqrt{2}}z \big) + i \text{erf}\big(\frac{1-i}{\sqrt{2}}z \big)\bigg)
-```
-Returns the value ``C(x)``
+FresnelC(z::Number) = fresnel(z)[1]
 """
-function Fresnel_C_erf(x)
-    C = sqrt(π/2)*(1-1im)/4*(erf((1+1im)/(sqrt(2))*x)+1im*erf((1-1im)/(sqrt(2))*x))
-    return real(C)
-end
+    FresnelS(z::Number) -> Number
 
-export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_erf, Fresnel_C_erf
+Computes the Fresnel sine integral S(z) for a given number `z`.
 
+# Arguments
+- `z::Number`: The input value (real or complex) at which to evaluate the Fresnel sine integral.
+
+# Returns
+- `Number`: The value of the Fresnel sine integral S(z).
+"""
+FresnelS(z::Number) = fresnel(z)[2]
+"""
+    FresnelE(z::Number) -> Number
+
+Computes the Fresnel E integral for the given input `z`.
+
+# Arguments
+- `z::Number`: The input value (real or complex) at which to evaluate the Fresnel E integral.
+
+# Returns
+- `Number`: The value of the Fresnel E integral at `z`.
+
+"""
+FresnelE(z::Number) = fresnel(z)[3]

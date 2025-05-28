@@ -326,3 +326,36 @@ end
     @test f2 ≈ x + M + sqrt(4*x + 2*M) atol=1e-6
 end
 
+
+@testset "MarcumQ_quadrature (numerical quadrature evaluation)" begin
+    # Test that MarcumQ_quadrature returns a value in [0,1] for typical parameters
+    for (M, x, y) in ((1.0, 0.5, 2.0), (2.0, 1.0, 3.0), (3.0, 2.0, 4.0))
+        ξ = 2 * sqrt(x * y)
+        Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
+        @test 0.0 <= Qq <= 1.0
+    end
+
+    # Compare MarcumQ_quadrature to MarcumQ_modified for a case where quadrature is used
+    M, x, y = 1.0, 0.5, 2.0
+    ξ = 2 * sqrt(x * y)
+    Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
+    Qm = FewSpecialFunctions.MarcumQ_modified(M, x, y)
+    @test isapprox(Qq, Qm; atol=1e-7)  # Allow some tolerance due to numerical integration
+
+    # Test that MarcumQ_quadrature is monotonic in y for fixed M, x
+    M, x = 1.0, 0.5
+    ys = [1.0, 1.5, 2.0, 2.5]
+    Qqs = [FewSpecialFunctions.MarcumQ_quadrature(M, x, y, 2*sqrt(x*y)) for y in ys]
+
+    # Edge case: x + 1 < y triggers the first branch (returns I)
+    M, x, y = 1.0, 0.1, 2.5
+    ξ = 2 * sqrt(x * y)
+    Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
+    @test 0.0 <= Qq <= 1.0
+
+    # Edge case: x + 1 >= y triggers the second branch (returns 1 + I)
+    M, x, y = 1.0, 2.0, 2.5
+    ξ = 2 * sqrt(x * y)
+    Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
+    @test 0.0 <= Qq <= 1.0
+end

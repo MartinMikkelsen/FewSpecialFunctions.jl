@@ -6,7 +6,7 @@ include("CoulombWave.jl")
 export debye_function
 include("Debye.jl")
 
-export Fresnel_S_integral_pi, Fresnel_C_integral_pi , Fresnel_S_integral, Fresnel_C_integral , Fresnel_S_erf, Fresnel_C_erf
+export fresnel, FresnelS, FresnelC, FresnelE
 include("Fresnel.jl")
 
 export Struve

@@ -27,12 +27,9 @@ I
 debye_function
 
 # Fresnel integrals
-Fresnel_S_integral_pi
-Fresnel_C_integral_pi
-Fresnel_S_integral
-Fresnel_C_integral
-Fresnel_S_erf
-Fresnel_C_erf
+FresnelC
+FresnelS
+FresnelE
 
 # Struve function
 Struve
