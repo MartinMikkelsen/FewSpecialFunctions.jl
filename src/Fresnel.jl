@@ -28,6 +28,40 @@ function fresnel(z::Number)
     return Cval, Sval, Eval
 end
 
+"""
+    FresnelC(z::Number) -> Number
+
+Computes the Fresnel cosine integral C(z) for the given number `z`.
+
+# Arguments
+- `z::Number`: The input value (can be real or complex).
+
+# Returns
+- `Number`: The value of the Fresnel cosine integral at `z`.
+"""
 FresnelC(z::Number) = fresnel(z)[1]
+"""
+    FresnelS(z::Number) -> Number
+
+Computes the Fresnel sine integral S(z) for a given number `z`.
+
+# Arguments
+- `z::Number`: The input value (real or complex) at which to evaluate the Fresnel sine integral.
+
+# Returns
+- `Number`: The value of the Fresnel sine integral S(z).
+"""
 FresnelS(z::Number) = fresnel(z)[2]
+"""
+    FresnelE(z::Number) -> Number
+
+Computes the Fresnel E integral for the given input `z`.
+
+# Arguments
+- `z::Number`: The input value (real or complex) at which to evaluate the Fresnel E integral.
+
+# Returns
+- `Number`: The value of the Fresnel E integral at `z`.
+
+"""
 FresnelE(z::Number) = fresnel(z)[3]
