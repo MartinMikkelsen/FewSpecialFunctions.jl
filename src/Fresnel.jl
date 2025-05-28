@@ -2,45 +2,32 @@ using SpecialFunctions
 export fresnel, FresnelS, FresnelC, FresnelE
 
 """
-    fresnel(z::Number)
+fresnel(z::Number)
 
-Compute the Fresnel integrals S(z) and C(z), and the auxiliary E(z),
-using the complex error function:
+Compute the Fresnel integrals C(z) and S(z), and the auxiliary E(z),
+using the complex error function, matching the convention:
 
-    zp = (√π/2)*(1 - i)*z
-    zm = (√π/2)*(1 + i)*z
-    ep = erf(zp)
-    em = erf(zm)
+    S(x) = ∫₀ˣ sin(π/2 t^2) dt
+    C(x) = ∫₀ˣ cos(π/2 t^2) dt
 
-Then
-    resp = (1 + i)/2 * em
-    resn = (1 - i)/2 * ep
+This matches the MATLAB and NIST convention (engineering, not mathematical).
 
-and
-    S = (resp - resn)/(2i),
-    C = (resp + resn)/2,
-    E = (1 + i)/2 - resp.
-
-Returns a named tuple `(S=S, C=C, E=E)`.
+Returns a tuple (C, S, E), where:
+  - C = C(z) = Fresnel cosine integral
+  - S = S(z) = Fresnel sine integral
+  - E = C(z) + i S(z) (auxiliary value)
 """
 function fresnel(z::Number)
-    zc = complex(z)
-    zp = (sqrt(π)/2)*(1 - im)*zc
-    zm = (sqrt(π)/2)*(1 + im)*zc
-    ep = erf(zp)
-    em = erf(zm)
-    resp = (1 + im)/2 * em
-    resn = (1 - im)/2 * ep
-    Sval = (resp - resn)/(2*im)
-    Cval = (resp + resn)/2
-    Eval = (1 + im)/2 - resp
-    return Sval, Cval, Eval
+    # Correct engineering convention (NIST, MATLAB):
+    # C(z) + i S(z) = (1 + i)/2 * erf((sqrt(π)/2) * (1 - i) * z)
+    w = (sqrt(π)/2) * (1 - im) * z
+    F = (1 + im)/2 * erf(w)
+    Cval = real(F)
+    Sval = imag(F)
+    Eval = F
+    return Cval, Sval, Eval
 end
 
-"""S(x) -> Fresnel sine integral."""
-FresnelS(z::Number) = fresnel(z)[1]
-"""C(x) -> Fresnel cosine integral."""
-FresnelC(z::Number) = fresnel(z)[2]
-"""E(z) -> exponential auxiliary function."""
+FresnelC(z::Number) = fresnel(z)[1]
+FresnelS(z::Number) = fresnel(z)[2]
 FresnelE(z::Number) = fresnel(z)[3]
-
