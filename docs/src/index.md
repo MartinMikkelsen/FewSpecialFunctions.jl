@@ -29,9 +29,8 @@ default(
 
 x = range(-25,25,length=5000)
 
-plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
 xlabel!(L"C(x)")
 ylabel!(L"S(x)")
 title!("Euler Spiral")
-plot(Fresnel_C_erf.(x),Fresnel_S_erf.(x))
+plot(FresnelC.(x),FresnelS.(x))
 ```

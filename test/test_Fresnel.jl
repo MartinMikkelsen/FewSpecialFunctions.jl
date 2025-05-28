@@ -20,3 +20,36 @@ using Test, DelimitedFiles, FewSpecialFunctions
   end
 
 end
+@testset "fresnel function" begin
+    # Test fresnel function directly
+    x_values = [0.0, 1.0, 2.0, -1.5]
+    
+    for x in x_values
+        C, S, E = FewSpecialFunctions.fresnel(x)
+        
+        # Test individual components match wrapper functions
+        @test C ≈ FewSpecialFunctions.FresnelC(x)
+        @test S ≈ FewSpecialFunctions.FresnelS(x)
+        @test E ≈ FewSpecialFunctions.FresnelE(x)
+        
+        # Test that E = C + i*S relationship holds
+        @test E ≈ C + im*S
+    end
+    
+    # Test special case z=0
+    C, S, E = FewSpecialFunctions.fresnel(0.0)
+    @test C ≈ 0.0
+    @test S ≈ 0.0
+    @test E ≈ 0.0
+    
+    # Test complex input
+    z = 1.0 + 1.0im
+    C, S, E = FewSpecialFunctions.fresnel(z)
+    @test E ≈ C + im*S
+    
+    # Test against known values
+    # At z = 1, C(1) ≈ 0.7798934, S(1) ≈ 0.4382591
+    C, S, E = FewSpecialFunctions.fresnel(1.0)
+    @test isapprox(C, 0.7798934, rtol=1e-6)
+    @test isapprox(S, 0.4382591, rtol=1e-6)
+end
