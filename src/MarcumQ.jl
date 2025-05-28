@@ -109,15 +109,24 @@ end
 # asymptotic for large M (section 4.2)
 function MarcumQ_large_M(M::T, x::T, y::T) where {T<:Number}
     ζv = ζ(x, y); ehalf = exp(-M*half_ζ2(x,y))
-    Ψ = [zero(T) for _ in 1:20]
-    Ψ[1] = sqrt(π/(T(2)*M))*erfc(-ζv*sqrt(M/T(2))); Ψ[2] = ehalf/M
+    maxK = 100  # Increased to avoid BoundsError
+    Ψ = [zero(T) for _ in 1:maxK]
+    Ψ[1] = sqrt(π/(T(2)*M))*erfc(-ζv*sqrt(M/T(2)))
+    Ψ[2] = ehalf/M
     s = zero(T); k = one(Int)
-    while true
+    while k < maxK
         Bk = sum(Ψ[j]/M^(k-j) for j in one(Int):k); s += Bk
         abs(Bk) <= eps(T)*abs(s) && break
-        k += one(Int); Ψ[k] = (k-one(Int))/M*Ψ[k-one(Int)] + (-ζv)^(k-one(Int))/M*ehalf
+        k += one(Int)
+        if k > maxK
+            break
+        end
+        Ψ[k] = (k-one(Int))/M*Ψ[k-one(Int)] + (-ζv)^(k-one(Int))/M*ehalf
     end
-    erfc(-ζv*sqrt(M/T(2)))/T(2) - sqrt(M/(T(2)*π))*s
+    result = erfc(-ζv*sqrt(M/T(2)))/T(2) - sqrt(M/(T(2)*π))*s
+    # Clamp to [0,1] for probability
+    result = max(min(result, one(T)), zero(T))
+    result
 end
 
 # quadrature (section 5)
