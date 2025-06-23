@@ -3,7 +3,7 @@ using Documenter, FewSpecialFunctions
 makedocs(
     build = "build",
     sitename = "FewSpecialFunctions.jl", 
-    pages = ["Home" => "index.md", "Functions" => "Functions.md", "API" => "API.md"],
+    pages = ["Home" => "index.md", "Functions" => "Functions.md", "References" => "API.md"],
     format = Documenter.HTML()
 )
 

@@ -2,15 +2,11 @@ using SpecialFunctions
 
 export FermiDiracIntegral, FermiDiracIntegralNorm
 
-@doc raw"""
+"""
     FermiDiracIntegral(j, x)
 
 The Fermi-Dirac integral
     
-```math
-    F_j(x) = \int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt
-```
-
 Returns the value ``F_j(x)``
 
 Resources:

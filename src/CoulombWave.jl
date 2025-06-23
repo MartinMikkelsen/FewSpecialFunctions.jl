@@ -39,6 +39,10 @@ end
     F(ℓ::Number, η::Number, ρ::Number)
 
 Regular Coulomb wave function.
+
+References:
+- [Coulomb wave function](https://en.wikipedia.org/wiki/Coulomb_wave_function)
+- [Implementation paper](https://arxiv.org/abs/1804.10976)
 """
 function F(ℓ::Number, η::Number, ρ::Number)
     ℓc = complex(float(ℓ))
@@ -47,7 +51,6 @@ function F(ℓ::Number, η::Number, ρ::Number)
     return C(ℓc, ηc) * ρc^(ℓc+1) * exp(-im*ρc) * _₁F₁(complex(ℓc+1-im*ηc), complex(2*ℓc+2), complex(2*im*ρc))
 end
 
-# Explicit real-valued overload to guarantee real output and avoid complex issues in downstream code
 function F(ℓ::Real, η::Real, ρ::Real)
     return real(F(complex(ℓ), complex(η), complex(ρ)))
 end
@@ -74,6 +77,10 @@ end
     H⁺(ℓ::Number, η::Number, ρ::Number)
 
 Outgoing Coulomb wave function.
+
+References:
+- [Coulomb wave function](https://en.wikipedia.org/wiki/Coulomb_wave_function)
+- [Implementation paper](https://arxiv.org/abs/1804.10976)
 """
 function H⁺(ℓ::Number, η::Number, ρ::Number)
     return D⁺(ℓ,η) * ρ^(ℓ+1) * exp(+im*ρ) * HypergeometricFunctions.U(ℓ+1+im*η, 2*ℓ+2, -2*im*ρ)
@@ -83,6 +90,10 @@ end
     H⁻(ℓ::Number, η::Number, ρ::Number)
 
 Incoming Coulomb wave function.
+
+References:
+- [Coulomb wave function](https://en.wikipedia.org/wiki/Coulomb_wave_function)
+- [Implementation paper](https://arxiv.org/abs/1804.10976)
 """
 function H⁻(ℓ::Number, η::Number, ρ::Number)
     return D⁻(ℓ,η) * ρ^(ℓ+1) * exp(-im*ρ) * HypergeometricFunctions.U(ℓ+1-im*η, 2*ℓ+2, +2*im*ρ)
@@ -101,6 +112,10 @@ end
     G(ℓ::Number, η::Number, ρ::Number)
 
 Irregular Coulomb wave function.
+
+References:
+- [Coulomb wave function](https://en.wikipedia.org/wiki/Coulomb_wave_function)
+- [Implementation paper](https://arxiv.org/abs/1804.10976)
 """
 function G(ℓ::Number, η::Number, ρ::Number)
     return (H⁺(ℓ, η, ρ) + H⁻(ℓ, η, ρ)) / 2
