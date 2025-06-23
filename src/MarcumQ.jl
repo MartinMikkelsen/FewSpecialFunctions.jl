@@ -84,6 +84,10 @@ function MarcumQ_large_xy(M::T, x::T, y::T, ξ::T) where {T<:Number}
     Ψ = ρ0==one(T) ? one(T) / T(2) : copysign(ρ0^(M-T(0.5))/T(2)*erfc(abs(δ)), ρ0-one(T))
     s = x>y ? one(T) : zero(T); n = 0; ρt = ρfac
     while true
+        # Prevent negative gamma arguments in lnA for both lnA(n, M-1) and lnA(n, M)
+        if (M - one(T)) + T(0.5) - n <= 0 || M + T(0.5) - n <= 0
+            break
+        end
         s += Ψ; abs(Ψ) <= eps(T)*abs(s) && break
         n += 1; ρt = -ρt; ef /= ξ
         Φ = (ef - σ*Φ)/(n - T(0.5))

@@ -53,3 +53,26 @@ end
     @test isapprox(C, 0.7798934, rtol=1e-6)
     @test isapprox(S, 0.4382591, rtol=1e-6)
 end
+
+@testset "Fresnel edge and special cases" begin
+
+  # Test at purely imaginary input
+  z = 2.0im
+  C, S, E = FewSpecialFunctions.fresnel(z)
+  # E should equal C + im*S
+  @test E ≈ C + im*S
+
+  # Test at a small value (Taylor expansion regime)
+  z = 1e-8
+  C, S, E = FewSpecialFunctions.fresnel(z)
+  @test isapprox(C, z, atol=1e-8)
+  @test isapprox(S, (π/6)*z^3, atol=1e-24)
+
+  # Test at a negative real value
+  z = -2.0
+  C, S, E = FewSpecialFunctions.fresnel(z)
+  # Fresnel integrals are odd/even functions:
+  @test isapprox(C, -FewSpecialFunctions.FresnelC(2.0), rtol=1e-6)
+  @test isapprox(S, -FewSpecialFunctions.FresnelS(2.0), rtol=1e-6)
+
+end

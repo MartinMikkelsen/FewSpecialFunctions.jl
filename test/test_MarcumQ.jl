@@ -289,13 +289,11 @@ end
 end
 
 @testset "f1_f2 (boundaries for recurrence relation)" begin
-    # Test specific values
     x, M = 1.0, 2.0
     f1, f2 = f1_f2(x, M)
     @test f1 ≈ x + M - sqrt(4*x + 2*M) atol=1e-9
     @test f2 ≈ x + M + sqrt(4*x + 2*M) atol=1e-9
     
-    # Test multiple values
     test_cases = [
         (0.5, 1.0),
         (2.0, 3.0),
@@ -310,14 +308,11 @@ end
         @test f1 ≈ expected_f1 atol=1e-9
         @test f2 ≈ expected_f2 atol=1e-9
         
-        # Verify that f1 < f2
         @test f1 < f2
         
-        # Verify that f1, f2 represent a valid interval
         @test f2 - f1 ≈ 2*sqrt(4*x + 2*M) atol=1e-9
     end
     
-    # Test with different numeric types
     x, M = 1.0f0, 2.0f0  # Float32
     f1, f2 = f1_f2(x, M)
     @test typeof(f1) == Float32
@@ -328,34 +323,75 @@ end
 
 
 @testset "MarcumQ_quadrature (numerical quadrature evaluation)" begin
-    # Test that MarcumQ_quadrature returns a value in [0,1] for typical parameters
     for (M, x, y) in ((1.0, 0.5, 2.0), (2.0, 1.0, 3.0), (3.0, 2.0, 4.0))
         ξ = 2 * sqrt(x * y)
         Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
         @test 0.0 <= Qq <= 1.0
     end
 
-    # Compare MarcumQ_quadrature to MarcumQ_modified for a case where quadrature is used
     M, x, y = 1.0, 0.5, 2.0
     ξ = 2 * sqrt(x * y)
     Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
     Qm = FewSpecialFunctions.MarcumQ_modified(M, x, y)
     @test isapprox(Qq, Qm; atol=1e-7)  # Allow some tolerance due to numerical integration
 
-    # Test that MarcumQ_quadrature is monotonic in y for fixed M, x
     M, x = 1.0, 0.5
     ys = [1.0, 1.5, 2.0, 2.5]
     Qqs = [FewSpecialFunctions.MarcumQ_quadrature(M, x, y, 2*sqrt(x*y)) for y in ys]
 
-    # Edge case: x + 1 < y triggers the first branch (returns I)
     M, x, y = 1.0, 0.1, 2.5
     ξ = 2 * sqrt(x * y)
     Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
     @test 0.0 <= Qq <= 1.0
 
-    # Edge case: x + 1 >= y triggers the second branch (returns 1 + I)
     M, x, y = 1.0, 2.0, 2.5
     ξ = 2 * sqrt(x * y)
     Qq = FewSpecialFunctions.MarcumQ_quadrature(M, x, y, ξ)
     @test 0.0 <= Qq <= 1.0
+end
+
+
+@testset "MarcumQ_large_M (asymptotic expansion for large M)" begin
+
+    M, x = 100.0, 2.0
+    ys = [2.0, 2.5, 3.0, 3.5]
+    Qs = [FewSpecialFunctions.MarcumQ_large_M(M, x, y) for y in ys]
+    @test all(diff(Qs) .<= 0)  
+
+    M, x, y = 100.0, 2.0, 20.0
+    Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
+    @test Qlm ≈ 0.0 atol=1e-10
+
+    M, x, y = 100.0, 2.0, 0.01
+    Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
+    @test Qlm ≈ 0.0 atol=1e-10
+
+    M, x, y = 50.0f0, 1.5f0, 2.5f0
+    Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
+    @test 0.0f0 <= Qlm <= 1.0f0
+    @test typeof(Qlm) == Float32
+end
+
+@testset "MarcumQ_recurrence (recurrence relation for Marcum Q)" begin
+    M, x = 4.0, 2.0
+    ys = [3.0, 4.0, 5.0, 6.0]
+    ξs = [2 * sqrt(x * y) for y in ys]
+    Qs = [FewSpecialFunctions.MarcumQ_recurrence(M, x, y, ξ) for (y, ξ) in zip(ys, ξs)]
+    @test all(diff(Qs) .<= 0)
+
+    M, x, y = 3.0f0, 1.5f0, 4.0f0
+    ξ = 2f0 * sqrt(x * y)
+    Qr = FewSpecialFunctions.MarcumQ_recurrence(M, x, y, ξ)
+    Qm = FewSpecialFunctions.MarcumQ_modified(M, x, y)
+    @test isapprox(Qr, Qm; atol=1e-6)
+    @test typeof(Qr) == Float32
+
+    M, x, y = 2.0, 1.0, 2.5
+    ξ = 2 * sqrt(x * y)
+    μ = M - ceil(M - (sqrt(2 * ξ) - 1))
+    if abs(M - μ) < 1e-12
+        Qr = FewSpecialFunctions.MarcumQ_recurrence(M, x, y, ξ)
+        Qm = FewSpecialFunctions.MarcumQ_modified(M, x, y)
+        @test isapprox(Qr, Qm; atol=1e-10)
+    end
 end
