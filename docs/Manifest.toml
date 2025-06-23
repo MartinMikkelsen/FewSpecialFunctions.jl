@@ -2,7 +2,7 @@
 
 julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "762c6665b7a3cf6576f61d6c54c7e0f3ace247c3"
+project_hash = "99cc9afdc329343ccb52f9d9621bbf5ef384be14"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -157,6 +157,20 @@ deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", 
 git-tree-sha1 = "6f8730fd1bdf974009ef296bd81afb2728854fc0"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 version = "1.11.3"
+
+[[deps.DomainColoring]]
+deps = ["ColorSchemes", "ColorTypes"]
+git-tree-sha1 = "d8a178233aaa83c1fdc599fe51c8d032ecf19bb4"
+uuid = "c24f3079-adb7-4533-8329-9f66732e5e85"
+version = "1.1.0"
+
+    [deps.DomainColoring.extensions]
+    MakieExt = "MakieCore"
+    PlotsExt = "Plots"
+
+    [deps.DomainColoring.weakdeps]
+    MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
+    Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
