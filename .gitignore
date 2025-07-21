@@ -51,3 +51,23 @@ repo_key
 
 # Buildkite: Ignore any agent keys (public or private) we have stored
 agent_key*
+
+*.jl.cov
+*.jl.*.cov
+*.DS_Store
+.DS_Store
+
+*.jl.mem
+
+deps/deps.jl
+deps/build.log
+deps/downloads/
+deps/usr/
+deps/src/
+
+docs/build/
+docs/site/
+
+
+Manifest.toml
+docs/build/
