@@ -164,38 +164,6 @@ savefig("debye.svg"); nothing # hide
 ```
 ![](./debye.svg)
 
-
-## Struve functions
-The Struve functions are solutions of the non-homogeneous Bessel's differential equation
-```math
-    x^2 \frac{\text{d}^2 y}{\text{d}x^2} + x \frac{\text{d}y}{\text{d}x}+(x^2-\alpha^2)y = \frac{4(x/2)^{\alpha+1}}{\sqrt{\pi}\Gamma(\alpha+1/2)}
-```
-The Struve functions are implemented using the following integral representation
-```math
-    \mathbf{H}_\nu(z) = \frac{2(z/2)^\nu}{\sqrt{\pi}\Gamma(\nu+1/2)} \int_0^1 (1-t)^{{\nu-1/2}}\sin(zt) \, \text{d}t
-```
-And
-```math
-    \mathbf{H}_\nu(z) = \frac{2(z/2)^\nu}{\sqrt{\pi}\Gamma(\nu+1/2)} \int_0^{\pi/2} \sin(z\cos(\theta)) \sin^{2\nu}(\theta) \, \text{d}\theta
-```
-Here is an example
-```@example
-using Plots, FewSpecialFunctions, LaTeXStrings # hide
-ENV["GKSwstype"] = "100" # hide
-
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-x = range(-5,stop=5,length=1000)
-plot(x,Struve.(0,x),label=L"H_0(x)")
-plot!(x,Struve.(1,x),label=L"H_1(x)")
-plot!(x,Struve.(2,x),label=L"H_2(x)")
-plot!(x,Struve.(3,x),label=L"H_3(x)")
-plot!(x,Struve.(4,x),label=L"H_4(x)")
-plot!(x,Struve.(5,x),label=L"H_5(x)")
-xlabel!(L"x")
-title!("Struve Functions")
-```
-
 ## Fermi-Dirac integrals
 
 In solid state physics the Fermi-Dirac integral is given by

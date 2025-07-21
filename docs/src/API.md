@@ -1,11 +1,11 @@
 
 ## References
 
-- [Clausen functions](https://doi.org/10.1007/s10543-023-00944-4)
-- [Coulomb wave functions](https://arxiv.org/abs/1804.10976)
-- [Debye functions](https://doi.org/10.1007/s10765-007-0256-1)
-- [Fermi-Dirac integrals](https://arxiv.org/abs/0811.0116)
-- [Marcum Q-function](https://arxiv.org/pdf/1311.0681v1)
+- [Clausen functions: Quadrature processes for efficient calculation of the Clausen functions](https://doi.org/10.1007/s10543-023-00944-4)
+- [Coulomb wave functions: Connection formulas between Coulomb wave functions](https://arxiv.org/abs/1804.10976)
+- [Debye functions: Calculation of Integer and Noninteger n-Dimensional Debye Functions Using Binomial Coefficients and Incomplete Gamma Functions](https://doi.org/10.1007/s10765-007-0256-1)
+- [Fermi-Dirac integrals: Notes on Fermi-Dirac Integrals](https://arxiv.org/abs/0811.0116)
+- [Marcum Q-function: https://arxiv.org/pdf/1311.0681v1](https://arxiv.org/pdf/1311.0681v1)
 - [Parabolic cylinder functions](https://www.scirp.org/reference/referencespapers?referenceid=1112080)
 
 ## API
@@ -42,9 +42,6 @@ debye_function
 FresnelC
 FresnelS
 FresnelE
-
-# Struve function
-Struve
 
 # Clausen functions
 Clausen
