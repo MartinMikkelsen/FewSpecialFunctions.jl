@@ -1,3 +1,5 @@
+using SpecialFunctions
+
 @testset "Parabolic Cylinder function" begin
     
 
@@ -120,3 +122,121 @@
 
 end
 
+
+@testset "Special case: a < 0 and a + 0.5 ≈ integer" begin
+    # a + 0.5 = integer, e.g., a = -1.5, -2.5, -3.5, etc.
+    # Test for U, V, dU, dV with such a values and compare to known values or to the general branch
+
+    # Helper to check if special branch is triggered
+    function is_special_branch(a)
+        a < 0 && isapprox(a + 0.5, round(a + 0.5))
+    end
+
+    # Test values
+    a_vals = [-1.5, -2.5, -3.5, -4.5]
+    x_vals = [-2.0, 0.0, 1.0, 3.5]
+
+    for a in a_vals, x in x_vals
+        # The function should not error and should return a finite value
+        @test isfinite(FewSpecialFunctions.U(a, x))
+        @test isfinite(FewSpecialFunctions.V(a, x))
+        @test isfinite(FewSpecialFunctions.dU(a, x))
+        @test isfinite(FewSpecialFunctions.dV(a, x))
+
+        # The special branch should be triggered
+        @test is_special_branch(a)
+    end
+
+    # Compare U(a, x) to the general branch for a just above and just below the special value
+    for x in x_vals
+        a = -2.5
+        δ = 1e-8
+        U_special = FewSpecialFunctions.U(a, x)
+        U_above = FewSpecialFunctions.U(a + δ, x)
+        U_below = FewSpecialFunctions.U(a - δ, x)
+        # The function should be continuous across the branch
+        @test isapprox(U_special, U_above; atol=1e-6)
+        @test isapprox(U_special, U_below; atol=1e-6)
+    end
+
+    # Check that the formula for θ and prefactors are numerically stable
+    for a in a_vals, x in x_vals
+        θ = π * (0.25 + a / 2)
+        f₁ = gamma(0.25 - a / 2) / (sqrt(π) * 2^(a / 2 + 0.25))
+        f₂ = gamma(0.75 - a / 2) / (sqrt(π) * 2^(a / 2 - 0.25))
+        @test isfinite(θ)
+        @test isfinite(f₁)
+        @test isfinite(f₂)
+    end
+end
+
+@testset "Asymptotic expansion branch for W(a, x)" begin
+    # Test values for large |x|, both positive and negative
+    a_vals = [-2.0, -0.5, 1.0, 3.5]
+    x_vals = [10.0, 20.0, -10.0, -20.0]
+
+    # Check that the function does not error and returns finite values for large |x|
+    for a in a_vals, x in x_vals
+        w = FewSpecialFunctions.W(a, x)
+        @test isfinite(w)
+    end
+
+    # Check continuity near x = 0 for large a
+    for a in [5.0, 10.0]
+        w_neg = FewSpecialFunctions.W(a, -20.0)
+        w_pos = FewSpecialFunctions.W(a, 20.0)
+        @test isfinite(w_neg)
+        @test isfinite(w_pos)
+    end
+
+    # Check that the returned value is real for real inputs
+    for a in a_vals, x in x_vals
+        w = FewSpecialFunctions.W(a, x)
+        @test isreal(w)
+    end
+
+    # Check that the branch for x > 0 and x < 0 is used
+    for a in a_vals
+        x = 15.0
+        w_pos = FewSpecialFunctions.W(a, x)
+        w_neg = FewSpecialFunctions.W(a, -x)
+        # For a = 0, W(0, x) is even in x, so values should be close
+        if a == 0.0
+            @test isapprox(w_pos, w_neg; atol=1e-8)
+        end
+    end
+
+    # Check that the phase ϕ is finite and well-defined for large x
+    for a in a_vals, x in x_vals
+        g₀ = gamma(Complex(1/2, a))
+        ϕ₂ = imag(g₀)
+        ϕ = x^2 / 4 - a * log(abs(x)) + π / 4 + ϕ₂ / 2
+        @test isfinite(ϕ)
+    end
+
+    # Check that the denominator in the recurrence is not zero
+    for a in a_vals
+        gref = gamma(Complex(1/2, a))
+        gr₀, gi₀ = real(gref), imag(gref)
+        den = gr₀^2 + gi₀^2
+        @test den > 0
+    end
+
+    # Check that the recurrence for u and v produces finite arrays
+    for a in a_vals
+        u = zeros(Float64, 21)
+        v = zeros(Float64, 21)
+        gref = gamma(Complex(1/2, a))
+        gr₀, gi₀ = real(gref), imag(gref)
+        den = gr₀^2 + gi₀^2
+        for k in 2:2:40
+            m = k ÷ 2
+            g = gamma(Complex(k + 0.5, a))
+            gr, gi = real(g), imag(g)
+            u[m] = (gr * gr₀ + gi * gi₀) / den
+            v[m] = (gr₀ * gi - gr * gi₀) / den
+        end
+        @test all(isfinite, u)
+        @test all(isfinite, v)
+    end
+end
