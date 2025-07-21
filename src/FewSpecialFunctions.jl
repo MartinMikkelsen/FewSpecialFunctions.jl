@@ -9,9 +9,6 @@ include("Debye.jl")
 export fresnel, FresnelS, FresnelC, FresnelE
 include("Fresnel.jl")
 
-export Struve
-include("Struve.jl")
-
 export Clausen
 include("Clausen.jl")
 

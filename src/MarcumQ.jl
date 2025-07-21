@@ -1,5 +1,5 @@
 using SpecialFunctions: besseli, gamma_inc, loggamma, erfc
-
+using QuadGK: quadgk
 export MarcumQ, dQdb
 
 Q(μ::T, x::T) where {T<:Number} = gamma_inc(μ, x)[2]
