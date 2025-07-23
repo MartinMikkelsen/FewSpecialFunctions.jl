@@ -5,7 +5,15 @@
 [![Coverage Status](https://coveralls.io/repos/github/MartinMikkelsen/FewSpecialFunctions.jl/badge.svg?branch=main)](https://coveralls.io/github/MartinMikkelsen/FewSpecialFunctions.jl?branch=main)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-A Julia package collecting a few special functions. Now includes over 13000 tests.
+A Julia package collecting a few special functions. Now includes over 13000 tests. Includes the following functions:
+
+- [Clausen functions](https://en.wikipedia.org/wiki/Clausen_function)
+- [Marcum-Q functions](https://en.wikipedia.org/wiki/Marcum_Q-function)
+- [Parabolic cylinder functions](https://en.wikipedia.org/wiki/Parabolic_cylinder_function)
+- [Coulomb wave functions](https://en.wikipedia.org/wiki/Coulomb_wave_function)
+- [Debye functions](https://en.wikipedia.org/wiki/Debye_function)
+- [Fermi-Dirac integrals](https://en.wikipedia.org/wiki/Incomplete_Fermi%E2%80%93Dirac_integral)
+- [Fresnel integrals](https://en.wikipedia.org/wiki/Fresnel_integral)
 
 ### Install 
 
@@ -28,22 +36,8 @@ julia> FermiDiracIntegral(3 / 2, 1.0)
 ```
 
 ### Some other examples
+
+Some other examples are shown in the [documentation](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/).
+
 ![CombinedPlot](combinedplot.png)
 
-### Cite
-
-```yaml
-cff-version: 1.2.0
-title: FewSpecialFunctions.jl
-message: >-
-  You can cite if you want.
-type: software
-authors:
-  - given-names: Martin
-    family-names: Mikkelsen
-    email: martin.mikkelsen@di.ku.dk
-repository-code: 'https://github.com/MartinMikkelsen/FewSpecialFunctions.jl'
-license: MIT
-version: 0.1.3
-date-released: '2023-01-26'
-```
