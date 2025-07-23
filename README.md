@@ -41,20 +41,3 @@ Some other examples are shown in the [documentation](https://martinmikkelsen.git
 
 ![CombinedPlot](combinedplot.png)
 
-### Cite
-
-```yaml
-cff-version: 1.2.0
-title: FewSpecialFunctions.jl
-message: >-
-  You can cite if you want.
-type: software
-authors:
-  - given-names: Martin
-    family-names: Mikkelsen
-    email: martin.mikkelsen@di.ku.dk
-repository-code: 'https://github.com/MartinMikkelsen/FewSpecialFunctions.jl'
-license: MIT
-version: 0.1.3
-date-released: '2023-01-26'
-```
