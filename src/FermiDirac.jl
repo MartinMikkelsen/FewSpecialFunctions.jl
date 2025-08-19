@@ -17,7 +17,7 @@ Resources:
 [5] H. M. Antia, Rational Function Approximations for Fermi-Dirac Integrals (1993)
 
 https://arxiv.org/abs/0811.0116
-https://de.wikipedia.org/wiki/Fermi-Dirac-Integral
+https://en.wikipedia.org/wiki/Complete_Fermi%E2%80%93Dirac_integral
 https://dlmf.nist.gov/25.12#iii
 """
 function FermiDiracIntegral(j::Real, x::Real)
