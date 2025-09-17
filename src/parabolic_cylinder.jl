@@ -10,9 +10,9 @@ Compute the parabolic cylinder function U(a,x) of the first kind for real parame
 S. Zhang and J. Jin, 'Computation of Special functions' (Wiley, 1966), E. Cojocaru, January 2009
 """
 function U(a::Float64, x::Float64)::Float64
-    ε = 1e-15
+    ε = 1.0e-15
 
-    if abs(x) ≤ 5
+    return if abs(x) ≤ 5
         c = zeros(Float64, 100)
         c[1] = a
         c₀, c₁ = 1.0, a
@@ -98,7 +98,7 @@ end
 Compute the parabolic cylinder function V(a,x).
 """
 function V(a::Float64, x::Float64)::Float64
-    ε = 1e-15
+    ε = 1.0e-15
 
     c = zeros(Float64, 100)
     c[1] = a
@@ -164,11 +164,11 @@ end
 Compute the parabolic cylinder function W(a,x) for real parameters.
 """
 function W(a::Float64, x::Float64)::Float64
-    ε = 1e-15
+    ε = 1.0e-15
     if abs(x) ≤ 8
-        p₀ = 2^(-3/4)
-        g₁ = abs(gamma(Complex(1/4, a/2)))
-        g₃ = abs(gamma(Complex(3/4, a/2)))
+        p₀ = 2^(-3 / 4)
+        g₁ = abs(gamma(Complex(1 / 4, a / 2)))
+        g₃ = abs(gamma(Complex(3 / 4, a / 2)))
         f₁ = sqrt(g₁ / g₃)
         f₂ = sqrt(2 * g₃ / g₁)
 
@@ -219,10 +219,10 @@ function W(a::Float64, x::Float64)::Float64
         u = zeros(Float64, 21)
         v = zeros(Float64, 21)
 
-        g₀ = gamma(Complex(1/2, a))
+        g₀ = gamma(Complex(1 / 2, a))
         ϕ₂ = imag(g₀)
 
-        gref = gamma(Complex(1/2, a))
+        gref = gamma(Complex(1 / 2, a))
         gr₀, gi₀ = real(gref), imag(gref)
         den = gr₀^2 + gi₀^2
 
@@ -279,7 +279,7 @@ end
 Compute the derivative of the parabolic cylinder function U(a,x) for real parameters.
 """
 function dU(a::Float64, x::Float64)::Float64
-    ε = 1e-15
+    ε = 1.0e-15
 
     c = zeros(Float64, 101)
     c[1] = a
@@ -343,7 +343,7 @@ end
 Compute the derivative of the parabolic cylinder function V(a,x) for real parameters.
 """
 function dV(a::Float64, x::Float64)::Float64
-    ε = 1e-15
+    ε = 1.0e-15
 
     c = zeros(Float64, 101)
     c[1] = a
@@ -404,18 +404,17 @@ function dV(a::Float64, x::Float64)::Float64
 end
 
 
-
 """
     dW(a::Float64, x::Float64)::Float64
 
 Compute the derivative of the parabolic cylinder function W with parameters `a` evaluated at `x`.
 """
 function dW(a::Float64, x::Float64)::Float64
-    ε = 1e-15
-    p₀ = 2^(-3/4)
+    ε = 1.0e-15
+    p₀ = 2^(-3 / 4)
 
-    g₁ = abs(gamma(Complex(1/4, a/2)))
-    g₃ = abs(gamma(Complex(3/4, a/2)))
+    g₁ = abs(gamma(Complex(1 / 4, a / 2)))
+    g₃ = abs(gamma(Complex(3 / 4, a / 2)))
     f₁ = sqrt(g₁ / g₃)
     f₂ = sqrt(2 * g₃ / g₁)
 
@@ -480,4 +479,3 @@ W(a::AbstractArray{<:Real}, x::Real) = [W(ai, x) for ai in a]
 
 dW(a::Real, x::AbstractArray{<:Real}) = [dW(a, xi) for xi in x]
 dW(a::AbstractArray{<:Real}, x::Real) = [dW(ai, x) for ai in a]
-

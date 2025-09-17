@@ -20,8 +20,8 @@ Returns a tuple (C, S, E), where:
 function fresnel(z::Number)
     # Correct engineering convention (NIST, MATLAB):
     # C(z) + i S(z) = (1 + i)/2 * erf((sqrt(π)/2) * (1 - i) * z)
-    w = (sqrt(π)/2) * (1 - im) * z
-    F = (1 + im)/2 * erf(w)
+    w = (sqrt(π) / 2) * (1 - im) * z
+    F = (1 + im) / 2 * erf(w)
     Cval = real(F)
     Sval = imag(F)
     Eval = F
