@@ -146,4 +146,45 @@ using SpecialFunctions
             @test abs(imag(val)) ≤ 1.0e-10
         end
     end
+
+
+    ℓs = [0.0, 1.0, 2.5]
+    ηs = [0.1, 1.0, 5.0]
+    ρs = [0.5, 2.0, 10.0]
+
+    @testset "Φ_dot numerical derivative" begin
+        for ℓ in ℓs, η in ηs, ρ in ρs
+            h = 1.0e-6
+            # Central difference should be close to forward/backward difference for smooth functions
+            central = Φ_dot(ℓ, η, ρ; h = h)
+            forward = (Φ(ℓ + h, η, ρ) - Φ(ℓ, η, ρ)) / h
+            backward = (Φ(ℓ, η, ρ) - Φ(ℓ - h, η, ρ)) / h
+            @test isfinite(central)
+            @test abs(central - 0.5 * (forward + backward)) < 1.0e-4 * max(1, abs(central))
+        end
+    end
+
+    @testset "F_dot numerical derivative" begin
+        for ℓ in ℓs, η in ηs, ρ in ρs
+            h = 1.0e-6
+            central = F_dot(ℓ, η, ρ; h = h)
+            forward = (F(ℓ + h, η, ρ) - F(ℓ, η, ρ)) / h
+            backward = (F(ℓ, η, ρ) - F(ℓ - h, η, ρ)) / h
+            @test isfinite(central)
+            @test abs(central - 0.5 * (forward + backward)) < 1.0e-4 * max(1, abs(central))
+        end
+    end
+
+
+    @testset "Φ_dot and F_dot handle keyword argument h" begin
+        ℓ, η, ρ = 1.0, 1.0, 1.0
+        val1 = Φ_dot(ℓ, η, ρ)
+        val2 = Φ_dot(ℓ, η, ρ; h = 1.0e-5)
+        @test isfinite(val1)
+        @test isfinite(val2)
+        val3 = F_dot(ℓ, η, ρ)
+        val4 = F_dot(ℓ, η, ρ; h = 1.0e-5)
+        @test isfinite(val3)
+        @test isfinite(val4)
+    end
 end
