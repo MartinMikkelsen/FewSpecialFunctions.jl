@@ -11,20 +11,20 @@ const ξ10 = [
     5.88422971202513756e1,
     9.52057687864990326e1,
     1.51245498588511132e2,
-    2.44769266678480451e2
+    2.44769266678480451e2,
 ]
 
 const A10 = [
     1.03011687962788351e0,
-    2.25802208525057270e-1,
+    2.2580220852505727e-1,
     1.67040618192678355e-2,
-    6.04607037721632010e-4,
+    6.0460703772163201e-4,
     1.16718411051188568e-5,
-    1.15360113152844190e-7,
+    1.1536011315284419e-7,
     5.23125205372251291e-10,
     8.88585842372452499e-13,
     3.78823474931504689e-16,
-    1.45749170427449731e-20
+    1.45749170427449731e-20,
 ]
 const ξ20 = [
     7.8332741180217739859429592034215121e-2,
@@ -46,7 +46,7 @@ const ξ20 = [
     5.5117670639883226012194621182330183e2,
     6.9813208096151573112006881397004676e2,
     8.9318894895282773667447559458923804e2,
-    1.1765731082977506193890547798997328e3
+    1.1765731082977506193890547798997328e3,
 ]
 
 const A20 = [
@@ -63,13 +63,13 @@ const A20 = [
     1.0549929160747159130056637444912904e-14,
     6.3107861649521708824465976542847217e-17,
     2.4806740961948186082790889707150879e-19,
-    6.0689440756436478490809693190089710e-22,
+    6.068944075643647849080969319008971e-22,
     8.5770997286711710319485672039762078e-25,
-    6.2967504148367631106945827191478750e-28,
+    6.296750414836763110694582719147875e-28,
     2.0455706071903958823179960004147795e-31,
-    2.2580064196927523355325843473600380e-35,
+    2.258006419692752335532584347360038e-35,
     5.1214712907227134883116239441893341e-40,
-    6.6554055933455521526556015293110494e-46
+    6.6554055933455521526556015293110494e-46,
 ]
 """
     f_n(n::Int, k::Int, θ::Float64)
@@ -82,9 +82,9 @@ function f_n(n::Int, k::Int, θ::Real)
     θ_float = Float64(θ)
 
     if iseven(n)
-        return sin(k*θ_float) / (float(k))^n
+        return sin(k * θ_float) / (float(k))^n
     else
-        return cos(k*θ_float) / (float(k))^n
+        return cos(k * θ_float) / (float(k))^n
     end
 end
 
@@ -147,27 +147,27 @@ const γ = Base.MathConstants.γ
 
 @inline F3(z::ComplexF64, θ::Float64) =
     -1 / (2 * z^2) * (
-        θ^2 * z^2 * Ci_complex(z * θ) + cos(θ * z) - θ * z * sin(θ * z)
-    )
+    θ^2 * z^2 * Ci_complex(z * θ) + cos(θ * z) - θ * z * sin(θ * z)
+)
 
 @inline F4(z::ComplexF64, θ::Float64) =
     -1 / (6 * z^3) * (
-        θ^3 * z^3 * Ci_complex(z * θ) + (2 - θ^2 * z^2) * sin(θ * z) + θ * z * cos(θ * z)
-    )
+    θ^3 * z^3 * Ci_complex(z * θ) + (2 - θ^2 * z^2) * sin(θ * z) + θ * z * cos(θ * z)
+)
 
 @inline F5(z::ComplexF64, θ::Float64) =
-1 / (24 * z^4) * (
+    1 / (24 * z^4) * (
     θ^4 * z^4 * Ci_complex(z * θ)
-    + θ * z * (2 - θ^2 * z^2) * sin(θ * z)
-    + (θ^2 * z^2 - 6) * cos(θ * z)
+        + θ * z * (2 - θ^2 * z^2) * sin(θ * z)
+        + (θ^2 * z^2 - 6) * cos(θ * z)
 )
 
 
 @inline F6(z::ComplexF64, θ::Float64) =
     1 / (120 * z^5) * (
-        θ^5 * z^5 * Ci_complex(z * θ)
-        + θ*z*(θ^2*z^2-6)*cos(θ*z)-(θ^4*z^4-2*θ^2*z^2+24)*sin(θ*z)
-        )
+    θ^5 * z^5 * Ci_complex(z * θ)
+        + θ * z * (θ^2 * z^2 - 6) * cos(θ * z) - (θ^4 * z^4 - 2 * θ^2 * z^2 + 24) * sin(θ * z)
+)
 
 """
     Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
@@ -178,9 +178,9 @@ References:
 - [Clausen function](https://en.wikipedia.org/wiki/Clausen_function)
 - [Implementation paper](https://doi.org/10.1007/s10543-023-00944-4)
 """
-function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
-    n<1 || n>6 && throw(ArgumentError("Only n=1..6 supported"))
-    (N==10 || N==20) || throw(ArgumentError("Only N=10 or N=20 supported"))
+function Clausen(n::Int, θ::Float64; N::Int = 10, m::Int = 20)
+    n < 1 || n > 6 && throw(ArgumentError("Only n=1..6 supported"))
+    (N == 10 || N == 20) || throw(ArgumentError("Only N=10 or N=20 supported"))
 
     if θ == 0.0
         return iseven(n) ? 0.0 : zeta(n)
@@ -191,19 +191,19 @@ function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
     if θmod <= π
         φ, sign = θmod, 1.0
     else
-        φ, sign = 2π - θmod, (-1.0)^(n+1)
+        φ, sign = 2π - θmod, (-1.0)^(n + 1)
     end
 
     if n == 1
-        if isapprox(φ, 0.0; atol=1e-14) || isapprox(φ, 2π; atol=1e-14)
+        if isapprox(φ, 0.0; atol = 1.0e-14) || isapprox(φ, 2π; atol = 1.0e-14)
             return Inf
         end
-        return sign * (-log(abs(2*sin(φ/2))))
+        return sign * (-log(abs(2 * sin(φ / 2))))
     end
 
-    ξ, A = N==10 ? (ξ10, A10) : (ξ20, A20)
+    ξ, A = N == 10 ? (ξ10, A10) : (ξ20, A20)
 
-    S1 = sum(f_n(n, k, φ) for k in 1:m-1)
+    S1 = sum(f_n(n, k, φ) for k in 1:(m - 1))
 
     S2 = 0.0
     for ν in 1:N
@@ -211,6 +211,6 @@ function Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
         S2 += A[ν] * real(F_clausen(n, z, φ))
     end
 
-    result0 = S1 - (π/4)*S2
+    result0 = S1 - (π / 4) * S2
     return sign * result0
 end

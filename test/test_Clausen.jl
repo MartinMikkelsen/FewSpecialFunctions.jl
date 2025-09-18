@@ -3,8 +3,8 @@ using SpecialFunctions
 
 # some tests from https://github.com/Expander/ClausenFunctions.jl
 
-function complex_approx(a::ComplexF64, b::ComplexF64; atol=1e-10)
-    return isapprox(real(a), real(b), atol=atol) && isapprox(imag(a), imag(b), atol=atol)
+function complex_approx(a::ComplexF64, b::ComplexF64; atol = 1.0e-10)
+    return isapprox(real(a), real(b), atol = atol) && isapprox(imag(a), imag(b), atol = atol)
 end
 
 @testset "Clausen1" begin
@@ -12,21 +12,21 @@ end
     data = open(readdlm, joinpath(@__DIR__, "data", "Cl1.txt"))
 
     for r in 1:size(data, 1)
-        row      = data[r, :]
-        x        = row[1]
+        row = data[r, :]
+        x = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(1,x;m=500000) ≈ expected rtol=1e-11
-        @test FewSpecialFunctions.Clausen(1,-x) ≈ expected rtol=1e-12
-        @test FewSpecialFunctions.Clausen(1,x-2pi) ≈ expected rtol=1e-12
-        @test FewSpecialFunctions.Clausen(1,x+2pi) ≈ expected rtol=1e-12
+        @test FewSpecialFunctions.Clausen(1, x; m = 500000) ≈ expected rtol = 1.0e-11
+        @test FewSpecialFunctions.Clausen(1, -x) ≈ expected rtol = 1.0e-12
+        @test FewSpecialFunctions.Clausen(1, x - 2pi) ≈ expected rtol = 1.0e-12
+        @test FewSpecialFunctions.Clausen(1, x + 2pi) ≈ expected rtol = 1.0e-12
 
     end
 
-    @test FewSpecialFunctions.Clausen(1,0.5) ≈ 0.70358563513784466 rtol=1e-14
-    @test FewSpecialFunctions.Clausen(1,0.5;N=20) ≈ 0.70358563513784466 rtol=1e-14
-    @test FewSpecialFunctions.Clausen(1,1.0) ≈ 0.042019505825368962 rtol=1e-14
-    @test FewSpecialFunctions.Clausen(1,2.0) ≈ -0.52054343429085363 rtol=1e-14
+    @test FewSpecialFunctions.Clausen(1, 0.5) ≈ 0.70358563513784466 rtol = 1.0e-14
+    @test FewSpecialFunctions.Clausen(1, 0.5; N = 20) ≈ 0.70358563513784466 rtol = 1.0e-14
+    @test FewSpecialFunctions.Clausen(1, 1.0) ≈ 0.042019505825368962 rtol = 1.0e-14
+    @test FewSpecialFunctions.Clausen(1, 2.0) ≈ -0.52054343429085363 rtol = 1.0e-14
 
 end
 
@@ -35,12 +35,12 @@ end
     data2 = open(readdlm, joinpath(@__DIR__, "data", "Cl2.txt"))
 
     for r in 1:size(data2, 1)
-        row      = data2[r, :]
-        x        = row[1]
+        row = data2[r, :]
+        x = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(2,x;N=20,m=500000) ≈ expected rtol=1e-9
-        @test FewSpecialFunctions.Clausen(2,x;N=10,m=500000) ≈ expected rtol=1e-9
+        @test FewSpecialFunctions.Clausen(2, x; N = 20, m = 500000) ≈ expected rtol = 1.0e-9
+        @test FewSpecialFunctions.Clausen(2, x; N = 10, m = 500000) ≈ expected rtol = 1.0e-9
 
     end
 
@@ -51,12 +51,12 @@ end
     data3 = open(readdlm, joinpath(@__DIR__, "data", "Cl3.txt"))
 
     for r in 1:size(data3, 1)
-        row      = data3[r, :]
-        x        = row[1]
+        row = data3[r, :]
+        x = row[1]
         expected = row[2]
-        
-        @test FewSpecialFunctions.Clausen(3,x;N=10,m=500000) ≈ expected rtol=1e-9
-        @test FewSpecialFunctions.Clausen(3,x;N=20,m=500000) ≈ expected rtol=1e-9
+
+        @test FewSpecialFunctions.Clausen(3, x; N = 10, m = 500000) ≈ expected rtol = 1.0e-9
+        @test FewSpecialFunctions.Clausen(3, x; N = 20, m = 500000) ≈ expected rtol = 1.0e-9
 
     end
 
@@ -67,12 +67,12 @@ end
     data4 = open(readdlm, joinpath(@__DIR__, "data", "Cl4.txt"))
 
     for r in 1:size(data4, 1)
-        row      = data4[r, :]
-        x        = row[1]
+        row = data4[r, :]
+        x = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(4,x;N=10,m=500000) ≈ expected rtol=1e-8
-        @test FewSpecialFunctions.Clausen(4,x;N=20,m=500000) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(4, x; N = 10, m = 500000) ≈ expected rtol = 1.0e-8
+        @test FewSpecialFunctions.Clausen(4, x; N = 20, m = 500000) ≈ expected rtol = 1.0e-8
     end
 end
 
@@ -81,12 +81,12 @@ end
     data5 = open(readdlm, joinpath(@__DIR__, "data", "Cl5.txt"))
 
     for r in 1:size(data5, 1)
-        row      = data5[r, :]
-        x        = row[1]
+        row = data5[r, :]
+        x = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(5,x;N=10,m=500000) ≈ expected rtol=1e-8
-        @test FewSpecialFunctions.Clausen(5,x;N=20,m=500000) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(5, x; N = 10, m = 500000) ≈ expected rtol = 1.0e-8
+        @test FewSpecialFunctions.Clausen(5, x; N = 20, m = 500000) ≈ expected rtol = 1.0e-8
     end
 end
 
@@ -95,37 +95,37 @@ end
     data6 = open(readdlm, joinpath(@__DIR__, "data", "Cl6.txt"))
 
     for r in 1:size(data6, 1)
-        row      = data6[r, :]
-        x        = row[1]
+        row = data6[r, :]
+        x = row[1]
         expected = row[2]
 
-        @test FewSpecialFunctions.Clausen(6,x) ≈ expected rtol=1e-8
-        @test FewSpecialFunctions.Clausen(6,x) ≈ expected rtol=1e-8
+        @test FewSpecialFunctions.Clausen(6, x) ≈ expected rtol = 1.0e-8
+        @test FewSpecialFunctions.Clausen(6, x) ≈ expected rtol = 1.0e-8
     end
 end
 
 @testset "f_n function" begin
     # Test with even n (should use sine)
-    @test FewSpecialFunctions.f_n(2, 1, π/4) ≈ sin(π/4) rtol=1e-15
-    @test FewSpecialFunctions.f_n(2, 2, π/3) ≈ sin(2π/3)/2^2 rtol=1e-15
-    @test FewSpecialFunctions.f_n(4, 3, π/6) ≈ sin(3π/6)/3^4 rtol=1e-15
-    @test FewSpecialFunctions.f_n(6, 5, 0.5) ≈ sin(5*0.5)/5^6 rtol=1e-15
-    
+    @test FewSpecialFunctions.f_n(2, 1, π / 4) ≈ sin(π / 4) rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(2, 2, π / 3) ≈ sin(2π / 3) / 2^2 rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(4, 3, π / 6) ≈ sin(3π / 6) / 3^4 rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(6, 5, 0.5) ≈ sin(5 * 0.5) / 5^6 rtol = 1.0e-15
+
     # Test with odd n (should use cosine)
-    @test FewSpecialFunctions.f_n(1, 1, π/4) ≈ cos(π/4) rtol=1e-15
-    @test FewSpecialFunctions.f_n(3, 2, π/3) ≈ cos(2π/3)/2^3 rtol=1e-15
-    @test FewSpecialFunctions.f_n(5, 3, π/6) ≈ cos(3π/6)/3^5 rtol=1e-15
-    @test FewSpecialFunctions.f_n(7, 5, 0.5) ≈ cos(5*0.5)/5^7 rtol=1e-15
-    
+    @test FewSpecialFunctions.f_n(1, 1, π / 4) ≈ cos(π / 4) rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(3, 2, π / 3) ≈ cos(2π / 3) / 2^3 rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(5, 3, π / 6) ≈ cos(3π / 6) / 3^5 rtol = 1.0e-15
+    @test FewSpecialFunctions.f_n(7, 5, 0.5) ≈ cos(5 * 0.5) / 5^7 rtol = 1.0e-15
+
     # Test special cases
     @test FewSpecialFunctions.f_n(2, 1, 0.0) == 0.0
     @test FewSpecialFunctions.f_n(1, 1, 0.0) == 1.0
-    @test FewSpecialFunctions.f_n(2, 1, π) ≈ 0.0 atol=1e-15
-    @test FewSpecialFunctions.f_n(1, 1, π) ≈ -1.0 rtol=1e-15
-    
+    @test FewSpecialFunctions.f_n(2, 1, π) ≈ 0.0 atol = 1.0e-15
+    @test FewSpecialFunctions.f_n(1, 1, π) ≈ -1.0 rtol = 1.0e-15
+
     # Test with larger k values
-    @test FewSpecialFunctions.f_n(2, 10, 0.1) ≈ sin(10*0.1)/10^2 rtol=1e-14
-    @test FewSpecialFunctions.f_n(3, 10, 0.1) ≈ cos(10*0.1)/10^3 rtol=1e-14
+    @test FewSpecialFunctions.f_n(2, 10, 0.1) ≈ sin(10 * 0.1) / 10^2 rtol = 1.0e-14
+    @test FewSpecialFunctions.f_n(3, 10, 0.1) ≈ cos(10 * 0.1) / 10^3 rtol = 1.0e-14
 end
 
 @testset "Testing F_clausen function dispatch" begin
@@ -140,10 +140,10 @@ end
     expected_F4 = -1 / (6 * z^3) * (θ^3 * z^3 * Ci_complex(z * θ) + (2 - θ^2 * z^2) * sin(θ * z) + θ * z * cos(θ * z))
     expected_F5 = 1 / (24 * z^4) * (
         (θ^4 * z^4 * Ci_complex(z * θ)) +
-        (θ * z * (2 - θ^2 * z^2) * sin(θ * z)) +
-        ((θ^2 * z^2 - 6) * cos(θ * z))
+            (θ * z * (2 - θ^2 * z^2) * sin(θ * z)) +
+            ((θ^2 * z^2 - 6) * cos(θ * z))
     )
-    expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ)+ θ*z*(θ^2*z^2-6)*cos(θ*z)-(θ^4*z^4-2*θ^2*z^2+24)*sin(θ*z))
+    expected_F6 = 1 / (120 * z^5) * (θ^5 * z^5 * Ci_complex(z * θ) + θ * z * (θ^2 * z^2 - 6) * cos(θ * z) - (θ^4 * z^4 - 2 * θ^2 * z^2 + 24) * sin(θ * z))
 
     # Valid dispatch tests for F1 to F6
     @test complex_approx(F_clausen(1, z, θ), expected_F1)
@@ -205,4 +205,3 @@ end
     z11 = 0.0 + 0.0im
     @test isnan(real(Ci_complex(z11))) && isnan(imag(Ci_complex(z11)))
 end
-
