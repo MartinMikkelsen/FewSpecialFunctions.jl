@@ -1,7 +1,7 @@
 name = "FewSpecialFunctions"
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
 authors = ["Martin Mikkelsen"]
-version = "0.1.10"
+version = "0.1.11"
 
 [deps]
 HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
