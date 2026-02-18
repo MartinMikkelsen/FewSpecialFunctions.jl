@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['lts', '1', 'pre']
+        version: ['1']
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
