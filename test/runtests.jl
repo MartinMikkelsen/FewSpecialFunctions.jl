@@ -12,5 +12,6 @@ using DelimitedFiles
     include("test_Fresnel.jl")
     include("test_MarcumQ.jl")
     include("test_parabolic_cylinder.jl")
+    include("test_type_genericity.jl")
 
 end

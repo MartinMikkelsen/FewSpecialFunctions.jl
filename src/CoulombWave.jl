@@ -32,7 +32,7 @@ Coulomb phase function.
 """
 function θ(ℓ::Number, η::Number, ρ::Number)
     logg = loggamma(ℓ + 1 + im * η)
-    return ρ - ℓ * π * 0.5 - η * log(2 * ρ) + imag(logg)
+    return ρ - ℓ * π / 2 - η * log(2 * ρ) + imag(logg)
 end
 
 """
@@ -159,9 +159,10 @@ function w(ℓ::Integer, η::Number)
 end
 
 function w(ℓ::Number, η::Number)
-    if isapprox(mod(ℓ - 0.5, 1.0), 0.0; atol = 1.0e-12)
+    T = typeof(float(ℓ))
+    if isapprox(mod(ℓ - T(0.5), one(T)), zero(T); atol = eps(T) * 100)
         result = one(η)
-        j = 0.5
+        j = T(0.5)
         while j <= ℓ
             result *= 1 + j^2 / η^2
             j += 1

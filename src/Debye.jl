@@ -3,26 +3,26 @@ using SpecialFunctions
 export debye_function
 
 """
-    debye_function(n::Float64, β::Float64, x::Float64; 
-                  tol=1e-35, max_terms=2000) -> Float64
+    debye_function(n::T, β::T, x::T; tol=T(1e-35), max_terms=2000) where {T <: AbstractFloat}
 
 Compute the generalized Debye function with parameters `n`, `β`, and `x`.
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 
 References:
-- [Debye function](https://en.wikipedia.org/wiki/Debye_function)    
+- [Debye function](https://en.wikipedia.org/wiki/Debye_function)
 - [Paper](https://doi.org/10.1007/s10765-007-0256-1)
 """
-function debye_function(n::Float64, β::Float64, x::Float64; tol = 1.0e-35, max_terms = 2000)
-    sum = 0.0
-    c = 1.0
+function debye_function(n::T, β::T, x::T; tol = T(1.0e-35), max_terms = 2000) where {T <: AbstractFloat}
+    sum = zero(T)
+    c = one(T)
 
-    γn1 = gamma(n + 1)
+    γn1 = gamma(n + one(T))
     @inbounds for i in 0:max_terms
         ψ = β + i
-        P, _ = gamma_inc(n + 1, ψ * x)
+        P, _ = gamma_inc(n + one(T), ψ * x)
         γlower = P * γn1
 
-        term = c * γlower / ψ^(n + 1)
+        term = c * γlower / ψ^(n + one(T))
         sum += term
 
         if abs(term) < tol * abs(sum)
@@ -36,7 +36,8 @@ function debye_function(n::Float64, β::Float64, x::Float64; tol = 1.0e-35, max_
 end
 
 function debye_function(n::Real, β::Real, x::Real; tol = 1.0e-35, max_terms = 2000)
-    return debye_function(Float64(n), Float64(β), Float64(x); tol = tol, max_terms = max_terms)
+    T = float(promote_type(typeof(n), typeof(β), typeof(x)))
+    return debye_function(T(n), T(β), T(x); tol = T(tol), max_terms = max_terms)
 end
 
 function debye_function(n::Real, β::Real, x::AbstractArray{<:Real}; tol = 1.0e-35, max_terms = 2000)
@@ -52,5 +53,5 @@ function debye_function(n::AbstractArray{<:Real}, β::Real, x::Real; tol = 1.0e-
 end
 
 function debye_function(β::Real, x::Real; tol = 1.0e-35, max_terms = 2000)
-    return debye_function(1.0, β, x; tol = tol, max_terms = max_terms)
+    return debye_function(one(float(promote_type(typeof(β), typeof(x)))), β, x; tol = tol, max_terms = max_terms)
 end

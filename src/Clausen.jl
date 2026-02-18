@@ -72,28 +72,31 @@ const A20 = [
     6.6554055933455521526556015293110494e-46,
 ]
 """
-    f_n(n::Int, k::Int, θ::Float64)
+    f_n(n::Int, k::Int, θ::Real)
 
 Compute the Clausen series summand fₙ(k, θ):
     sin(kθ)/kⁿ for even n,
     cos(kθ)/kⁿ for odd n.
+Supports any `Real` input type for `θ`.
 """
 function f_n(n::Int, k::Int, θ::Real)
-    θ_float = Float64(θ)
+    T = float(typeof(θ))
+    θT = T(θ)
 
     if iseven(n)
-        return sin(k * θ_float) / (float(k))^n
+        return sin(k * θT) / T(k)^n
     else
-        return cos(k * θ_float) / (float(k))^n
+        return cos(k * θT) / T(k)^n
     end
 end
 
 """
-    F_clausen(n::Int, z::ComplexF64, θ::Float64)
+    F_clausen(n::Int, z::Complex{T}, θ::T) where {T <: AbstractFloat}
 
 Dispatch to the correct primitive function Fₙ(z, θ) for n = 1..6.
+Supports any `AbstractFloat` type.
 """
-function F_clausen(n::Int, z::ComplexF64, θ::Float64)
+function F_clausen(n::Int, z::Complex{T}, θ::T) where {T <: AbstractFloat}
     if n == 1
         return F1(z, θ)
     elseif n == 2
@@ -111,92 +114,105 @@ function F_clausen(n::Int, z::ComplexF64, θ::Float64)
     end
 end
 
+# Fallback for non-matching types
+function F_clausen(n::Int, z::Complex, θ::Real)
+    T = float(promote_type(real(typeof(z)), typeof(θ)))
+    return F_clausen(n, Complex{T}(z), T(θ))
+end
+
 """
-    Ci_complex(z::ComplexF64)
+    Ci_complex(z::Complex{T}) where {T <: AbstractFloat}
 
 Complex cosine integral function used in Clausen function calculations.
+Supports any `AbstractFloat` type.
 """
-function Ci_complex(z::ComplexF64)
+function Ci_complex(z::Complex{T}) where {T <: AbstractFloat}
     if isinf(real(z)) && imag(z) == 0
-        return real(z) > 0 ? (0.0 + 0im) : (π * im)
+        return real(z) > 0 ? Complex{T}(zero(T), zero(T)) : Complex{T}(zero(T), T(π))
     end
 
     if isinf(z)
-        return NaN + NaN * im
+        return Complex{T}(T(NaN), T(NaN))
     end
 
-    if z == 0.0 + 0.0im
-        return NaN + NaN * im
+    if z == zero(Complex{T})
+        return Complex{T}(T(NaN), T(NaN))
     end
 
-    v = -0.5 * (expint(im * z) + expint(-im * z))
+    v = -one(T) / 2 * (expint(im * z) + expint(-im * z))
 
     if real(z) < 0
-        v += π * im
+        v += T(π) * im
     end
 
-    return ComplexF64(v)
+    return Complex{T}(v)
 end
+
+# Fallback for non-parametric complex
+Ci_complex(z::Complex) = Ci_complex(ComplexF64(z))
 
 const γ = Base.MathConstants.γ
 
-@inline F1(z::ComplexF64, θ::Float64) = Ci_complex(z * θ)
+@inline F1(z::Complex{T}, θ::T) where {T <: AbstractFloat} = Ci_complex(z * θ)
 
-@inline F2(z::ComplexF64, θ::Float64) =
+@inline F2(z::Complex{T}, θ::T) where {T <: AbstractFloat} =
     (θ * z * Ci_complex(z * θ) - sin(θ * z)) / z
 
-@inline F3(z::ComplexF64, θ::Float64) =
-    -1 / (2 * z^2) * (
+@inline F3(z::Complex{T}, θ::T) where {T <: AbstractFloat} =
+    -one(T) / (2 * z^2) * (
     θ^2 * z^2 * Ci_complex(z * θ) + cos(θ * z) - θ * z * sin(θ * z)
 )
 
-@inline F4(z::ComplexF64, θ::Float64) =
-    -1 / (6 * z^3) * (
+@inline F4(z::Complex{T}, θ::T) where {T <: AbstractFloat} =
+    -one(T) / (6 * z^3) * (
     θ^3 * z^3 * Ci_complex(z * θ) + (2 - θ^2 * z^2) * sin(θ * z) + θ * z * cos(θ * z)
 )
 
-@inline F5(z::ComplexF64, θ::Float64) =
-    1 / (24 * z^4) * (
+@inline F5(z::Complex{T}, θ::T) where {T <: AbstractFloat} =
+    one(T) / (24 * z^4) * (
     θ^4 * z^4 * Ci_complex(z * θ)
         + θ * z * (2 - θ^2 * z^2) * sin(θ * z)
         + (θ^2 * z^2 - 6) * cos(θ * z)
 )
 
 
-@inline F6(z::ComplexF64, θ::Float64) =
-    1 / (120 * z^5) * (
+@inline F6(z::Complex{T}, θ::T) where {T <: AbstractFloat} =
+    one(T) / (120 * z^5) * (
     θ^5 * z^5 * Ci_complex(z * θ)
         + θ * z * (θ^2 * z^2 - 6) * cos(θ * z) - (θ^4 * z^4 - 2 * θ^2 * z^2 + 24) * sin(θ * z)
 )
 
 """
-    Clausen(n::Int, θ::Float64; N::Int=10, m::Int=20)
+    Clausen(n::Int, θ::Real; N::Int=10, m::Int=20)
 
 Compute the Clausen function of order `n` at angle `θ`.
+Supports any `Real` input type for `θ`.
 
 References:
 - [Clausen function](https://en.wikipedia.org/wiki/Clausen_function)
 - [Implementation paper](https://doi.org/10.1007/s10543-023-00944-4)
 """
-function Clausen(n::Int, θ::Float64; N::Int = 10, m::Int = 20)
+function Clausen(n::Int, θ::Real; N::Int = 10, m::Int = 20)
+    T = float(typeof(θ))
+    θT = T(θ)
     n < 1 || n > 6 && throw(ArgumentError("Only n=1..6 supported"))
     (N == 10 || N == 20) || throw(ArgumentError("Only N=10 or N=20 supported"))
 
-    if θ == 0.0
-        return iseven(n) ? 0.0 : zeta(n)
+    if θT == zero(T)
+        return iseven(n) ? zero(T) : T(zeta(n))
     end
 
-    θmod = mod(θ, 2π)
+    θmod = mod(θT, T(2π))
 
-    if θmod <= π
-        φ, sign = θmod, 1.0
+    if θmod ≤ T(π)
+        φ, sign = θmod, one(T)
     else
-        φ, sign = 2π - θmod, (-1.0)^(n + 1)
+        φ, sign = T(2π) - θmod, (-one(T))^(n + 1)
     end
 
     if n == 1
-        if isapprox(φ, 0.0; atol = 1.0e-14) || isapprox(φ, 2π; atol = 1.0e-14)
-            return Inf
+        if isapprox(φ, zero(T); atol = T(1.0e-14)) || isapprox(φ, T(2π); atol = T(1.0e-14))
+            return T(Inf)
         end
         return sign * (-log(abs(2 * sin(φ / 2))))
     end
@@ -205,12 +221,12 @@ function Clausen(n::Int, θ::Float64; N::Int = 10, m::Int = 20)
 
     S1 = sum(f_n(n, k, φ) for k in 1:(m - 1))
 
-    S2 = 0.0
+    S2 = zero(T)
     for ν in 1:N
-        z = (m - 0.5) + 0.5im * sqrt(ξ[ν])
-        S2 += A[ν] * real(F_clausen(n, z, φ))
+        z = Complex{T}(T(m) - T(0.5), T(0.5) * sqrt(T(ξ[ν])))
+        S2 += T(A[ν]) * real(F_clausen(n, z, φ))
     end
 
-    result0 = S1 - (π / 4) * S2
+    result0 = S1 - T(π) / 4 * S2
     return sign * result0
 end

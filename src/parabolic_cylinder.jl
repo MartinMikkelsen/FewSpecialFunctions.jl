@@ -3,29 +3,30 @@ using SpecialFunctions: gamma
 export U, V, W, dU, dV, dW
 
 """
-    U(a::Float64, x::Float64)::Float64
+    U(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the parabolic cylinder function U(a,x) of the first kind for real parameters.
-    
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+
 S. Zhang and J. Jin, 'Computation of Special functions' (Wiley, 1966), E. Cojocaru, January 2009
 """
-function U(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
+function U(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
 
     return if abs(x) ≤ 5
-        c = zeros(Float64, 100)
+        c = zeros(T, 100)
         c[1] = a
-        c₀, c₁ = 1.0, a
+        c₀, c₁ = one(T), a
         for k in 4:2:200
             m = k ÷ 2
-            c[m] = a * c₁ + (k - 2) * (k - 3) * c₀ / 4
+            c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
             c₀, c₁ = c₁, c[m]
         end
 
-        y₁ = 1.0
-        term = 1.0
+        y₁ = one(T)
+        term = one(T)
         @inbounds for k in 1:100
-            term *= 0.5 * x^2 / (k * (2k - 1))
+            term *= x^2 / (T(2) * T(k) * T(2k - 1))
             Δ = c[k] * term
             y₁ += Δ
             if abs(Δ / y₁) ≤ ε && k > 30
@@ -33,19 +34,19 @@ function U(a::Float64, x::Float64)::Float64
             end
         end
 
-        d = zeros(Float64, 100)
-        d[1], d[2] = 1.0, a
-        d₁, d₂ = 1.0, a
+        d = zeros(T, 100)
+        d[1], d[2] = one(T), a
+        d₁, d₂ = one(T), a
         for k in 5:2:160
             m = (k + 1) ÷ 2
-            d[m] = a * d₂ + 0.25 * (k - 2) * (k - 3) * d₁
+            d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
             d₁, d₂ = d₂, d[m]
         end
 
-        y₂ = 1.0
-        term = 1.0
+        y₂ = one(T)
+        term = one(T)
         @inbounds for k in 1:100
-            term *= 0.5 * x^2 / (k * (2k + 1))
+            term *= x^2 / (T(2) * T(k) * T(2k + 1))
             Δ = d[k + 1] * term
             y₂ += Δ
             if abs(Δ / y₂) ≤ ε && k > 30
@@ -54,24 +55,24 @@ function U(a::Float64, x::Float64)::Float64
         end
         y₂ *= x
 
-        if a < 0 && isapprox(a + 0.5, round(a + 0.5))
-            θ = pi * (0.25 + a / 2)
-            f₁ = gamma(0.25 - a / 2) / (√π * 2^(a / 2 + 0.25))
-            f₂ = gamma(0.75 - a / 2) / (√π * 2^(a / 2 - 0.25))
+        if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
+            θ = T(π) * (T(0.25) + a / 2)
+            f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+            f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
             return cos(θ) * f₁ * y₁ - sin(θ) * f₂ * y₂
         else
-            prefactor = √π / 2^(a / 2 + 0.25)
-            g₁ = gamma(0.25 + a / 2)
-            g₃ = gamma(0.75 + a / 2)
-            return prefactor * (y₁ / g₃ - √2 * y₂ / g₁)
+            prefactor = sqrt(T(π)) / T(2)^(a / 2 + T(0.25))
+            g₁ = gamma(T(0.25) + a / 2)
+            g₃ = gamma(T(0.75) + a / 2)
+            return prefactor * (y₁ / g₃ - sqrt(T(2)) * y₂ / g₁)
         end
     else
         q = exp(-x^2 / 4)
-        a₀ = q * abs(x)^(-a - 0.5)
-        r = 1.0
-        u = 1.0
+        a₀ = q * abs(x)^(-a - T(0.5))
+        r = one(T)
+        u = one(T)
         for k in 1:20
-            r *= -(2k + a - 0.5) * (2k + a - 1.5) / (2k * x^2)
+            r *= -(T(2k) + a - T(0.5)) * (T(2k) + a - T(1.5)) / (T(2k) * x^2)
             u += r
             if abs(r / u) < ε
                 break
@@ -80,11 +81,11 @@ function U(a::Float64, x::Float64)::Float64
         u *= a₀
 
         if x < 0
-            if a < 0 && isapprox(a + 0.5, round(a + 0.5))
+            if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
                 return -u * sinpi(a)
             else
                 v = V(a, -x)
-                return pi * v / gamma(a + 0.5) - sinpi(a) * u
+                return T(π) * v / gamma(a + T(0.5)) - sinpi(a) * u
             end
         else
             return u
@@ -93,26 +94,27 @@ function U(a::Float64, x::Float64)::Float64
 end
 
 """
-    V(a::Float64, x::Float64)::Float64
+    V(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the parabolic cylinder function V(a,x).
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 """
-function V(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
+function V(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
 
-    c = zeros(Float64, 100)
+    c = zeros(T, 100)
     c[1] = a
-    c₀, c₁ = 1.0, a
+    c₀, c₁ = one(T), a
     for k in 4:2:200
         m = k ÷ 2
-        c[m] = a * c₁ + (k - 2) * (k - 3) * c₀ / 4
+        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
         c₀, c₁ = c₁, c[m]
     end
 
-    y₁ = 1.0
-    term = 1.0
+    y₁ = one(T)
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k - 1))
+        term *= x^2 / (T(2) * T(k) * T(2k - 1))
         Δ = c[k] * term
         y₁ += Δ
         if abs(Δ / y₁) ≤ ε && k > 30
@@ -120,19 +122,19 @@ function V(a::Float64, x::Float64)::Float64
         end
     end
 
-    d = zeros(Float64, 100)
-    d[1], d[2] = 1.0, a
-    d₁, d₂ = 1.0, a
+    d = zeros(T, 100)
+    d[1], d[2] = one(T), a
+    d₁, d₂ = one(T), a
     for k in 5:2:160
         m = (k + 1) ÷ 2
-        d[m] = a * d₂ + 0.25 * (k - 2) * (k - 3) * d₁
+        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
         d₁, d₂ = d₂, d[m]
     end
 
-    y₂ = 1.0
-    term = 1.0
+    y₂ = one(T)
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k + 1))
+        term *= x^2 / (T(2) * T(k) * T(2k + 1))
         Δ = d[k + 1] * term
         y₂ += Δ
         if abs(Δ / y₂) ≤ ε && k > 30
@@ -141,50 +143,51 @@ function V(a::Float64, x::Float64)::Float64
     end
     y₂ *= x
 
-    if a < 0 && isapprox(a + 0.5, round(a + 0.5))
-        θ = pi * (0.25 + a / 2)
-        f₁ = gamma(0.25 - a / 2) / (√π * 2^(a / 2 + 0.25))
-        f₂ = gamma(0.75 - a / 2) / (√π * 2^(a / 2 - 0.25))
-        v = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(0.5 - a)
+    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
+        θ = T(π) * (T(0.25) + a / 2)
+        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
+        v = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(T(0.5) - a)
     else
         sinπa = sinpi(a)
-        g₀ = gamma(0.5 + a)
-        p₀ = g₀ / (√π * 2^(a / 2 + 0.25))
-        g₁ = gamma(0.25 + a / 2)
-        g₃ = gamma(0.75 + a / 2)
-        v = p₀ * (y₁ * (1 + sinπa) / g₃ + √2 * y₂ * (1 - sinπa) / g₁)
+        g₀ = gamma(T(0.5) + a)
+        p₀ = g₀ / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+        g₁ = gamma(T(0.25) + a / 2)
+        g₃ = gamma(T(0.75) + a / 2)
+        v = p₀ * (y₁ * (one(T) + sinπa) / g₃ + sqrt(T(2)) * y₂ * (one(T) - sinπa) / g₁)
     end
 
     return v
 end
 
 """
-    W(a::Float64, x::Float64)::Float64
+    W(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the parabolic cylinder function W(a,x) for real parameters.
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 """
-function W(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
+function W(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
     if abs(x) ≤ 8
-        p₀ = 2^(-3 / 4)
-        g₁ = abs(gamma(Complex(1 / 4, a / 2)))
-        g₃ = abs(gamma(Complex(3 / 4, a / 2)))
+        p₀ = T(2)^(-T(3) / 4)
+        g₁ = abs(gamma(Complex{T}(T(1) / 4, a / 2)))
+        g₃ = abs(gamma(Complex{T}(T(3) / 4, a / 2)))
         f₁ = sqrt(g₁ / g₃)
-        f₂ = sqrt(2 * g₃ / g₁)
+        f₂ = sqrt(T(2) * g₃ / g₁)
 
-        c = zeros(Float64, 100)
+        c = zeros(T, 100)
         c[1] = a
-        c₀, c₁ = 1.0, a
+        c₀, c₁ = one(T), a
         for k in 4:2:200
             m = k ÷ 2
-            c[m] = a * c₁ - (k - 2) * (k - 3) * c₀ / 4
+            c[m] = a * c₁ - T(k - 2) * T(k - 3) * c₀ / 4
             c₀, c₁ = c₁, c[m]
         end
 
-        y₁ = 1.0
-        term = 1.0
+        y₁ = one(T)
+        term = one(T)
         for k in 1:100
-            term *= 0.5 * x^2 / (k * (2k - 1))
+            term *= x^2 / (T(2) * T(k) * T(2k - 1))
             Δ = c[k] * term
             y₁ += Δ
             if abs(Δ / y₁) ≤ ε && k > 30
@@ -192,19 +195,19 @@ function W(a::Float64, x::Float64)::Float64
             end
         end
 
-        d = zeros(Float64, 100)
-        d[1], d[2] = 1.0, a
-        d₁, d₂ = 1.0, a
+        d = zeros(T, 100)
+        d[1], d[2] = one(T), a
+        d₁, d₂ = one(T), a
         for k in 5:2:160
             m = (k + 1) ÷ 2
-            d[m] = a * d₂ - 0.25 * (k - 2) * (k - 3) * d₁
+            d[m] = a * d₂ - T(k - 2) * T(k - 3) * d₁ / 4
             d₁, d₂ = d₂, d[m]
         end
 
-        y₂ = 1.0
-        term = 1.0
+        y₂ = one(T)
+        term = one(T)
         for k in 1:100
-            term *= 0.5 * x^2 / (k * (2k + 1))
+            term *= x^2 / (T(2) * T(k) * T(2k + 1))
             Δ = d[k + 1] * term
             y₂ += Δ
             if abs(Δ / y₂) ≤ ε && k > 30
@@ -216,84 +219,85 @@ function W(a::Float64, x::Float64)::Float64
         return p₀ * (f₁ * y₁ - f₂ * y₂)
 
     else
-        u = zeros(Float64, 21)
-        v = zeros(Float64, 21)
+        u = zeros(T, 21)
+        v = zeros(T, 21)
 
-        g₀ = gamma(Complex(1 / 2, a))
+        g₀ = gamma(Complex{T}(T(1) / 2, a))
         ϕ₂ = imag(g₀)
 
-        gref = gamma(Complex(1 / 2, a))
+        gref = gamma(Complex{T}(T(1) / 2, a))
         gr₀, gi₀ = real(gref), imag(gref)
         den = gr₀^2 + gi₀^2
 
         for k in 2:2:40
             m = k ÷ 2
-            g = gamma(Complex(k + 0.5, a))
+            g = gamma(Complex{T}(T(k) + T(0.5), a))
             gr, gi = real(g), imag(g)
             u[m] = (gr * gr₀ + gi * gi₀) / den
             v[m] = (gr₀ * gi - gr * gi₀) / den
         end
 
         x² = x^2
-        sv₁ = v[1] / (2x²)
-        su₂ = u[1] / (2x²)
-        fac = 1.0
+        sv₁ = v[1] / (T(2) * x²)
+        su₂ = u[1] / (T(2) * x²)
+        fac = one(T)
         for k in 3:2:19
-            fac *= -k * (k - 1)
-            denom = fac * 2^k * x^(2k)
+            fac *= -T(k) * T(k - 1)
+            denom = fac * T(2)^k * x^(2k)
             sv₁ += v[k] / denom
             su₂ += u[k] / denom
         end
 
-        sv₂ = 0.0
-        su₁ = 0.0
-        fac = 1.0
+        sv₂ = zero(T)
+        su₁ = zero(T)
+        fac = one(T)
         for k in 2:2:20
-            fac *= -k * (k - 1)
-            denom = fac * 2^k * x^(2k)
+            fac *= -T(k) * T(k - 1)
+            denom = fac * T(2)^k * x^(2k)
             sv₂ += v[k] / denom
             su₁ += u[k] / denom
         end
 
-        s₁ = 1 + sv₁ - su₁
+        s₁ = one(T) + sv₁ - su₁
         s₂ = -sv₂ - su₂
 
-        ea = exp(pi * a)
-        S = sqrt(1 + ea^2)
+        ea = exp(T(π) * a)
+        S = sqrt(one(T) + ea^2)
         f₊ = S + ea
         f₋ = S - ea
 
-        ϕ = x^2 / 4 - a * log(abs(x)) + pi / 4 + ϕ₂ / 2
+        ϕ = x^2 / 4 - a * log(abs(x)) + T(π) / 4 + ϕ₂ / 2
 
         if x > 0
-            return sqrt(2 * f₋ / abs(x)) * (s₁ * cos(ϕ) - s₂ * sin(ϕ))
+            return sqrt(T(2) * f₋ / abs(x)) * (s₁ * cos(ϕ) - s₂ * sin(ϕ))
         else
-            return sqrt(2 * f₊ / abs(x)) * (s₁ * sin(ϕ) + s₂ * cos(ϕ))
+            return sqrt(T(2) * f₊ / abs(x)) * (s₁ * sin(ϕ) + s₂ * cos(ϕ))
         end
     end
 end
 
 """
-    dU(a::Float64, x::Float64)::Float64
+    dU(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the derivative of the parabolic cylinder function U(a,x) for real parameters.
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 """
-function dU(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
+function dU(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
 
-    c = zeros(Float64, 101)
+    c = zeros(T, 101)
     c[1] = a
-    c₀, c₁ = 1.0, a
+    c₀, c₁ = one(T), a
     for k in 4:2:202
         m = k ÷ 2
-        c[m] = a * c₁ + (k - 2) * (k - 3) * c₀ / 4
+        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
         c₀, c₁ = c₁, c[m]
     end
 
     y₁ = a
-    term = 1.0
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k + 1))
+        term *= x^2 / (T(2) * T(k) * T(2k + 1))
         Δ = c[k + 1] * term
         y₁ += Δ
         if abs(Δ / y₁) ≤ ε && k > 30
@@ -302,19 +306,19 @@ function dU(a::Float64, x::Float64)::Float64
     end
     y₁ *= x
 
-    d = zeros(Float64, 101)
-    d[1], d[2] = 1.0, a
-    d₁, d₂ = 1.0, a
+    d = zeros(T, 101)
+    d[1], d[2] = one(T), a
+    d₁, d₂ = one(T), a
     for k in 5:2:160
         m = (k + 1) ÷ 2
-        d[m] = a * d₂ + 0.25 * (k - 2) * (k - 3) * d₁
+        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
         d₁, d₂ = d₂, d[m]
     end
 
-    y₂ = 1.0
-    term = 1.0
+    y₂ = one(T)
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k - 1))
+        term *= x^2 / (T(2) * T(k) * T(2k - 1))
         Δ = d[k + 1] * term
         y₂ += Δ
         if abs(Δ / y₂) ≤ ε && k > 30
@@ -322,42 +326,43 @@ function dU(a::Float64, x::Float64)::Float64
         end
     end
 
-    if a < 0 && isapprox(a + 0.5, round(a + 0.5))
-        θ = pi * (0.25 + a / 2)
-        f₁ = gamma(0.25 - a / 2) / (√π * 2^(a / 2 + 0.25))
-        f₂ = gamma(0.75 - a / 2) / (√π * 2^(a / 2 - 0.25))
+    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
+        θ = T(π) * (T(0.25) + a / 2)
+        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
         du = cos(θ) * f₁ * y₁ - sin(θ) * f₂ * y₂
     else
-        prefactor = √π / 2^(a / 2 + 0.25)
-        g₁ = gamma(0.25 + a / 2)
-        g₃ = gamma(0.75 + a / 2)
-        du = prefactor * (y₁ / g₃ - √2 * y₂ / g₁)
+        prefactor = sqrt(T(π)) / T(2)^(a / 2 + T(0.25))
+        g₁ = gamma(T(0.25) + a / 2)
+        g₃ = gamma(T(0.75) + a / 2)
+        du = prefactor * (y₁ / g₃ - sqrt(T(2)) * y₂ / g₁)
     end
 
     return du
 end
 
 """
-    dV(a::Float64, x::Float64)::Float64
+    dV(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the derivative of the parabolic cylinder function V(a,x) for real parameters.
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 """
-function dV(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
+function dV(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
 
-    c = zeros(Float64, 101)
+    c = zeros(T, 101)
     c[1] = a
-    c₀, c₁ = 1.0, a
+    c₀, c₁ = one(T), a
     for k in 4:2:202
         m = k ÷ 2
-        c[m] = a * c₁ + (k - 2) * (k - 3) * c₀ / 4
+        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
         c₀, c₁ = c₁, c[m]
     end
 
     y₁ = a
-    term = 1.0
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k + 1))
+        term *= x^2 / (T(2) * T(k) * T(2k + 1))
         Δ = c[k + 1] * term
         y₁ += Δ
         if abs(Δ / y₁) ≤ ε && k > 30
@@ -366,19 +371,19 @@ function dV(a::Float64, x::Float64)::Float64
     end
     y₁ *= x
 
-    d = zeros(Float64, 101)
-    d[1], d[2] = 1.0, a
-    d₁, d₂ = 1.0, a
+    d = zeros(T, 101)
+    d[1], d[2] = one(T), a
+    d₁, d₂ = one(T), a
     for k in 5:2:160
         m = (k + 1) ÷ 2
-        d[m] = a * d₂ + 0.25 * (k - 2) * (k - 3) * d₁
+        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
         d₁, d₂ = d₂, d[m]
     end
 
-    y₂ = 1.0
-    term = 1.0
+    y₂ = one(T)
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k - 1))
+        term *= x^2 / (T(2) * T(k) * T(2k - 1))
         Δ = d[k + 1] * term
         y₂ += Δ
         if abs(Δ / y₂) ≤ ε && k > 30
@@ -386,18 +391,18 @@ function dV(a::Float64, x::Float64)::Float64
         end
     end
 
-    if a < 0 && isapprox(a + 0.5, round(a + 0.5))
-        θ = pi * (0.25 + a / 2)
-        f₁ = gamma(0.25 - a / 2) / (√π * 2^(a / 2 + 0.25))
-        f₂ = gamma(0.75 - a / 2) / (√π * 2^(a / 2 - 0.25))
-        dv = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(0.5 - a)
+    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
+        θ = T(π) * (T(0.25) + a / 2)
+        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
+        dv = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(T(0.5) - a)
     else
         sinπa = sinpi(a)
-        g₀ = gamma(0.5 + a)
-        p₀ = g₀ / (√π * 2^(a / 2 + 0.25))
-        g₁ = gamma(0.25 + a / 2)
-        g₃ = gamma(0.75 + a / 2)
-        dv = p₀ * (y₁ * (1 + sinπa) / g₃ + √2 * y₂ * (1 - sinπa) / g₁)
+        g₀ = gamma(T(0.5) + a)
+        p₀ = g₀ / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
+        g₁ = gamma(T(0.25) + a / 2)
+        g₃ = gamma(T(0.75) + a / 2)
+        dv = p₀ * (y₁ * (one(T) + sinπa) / g₃ + sqrt(T(2)) * y₂ * (one(T) - sinπa) / g₁)
     end
 
     return dv
@@ -405,32 +410,33 @@ end
 
 
 """
-    dW(a::Float64, x::Float64)::Float64
+    dW(a::T, x::T) where {T <: AbstractFloat}
 
 Compute the derivative of the parabolic cylinder function W with parameters `a` evaluated at `x`.
+Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
 """
-function dW(a::Float64, x::Float64)::Float64
-    ε = 1.0e-15
-    p₀ = 2^(-3 / 4)
+function dW(a::T, x::T) where {T <: AbstractFloat}
+    ε = eps(T) * 10
+    p₀ = T(2)^(-T(3) / 4)
 
-    g₁ = abs(gamma(Complex(1 / 4, a / 2)))
-    g₃ = abs(gamma(Complex(3 / 4, a / 2)))
+    g₁ = abs(gamma(Complex{T}(T(1) / 4, a / 2)))
+    g₃ = abs(gamma(Complex{T}(T(3) / 4, a / 2)))
     f₁ = sqrt(g₁ / g₃)
-    f₂ = sqrt(2 * g₃ / g₁)
+    f₂ = sqrt(T(2) * g₃ / g₁)
 
-    c = zeros(Float64, 101)
+    c = zeros(T, 101)
     c[1] = a
-    c₀, c₁ = 1.0, a
+    c₀, c₁ = one(T), a
     for k in 4:2:202
         m = k ÷ 2
-        c[m] = a * c₁ - (k - 2) * (k - 3) * c₀ / 4
+        c[m] = a * c₁ - T(k - 2) * T(k - 3) * c₀ / 4
         c₀, c₁ = c₁, c[m]
     end
 
     y₁ = a
-    term = 1.0
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k + 1))
+        term *= x^2 / (T(2) * T(k) * T(2k + 1))
         Δ = c[k + 1] * term
         y₁ += Δ
         if abs(Δ / y₁) ≤ ε && k > 30
@@ -439,19 +445,19 @@ function dW(a::Float64, x::Float64)::Float64
     end
     y₁ *= x
 
-    d = zeros(Float64, 101)
-    d[1], d[2] = 1.0, a
-    d₁, d₂ = 1.0, a
+    d = zeros(T, 101)
+    d[1], d[2] = one(T), a
+    d₁, d₂ = one(T), a
     for k in 5:2:160
         m = (k + 1) ÷ 2
-        d[m] = a * d₂ - 0.25 * (k - 2) * (k - 3) * d₁
+        d[m] = a * d₂ - T(k - 2) * T(k - 3) * d₁ / 4
         d₁, d₂ = d₂, d[m]
     end
 
-    y₂ = 1.0
-    term = 1.0
+    y₂ = one(T)
+    term = one(T)
     @inbounds for k in 1:100
-        term *= 0.5 * x^2 / (k * (2k - 1))
+        term *= x^2 / (T(2) * T(k) * T(2k - 1))
         Δ = d[k + 1] * term
         y₂ += Δ
         if abs(Δ / y₂) ≤ ε && k > 30
@@ -460,6 +466,14 @@ function dW(a::Float64, x::Float64)::Float64
     end
 
     return p₀ * (f₁ * y₁ - f₂ * y₂)
+end
+
+# Promotion methods for Real inputs
+for func in (:U, :V, :W, :dU, :dV, :dW)
+    @eval function $func(a::Real, x::Real)
+        T = float(promote_type(typeof(a), typeof(x)))
+        return $func(T(a), T(x))
+    end
 end
 
 U(a::Real, x::AbstractArray{<:Real}) = [U(a, xi) for xi in x]
