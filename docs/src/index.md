@@ -10,6 +10,12 @@ Get the latest stable release with Julia's package manager:
 julia ] add FewSpecialFunctions
 ```
 
+## Features
+
+- Numerical implementations of special mathematical functions
+- **Generic type support**: all functions work with `Float32`, `Float64`, `BigFloat`, and other `AbstractFloat` types
+- Automatic type promotion for mixed inputs
+
 ## Quick example
 
 Here is how to generate an Euler spiral using [FewSpecialFunctions.jl](https://github.com/MartinMikkelsen/FewSpecialFunctions.jl). 

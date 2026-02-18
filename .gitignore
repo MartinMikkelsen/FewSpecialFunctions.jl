@@ -42,6 +42,7 @@ docs/build/
 .cache
 # Buildkite: Ignore the entire .buildkite directory
 /.buildkite
+*.md
 
 # Builtkite: json test data
 /test/results.json

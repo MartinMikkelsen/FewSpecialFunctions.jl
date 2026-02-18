@@ -1,5 +1,37 @@
 # Functions
 
+## Type flexibility
+
+All functions in this package support generic numeric types. Instead of being restricted to `Float64`, the functions accept any `AbstractFloat` (or `Real`) input type and preserve the type through computation where possible. This means you can use `Float32` for faster computation with lower precision, or `BigFloat` for arbitrary-precision calculations.
+
+**Examples:**
+
+```julia
+# Float32 inputs → Float32 output
+debye_function(2.0f0, 1.0f0, 5.0f0)  # returns Float32
+
+# BigFloat for high precision
+debye_function(big"2.0", big"1.0", big"5.0")  # returns BigFloat
+
+# Integer inputs are automatically promoted to Float64
+U(0, 1)  # returns Float64
+
+# Mixed types promote to the widest common type
+debye_function(2.0f0, 1.0, 5.0f0)  # Float32 + Float64 → Float64
+```
+
+The following table summarizes the type behavior for each function family:
+
+| Function family | Input type constraint | Type preservation |
+|---|---|---|
+| Coulomb wave functions | `Number` | Via Julia's promotion rules |
+| Debye functions | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
+| Fresnel integrals | `Number` | Via `erf` from SpecialFunctions |
+| Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
+| Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
+| Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
+| Parabolic cylinder | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
+
 ## Coulomb wave functions
 
 The Coulomb wave functions are solutions to the radial Schrödinger equation for a charged particle in a Coulomb potential. This package implements both the regular (`F_ℓ(η, ρ)`) and irregular (`G_ℓ(η, ρ)`) Coulomb wave functions, as well as auxiliary functions and normalization constants. The implementation follows the approach described in [arXiv:1804.10976](https://arxiv.org/abs/1804.10976), using confluent hypergeometric functions and robust normalization. The functions are implemented for real and complex arguments, and special care is taken to ensure numerical stability across a wide range of parameters.

@@ -158,19 +158,18 @@ end
 MarcumQ(M::T, a::T, b::T) where {T <: Number} = MarcumQ_modified(M, a^2 / T(2), b^2 / T(2))
 
 """
-    MarcumQ(μ::Float64, a::Float64, b::Float64)
+    MarcumQ(μ::Real, a::Real, b::Real)
 
 Compute the generalized Marcum Q-function of order `μ` with non-centrality parameter `a` and threshold `b`.
+Supports any `Real` input type; arguments are promoted to a common floating-point type.
 
 Reference:
     [1] https://arxiv.org/pdf/1311.0681v1
 """
-function MarcumQ(μ::Float64, a::Float64, b::Float64)
-    return MarcumQ_modified(μ, a^2 / 2.0, b^2 / 2.0)
-end
-
 function MarcumQ(μ::Real, a::Real, b::Real)
-    return MarcumQ_modified(Float64(μ), Float64(a)^2 / 2.0, Float64(b)^2 / 2.0)
+    T = float(promote_type(typeof(μ), typeof(a), typeof(b)))
+    μT, aT, bT = T(μ), T(a), T(b)
+    return MarcumQ_modified(μT, aT^2 / T(2), bT^2 / T(2))
 end
 
 function MarcumQ(μ::Real, a::Real, b::AbstractArray{<:Real})
