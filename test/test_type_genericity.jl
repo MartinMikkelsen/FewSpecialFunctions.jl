@@ -1,5 +1,6 @@
 using Test
 using SpecialFunctions
+using FewSpecialFunctions
 
 @testset "Type genericity" begin
 
