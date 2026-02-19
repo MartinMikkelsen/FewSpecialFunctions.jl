@@ -2,7 +2,7 @@
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "3d49cb57ae2e375dd522193188e0cfcdacfaff2f"
+project_hash = "7129bbbb38e5340af02e6fe1a9f65ca2d1e78d25"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -34,6 +34,12 @@ deps = ["HypergeometricFunctions", "QuadGK", "SpecialFunctions"]
 path = "."
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
 version = "0.1.11"
+
+    [deps.FewSpecialFunctions.extensions]
+    FewSpecialFunctionsForwardDiffExt = "ForwardDiff"
+
+    [deps.FewSpecialFunctions.weakdeps]
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 
 [[deps.HypergeometricFunctions]]
 deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
