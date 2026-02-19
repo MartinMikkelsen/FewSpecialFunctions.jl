@@ -32,6 +32,67 @@ The following table summarizes the type behavior for each function family:
 | Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
 | Parabolic cylinder | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
 
+## Automatic differentiation
+
+All functions support automatic differentiation via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl). The extension is a weak dependency and is loaded automatically when `ForwardDiff` is available.
+
+### Fresnel integrals
+
+The derivative of `FresnelC` is analytically `cos(πx²/2)`, which ForwardDiff recovers exactly:
+
+```julia
+using FewSpecialFunctions, ForwardDiff
+
+x0 = 0.7
+dC = ForwardDiff.derivative(FresnelC, x0)
+exact = cos((π / 2) * x0^2)
+isapprox(dC, exact)  # true
+```
+
+Similarly for `FresnelS`:
+
+```julia
+dS = ForwardDiff.derivative(FresnelS, x0)
+isapprox(dS, sin((π / 2) * x0^2))  # true
+```
+
+### Marcum Q-function
+
+The derivative of `MarcumQ(M, a, b)` with respect to `b` is available analytically via `dQdb`. ForwardDiff gives the same result:
+
+```julia
+M, a, b = 2.0, 1.5, 3.0
+dQ_ad = ForwardDiff.derivative(b -> MarcumQ(M, a, b), b)
+dQ_exact = dQdb(M, a, b)
+isapprox(dQ_ad, dQ_exact)  # true
+```
+
+ForwardDiff can also differentiate with respect to `a` or `M`, where no closed-form is available:
+
+```julia
+# Gradient with respect to both a and b simultaneously
+f(v) = MarcumQ(2.0, v[1], v[2])
+g = ForwardDiff.gradient(f, [1.5, 3.0])
+# g[1] ≈ d/da MarcumQ,  g[2] ≈ dQdb(2.0, 1.5, 3.0)
+```
+
+### Parabolic cylinder function
+
+The first derivative `dU(a, x)` is built in; ForwardDiff agrees with it. The second derivative follows from the parabolic cylinder ODE, `U''(a,x) = (x²/4 + a) U(a,x)`, and ForwardDiff recovers it by differentiating `dU`:
+
+```julia
+a, x0 = 0.5, 1.2
+
+# First derivative
+dU_ad = ForwardDiff.derivative(x -> U(a, x), x0)
+isapprox(dU_ad, dU(a, x0))  # true
+
+# Second derivative via ForwardDiff of dU
+d2U_ad = ForwardDiff.derivative(x -> dU(a, x), x0)
+d2U_ode = (x0^2 / 4 + a) * U(a, x0)   # from the ODE
+isapprox(d2U_ad, d2U_ode)  # true
+```
+
 ## Coulomb wave functions
 
 The Coulomb wave functions are solutions to the radial Schrödinger equation for a charged particle in a Coulomb potential. This package implements both the regular (`F_ℓ(η, ρ)`) and irregular (`G_ℓ(η, ρ)`) Coulomb wave functions, as well as auxiliary functions and normalization constants. The implementation follows the approach described in [arXiv:1804.10976](https://arxiv.org/abs/1804.10976), using confluent hypergeometric functions and robust normalization. The functions are implemented for real and complex arguments, and special care is taken to ensure numerical stability across a wide range of parameters.
