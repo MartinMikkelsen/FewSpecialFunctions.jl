@@ -1,6 +1,6 @@
 name = "FewSpecialFunctions"
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Martin Mikkelsen"]
 
 [deps]
