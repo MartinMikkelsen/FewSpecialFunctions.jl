@@ -6,24 +6,27 @@ jobs:
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Julia
         uses: julia-actions/setup-julia@v2
         with:
           version: "1"
+
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest
+
       - name: Run tests
         uses: julia-actions/julia-runtest@latest
-      - name: Process coverage (creates lcov.info)
+
+      - name: Process coverage (src only)
         uses: julia-actions/julia-processcoverage@v1
-      - name: Keep only src/ in coverage
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov
-          lcov --extract lcov.info '*/src/*' -o lcov.info
+        with:
+          directories: src
+
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
