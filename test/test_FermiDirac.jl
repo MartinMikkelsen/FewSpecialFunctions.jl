@@ -61,4 +61,10 @@
     @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, 1.2) ≈ 9.066754659806907 atol = 1.0e-13
     @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, -2.5) ≈ 0.2708561865299367 atol = 1.0e-13
     @test FewSpecialFunctions.FermiDiracIntegral(5 / 2, -2.0) ≈ 0.44455445345876304 atol = 1.0e-13
+
+    @testset "FermiDirac invalid order" begin
+        # Order j < -1/2 is not supported
+        @test_throws ErrorException FewSpecialFunctions.FermiDiracIntegral(-1.0, 0.0)
+        @test_throws ErrorException FewSpecialFunctions.FermiDiracIntegral(-0.6, 1.0)
+    end
 end

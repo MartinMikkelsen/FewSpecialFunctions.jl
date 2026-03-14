@@ -135,4 +135,36 @@ using FewSpecialFunctions
         @test isfinite(val)
     end
 
+    @testset "Clausen Float32 and BigFloat" begin
+        @test typeof(FewSpecialFunctions.Clausen(1, Float32(π / 2))) == Float32
+        @test typeof(FewSpecialFunctions.Clausen(2, Float32(π / 2))) == Float32
+        @test typeof(FewSpecialFunctions.Clausen(1, BigFloat(π / 2))) == BigFloat
+        @test typeof(FewSpecialFunctions.Clausen(2, BigFloat(π / 2))) == BigFloat
+    end
+
+    @testset "debye_function Float32" begin
+        result = FewSpecialFunctions.debye_function(2.0f0, 1.0f0, 5.0f0)
+        @test result isa Float32
+        @test isfinite(result)
+    end
+
+    @testset "MarcumQ BigFloat" begin
+        result = FewSpecialFunctions.MarcumQ(big"1.0", big"0.2", big"0.6")
+        @test result isa BigFloat
+        @test isapprox(result, big"0.838249985438908"; atol = big"1e-9")
+    end
+
+    @testset "Parabolic cylinder BigFloat" begin
+        result_U = FewSpecialFunctions.U(big"0.0", big"1.0")
+        @test result_U isa BigFloat
+        @test isfinite(result_U)
+
+        result_V = FewSpecialFunctions.V(big"0.0", big"1.0")
+        @test result_V isa BigFloat
+        @test isfinite(result_V)
+
+        # W requires gamma(Complex{BigFloat}) which SpecialFunctions does not support;
+        # skip W/dW BigFloat tests until upstream support is added.
+    end
+
 end

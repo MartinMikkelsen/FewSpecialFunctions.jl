@@ -187,4 +187,44 @@ using SpecialFunctions
         @test isfinite(val3)
         @test isfinite(val4)
     end
+
+    @testset "w invalid ℓ" begin
+        # Non-integer, non-half-integer ℓ should throw ArgumentError
+        @test_throws ArgumentError FewSpecialFunctions.w(0.3, 1.0)
+        @test_throws ArgumentError FewSpecialFunctions.w(1.2, 2.0)
+        # Half-integer should not throw
+        @test isfinite(FewSpecialFunctions.w(0.5, 1.0))
+        @test isfinite(FewSpecialFunctions.w(1.5, 2.0))
+    end
+
+    @testset "Ψ and I adaptive step size" begin
+        # ℓ must be integer or half-integer for w(ℓ, η) used inside Ψ
+        ℓ, η_val, ρ = 1, 0.5, 2.0   # Int ℓ dispatches to w(ℓ::Integer, η)
+
+        # Default h=nothing uses cbrt(eps(T)) — should return finite values
+        @test isfinite(FewSpecialFunctions.Ψ(ℓ, η_val, ρ))
+        @test isfinite(FewSpecialFunctions.I(ℓ, η_val, ρ))
+
+        # Explicit h overrides the default
+        @test isfinite(FewSpecialFunctions.Ψ(ℓ, η_val, ρ; h = 1.0e-5))
+        @test isfinite(FewSpecialFunctions.I(ℓ, η_val, ρ; h = 1.0e-5))
+
+        # Default and explicit h give consistent results (within finite-diff accuracy)
+        @test FewSpecialFunctions.Ψ(ℓ, η_val, ρ) ≈ FewSpecialFunctions.Ψ(ℓ, η_val, ρ; h = 1.0e-5) rtol = 1.0e-4
+        @test FewSpecialFunctions.I(ℓ, η_val, ρ) ≈ FewSpecialFunctions.I(ℓ, η_val, ρ; h = 1.0e-5) rtol = 1.0e-4
+
+        # BigFloat input: adaptive h uses cbrt(eps(BigFloat)) ≪ 1e-6 — just verify no crash
+        Ψ_big = FewSpecialFunctions.Ψ(ℓ, BigFloat("0.5"), BigFloat(2))
+        @test isfinite(real(Ψ_big))
+        # BigFloat and Float64 results should agree in magnitude
+        @test isapprox(abs(Ψ_big), abs(FewSpecialFunctions.Ψ(ℓ, η_val, ρ)); rtol = 1.0e-3)
+    end
+
+    @testset "η edge cases" begin
+        @test_throws ArgumentError η(0, 1.0)
+        @test_throws ArgumentError η(1.0, 0)
+        @test_throws ArgumentError η(0.0)
+        @test η(1.0, 2.0) ≈ 0.5
+        @test η(4.0) ≈ 0.5
+    end
 end

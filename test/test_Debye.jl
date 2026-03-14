@@ -56,3 +56,10 @@ end
     # Test default n=1.0
     @test FewSpecialFunctions.debye_function(1.5, 2.0) ≈ FewSpecialFunctions.debye_function(1.0, 1.5, 2.0)
 end
+
+@testset "debye_function validation" begin
+    @test_throws ArgumentError FewSpecialFunctions.debye_function(1.0, 1.0, -1.0)
+    @test FewSpecialFunctions.debye_function(1.0, 1.0, 0.0) == 1.0  # limit at x=0 is 1
+    @test_throws ArgumentError FewSpecialFunctions.debye_function(1.0, -1.0, 1.0)
+    @test_throws ArgumentError FewSpecialFunctions.debye_function(-1.0, 1.0, 1.0)
+end

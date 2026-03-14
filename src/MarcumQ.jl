@@ -86,12 +86,13 @@ function MarcumQ_large_xy(M::T, x::T, y::T, ξ::T) where {T <: Number}
     Ψ = ρ0 == one(T) ? one(T) / T(2) : copysign(ρ0^(M - T(0.5)) / T(2) * erfc(abs(δ)), ρ0 - one(T))
     s = x > y ? one(T) : zero(T); n = 0; ρt = ρfac
     while true
-        # Prevent negative gamma arguments in lnA for both lnA(n, M-1) and lnA(n, M)
+        s += Ψ; abs(Ψ) <= eps(T) * abs(s) && break
+        n += 1; ρt = -ρt; ef /= ξ
+        # Guard: prevent negative gamma arguments in lnA(n, M-1) and lnA(n, M).
+        # Must be checked after n is incremented, since lnA uses the incremented n.
         if (M - one(T)) + T(0.5) - n <= 0 || M + T(0.5) - n <= 0
             break
         end
-        s += Ψ; abs(Ψ) <= eps(T) * abs(s) && break
-        n += 1; ρt = -ρt; ef /= ξ
         Φ = (ef - σ * Φ) / (n - T(0.5))
         lnAn = lnA(n, M - one(T))
         Ψ = ρt * exp(lnAn) * (one(T) - exp(lnA(n, M) - lnAn) / ρ0) * Φ
@@ -148,7 +149,7 @@ function MarcumQ_modified(M::T, x::T, y::T) where {T <: Number}
     Qv = x < T(30) ? MarcumQ_small_x(M, x, y) :
         (ξ > T(30) && M^2 < T(2) * ξ) ? MarcumQ_large_xy(M, x, y, ξ) :
         (f1 < y < f2 && M < T(135)) ? MarcumQ_recurrence(M, x, y, ξ) :
-        (f1 < y < f2 && M >= T(135)) ? error("Large-M not implemented") :
+        (f1 < y < f2 && M >= T(135)) ? MarcumQ_large_M(M, x, y) :
         MarcumQ_quadrature(M, x / T(M), y / T(M), ξ / T(M))
     Qv > one(T) && Qv < one(T) + eps(T) && (Qv = one(T))
     return Qv
@@ -160,13 +161,20 @@ MarcumQ(M::T, a::T, b::T) where {T <: Number} = MarcumQ_modified(M, a^2 / T(2), 
 """
     MarcumQ(μ::Real, a::Real, b::Real)
 
-Compute the generalized Marcum Q-function of order `μ` with non-centrality parameter `a` and threshold `b`.
+Compute the generalized Marcum Q-function Q_μ(a, b) of order `μ` with non-centrality
+parameter `a ≥ 0` and threshold `b ≥ 0`. Returns a value in [0, 1].
+
+Requires `μ ≥ 0.5`, `a ≥ 0`, and `b ≥ 0`; throws `ArgumentError` otherwise.
 Supports any `Real` input type; arguments are promoted to a common floating-point type.
+Array broadcasting is supported: any one argument may be an `AbstractArray`.
 
 Reference:
     [1] https://arxiv.org/pdf/1311.0681v1
 """
 function MarcumQ(μ::Real, a::Real, b::Real)
+    μ < 0.5 && throw(ArgumentError("order μ must satisfy μ ≥ 0.5, got μ = $μ"))
+    a < 0 && throw(ArgumentError("parameter a must be ≥ 0, got a = $a"))
+    b < 0 && throw(ArgumentError("parameter b must be ≥ 0, got b = $b"))
     T = float(promote_type(typeof(μ), typeof(a), typeof(b)))
     μT, aT, bT = T(μ), T(a), T(b)
     return MarcumQ_modified(μT, aT^2 / T(2), bT^2 / T(2))

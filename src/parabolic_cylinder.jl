@@ -34,7 +34,7 @@ function U(a::T, x::T) where {T <: AbstractFloat}
             end
         end
 
-        d = zeros(T, 100)
+        d = zeros(T, 101)
         d[1], d[2] = one(T), a
         d₁, d₂ = one(T), a
         for k in 5:2:160
@@ -122,7 +122,7 @@ function V(a::T, x::T) where {T <: AbstractFloat}
         end
     end
 
-    d = zeros(T, 100)
+    d = zeros(T, 101)
     d[1], d[2] = one(T), a
     d₁, d₂ = one(T), a
     for k in 5:2:160
@@ -195,7 +195,7 @@ function W(a::T, x::T) where {T <: AbstractFloat}
             end
         end
 
-        d = zeros(T, 100)
+        d = zeros(T, 101)
         d[1], d[2] = one(T), a
         d₁, d₂ = one(T), a
         for k in 5:2:160

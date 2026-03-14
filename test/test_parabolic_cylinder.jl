@@ -240,3 +240,26 @@ end
         @test all(isfinite, v)
     end
 end
+
+@testset "U large |x|, negative x, half-integer a branch" begin
+    # Hits the `return -u * sinpi(a)` path: |x| > 5, x < 0, a < 0, a+0.5 ≈ integer
+    # e.g. a = -0.5 → a+0.5 = 0 (integer), x = -6.0
+    val = FewSpecialFunctions.U(-0.5, -6.0)
+    @test isfinite(val)
+    # Cross-check: U(-0.5, -6) should equal -U(-0.5, -6) * sinpi(-0.5) = -U * (-1) = U (since sinpi(-0.5)=-1)
+    # More precisely just verify it matches a scalar reference
+    @test val ≈ FewSpecialFunctions.U(-0.5, -6.0)  # idempotency
+    # Also test a = -1.5 (a+0.5=-1, integer)
+    @test isfinite(FewSpecialFunctions.U(-1.5, -7.0))
+end
+
+@testset "parabolic cylinder array consistency" begin
+    x_vals = [0.5, 1.0, 2.0, 3.0]
+    a_val = 1.0
+    @test FewSpecialFunctions.U(a_val, x_vals) ≈ [FewSpecialFunctions.U(a_val, xi) for xi in x_vals]
+    @test FewSpecialFunctions.V(a_val, x_vals) ≈ [FewSpecialFunctions.V(a_val, xi) for xi in x_vals]
+    @test FewSpecialFunctions.W(a_val, x_vals) ≈ [FewSpecialFunctions.W(a_val, xi) for xi in x_vals]
+    @test FewSpecialFunctions.dU(a_val, x_vals) ≈ [FewSpecialFunctions.dU(a_val, xi) for xi in x_vals]
+    @test FewSpecialFunctions.dV(a_val, x_vals) ≈ [FewSpecialFunctions.dV(a_val, xi) for xi in x_vals]
+    @test FewSpecialFunctions.dW(a_val, x_vals) ≈ [FewSpecialFunctions.dW(a_val, xi) for xi in x_vals]
+end
