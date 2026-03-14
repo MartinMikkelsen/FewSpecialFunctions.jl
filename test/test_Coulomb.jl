@@ -188,6 +188,15 @@ using SpecialFunctions
         @test isfinite(val4)
     end
 
+    @testset "w invalid ℓ" begin
+        # Non-integer, non-half-integer ℓ should throw ArgumentError
+        @test_throws ArgumentError FewSpecialFunctions.w(0.3, 1.0)
+        @test_throws ArgumentError FewSpecialFunctions.w(1.2, 2.0)
+        # Half-integer should not throw
+        @test isfinite(FewSpecialFunctions.w(0.5, 1.0))
+        @test isfinite(FewSpecialFunctions.w(1.5, 2.0))
+    end
+
     @testset "η edge cases" begin
         @test_throws ArgumentError η(0, 1.0)
         @test_throws ArgumentError η(1.0, 0)

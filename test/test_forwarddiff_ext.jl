@@ -159,6 +159,14 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
             @test isapprox(ForwardDiff.derivative(x -> V(a, x), x1), dV(a, x1); atol = 1.0e-5, rtol = 1.0e-4)
         end
 
+        # Clausen n=1 uses finite-difference derivative (no closed form)
+        @testset "Clausen n=1 ForwardDiff" begin
+            θ0 = π / 3
+            fd = fdiff(x -> Clausen(1, x), θ0)
+            ad = ForwardDiff.derivative(x -> Clausen(1, x), θ0)
+            @test isapprox(ad, fd; rtol = 1.0e-5)
+        end
+
         # Second derivative from the parabolic cylinder ODE: d(dU)/dx = (x²/4 + a) * U(a, x)
         for (a, x1) in [(0.2, 0.7), (0.5, 1.2), (1.5, -0.8)]
             d2U = ForwardDiff.derivative(x -> dU(a, x), x1)
