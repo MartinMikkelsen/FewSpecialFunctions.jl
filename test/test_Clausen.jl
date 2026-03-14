@@ -166,6 +166,14 @@ end
 
 end
 
+@testset "Clausen singularity" begin
+    # Near-zero θ goes through the n=1 branch where φ≈0 triggers the Inf return
+    @test isinf(Clausen(1, 1.0e-16))
+    @test isinf(Clausen(1, 2π))
+    # Cl₁(π) = -log|2sin(π/2)| = -log(2)
+    @test Clausen(1, π) ≈ -log(2.0) atol = 1.0e-10
+end
+
 @testset "Ci_complex Tests" begin
     # Test case 1: Negative real axis
     z2 = -1.0 + 0.0im

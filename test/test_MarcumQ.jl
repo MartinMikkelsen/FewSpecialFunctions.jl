@@ -449,3 +449,16 @@ end
     end
 
 end
+
+@testset "MarcumQ validation" begin
+    @test_throws ArgumentError MarcumQ(0.4, 1.0, 1.0)
+    @test_throws ArgumentError MarcumQ(1.0, -1.0, 1.0)
+    @test_throws ArgumentError MarcumQ(1.0, 1.0, -1.0)
+end
+
+@testset "MarcumQ large M" begin
+    # Previously crashed with "Large-M not implemented"; now uses MarcumQ_large_M fallback
+    @test 0.0 ≤ MarcumQ(150.0, 10.0, 10.0) ≤ 1.0
+    @test 0.0 ≤ MarcumQ(150.0, 5.0, 20.0) ≤ 1.0
+    @test 0.0 ≤ MarcumQ(200.0, 8.0, 15.0) ≤ 1.0
+end

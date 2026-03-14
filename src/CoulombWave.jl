@@ -5,13 +5,18 @@ using HypergeometricFunctions
     η(a::Number, k::Number)
     η(ϵ::Number)
 
-Coulomb parameter. For two arguments, returns 1/(a*k). For one argument, returns 1/sqrt(ϵ).
+Coulomb parameter. For two arguments, returns `1/(a*k)`. For one argument, returns `1/sqrt(ϵ)`.
+
+Both `a` and `k` must be nonzero. `ϵ` must be nonzero.
 """
 function η(a::Number, k::Number)
+    iszero(a) && throw(ArgumentError("a must be nonzero"))
+    iszero(k) && throw(ArgumentError("k must be nonzero"))
     return 1 / (a * k)
 end
 
 function η(ϵ::Number)
+    iszero(ϵ) && throw(ArgumentError("ϵ must be nonzero"))
     return 1 / sqrt(ϵ)
 end
 
@@ -220,39 +225,48 @@ function g(ℓ::Number, η::Number)
 end
 
 """
-    Φ_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    Φ_dot(ℓ::Number, η::Number, ρ::Number; h=nothing)
 
-Numerical derivative of Φ with respect to ℓ.
+Numerical derivative of Φ with respect to ℓ using a central finite difference.
+`h` is the step size; defaults to `cbrt(eps(T))` where `T` is the float type of `ℓ`,
+which is near-optimal for double-sided finite differences.
 """
-function Φ_dot(ℓ::Number, η::Number, ρ::Number; h = 1.0e-6)
-    return (Φ(ℓ + h, η, ρ) - Φ(ℓ - h, η, ρ)) / (2h)
+function Φ_dot(ℓ::Number, η::Number, ρ::Number; h = nothing)
+    h_eff = h === nothing ? cbrt(eps(real(float(typeof(ℓ))))) : h
+    return (Φ(ℓ + h_eff, η, ρ) - Φ(ℓ - h_eff, η, ρ)) / (2 * h_eff)
 end
 
 """
-    F_dot(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    F_dot(ℓ::Number, η::Number, ρ::Number; h=nothing)
 
-Numerical derivative of F with respect to ℓ.
+Numerical derivative of F with respect to ℓ using a central finite difference.
+`h` is the step size; defaults to `cbrt(eps(T))` where `T` is the float type of `ℓ`.
 """
-function F_dot(ℓ::Number, η::Number, ρ::Number; h = 1.0e-6)
-    return (F(ℓ + h, η, ρ) - F(ℓ - h, η, ρ)) / (2h)
+function F_dot(ℓ::Number, η::Number, ρ::Number; h = nothing)
+    h_eff = h === nothing ? cbrt(eps(real(float(typeof(ℓ))))) : h
+    return (F(ℓ + h_eff, η, ρ) - F(ℓ - h_eff, η, ρ)) / (2 * h_eff)
 end
 
 """
-    Ψ(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    Ψ(ℓ::Number, η::Number, ρ::Number; h=nothing)
 
 Auxiliary function for Coulomb wave functions.
+`h` is the finite-difference step size; defaults to `cbrt(eps(T))` (see `Φ_dot`).
 """
-function Ψ(ℓ::Number, η::Number, ρ::Number; h = 1.0e-6)
-    return w(ℓ, η) * Φ_dot(ℓ, η, ρ; h = h) / 2 + Φ_dot(-ℓ - 1, η, ρ; h = h) / 2
+function Ψ(ℓ::Number, η::Number, ρ::Number; h = nothing)
+    h_eff = h === nothing ? cbrt(eps(real(float(typeof(ℓ))))) : h
+    return w(ℓ, η) * Φ_dot(ℓ, η, ρ; h = h_eff) / 2 + Φ_dot(-ℓ - 1, η, ρ; h = h_eff) / 2
 end
 
 """
-    I(ℓ::Number, η::Number, ρ::Number; h=1e-6)
+    I(ℓ::Number, η::Number, ρ::Number; h=nothing)
 
 Auxiliary function for Coulomb wave functions.
+`h` is the finite-difference step size; defaults to `cbrt(eps(T))` (see `Φ_dot`).
 """
-function I(ℓ::Number, η::Number, ρ::Number; h = 1.0e-6)
-    return C(ℓ, η) * gamma(2 * ℓ + 2) / ((2 * η)^(ℓ + 1)) * Ψ(ℓ, η, ρ; h = h)
+function I(ℓ::Number, η::Number, ρ::Number; h = nothing)
+    h_eff = h === nothing ? cbrt(eps(real(float(typeof(ℓ))))) : h
+    return C(ℓ, η) * gamma(2 * ℓ + 2) / ((2 * η)^(ℓ + 1)) * Ψ(ℓ, η, ρ; h = h_eff)
 end
 
 

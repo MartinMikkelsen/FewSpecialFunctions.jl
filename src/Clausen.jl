@@ -185,8 +185,17 @@ const γ = Base.MathConstants.γ
 """
     Clausen(n::Int, θ::Real; N::Int=10, m::Int=20)
 
-Compute the Clausen function of order `n` at angle `θ`.
+Compute the Clausen function Cl_n(θ) of order `n` at angle `θ`.
 Supports any `Real` input type for `θ`.
+
+`n` must be in 1..6; `N` must be 10 or 20 (throws `ArgumentError` otherwise).
+
+**Note on singularity:** `Clausen(1, θ)` = -log|2sin(θ/2)| has a logarithmic singularity
+at θ = 0, 2π, 4π, …, where it returns `Inf`.
+
+- `N`: number of Gauss-Legendre quadrature nodes used in the Euler-Maclaurin tail
+  sum; 10 gives double precision, 20 gives extended precision.
+- `m`: number of terms in the direct summation before switching to the tail formula.
 
 References:
 - [Clausen function](https://en.wikipedia.org/wiki/Clausen_function)

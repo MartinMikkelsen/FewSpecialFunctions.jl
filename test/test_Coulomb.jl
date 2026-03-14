@@ -187,4 +187,12 @@ using SpecialFunctions
         @test isfinite(val3)
         @test isfinite(val4)
     end
+
+    @testset "η edge cases" begin
+        @test_throws ArgumentError η(0, 1.0)
+        @test_throws ArgumentError η(1.0, 0)
+        @test_throws ArgumentError η(0.0)
+        @test η(1.0, 2.0) ≈ 0.5
+        @test η(4.0) ≈ 0.5
+    end
 end
