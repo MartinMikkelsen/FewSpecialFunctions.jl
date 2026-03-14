@@ -5,11 +5,12 @@ export debye_function
 """
     debye_function(n::T, β::T, x::T; tol=T(1e-35), max_terms=2000) where {T <: AbstractFloat}
 
-Compute the generalized Debye function with parameters `n > 0`, `β > 0`, and `x > 0`.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute the generalized Debye function with parameters `n > 0`, `β > 0`, and `x ≥ 0`.
+Returns `1.0` at `x = 0` (the limiting value). Supports any `AbstractFloat` type
+(e.g., `Float32`, `Float64`, `BigFloat`).
 Array broadcasting is supported: any one argument may be an `AbstractArray`.
 
-Throws `ArgumentError` if `n ≤ 0`, `β ≤ 0`, or `x ≤ 0`.
+Throws `ArgumentError` if `n ≤ 0`, `β ≤ 0`, or `x < 0`.
 
 - `tol`: convergence tolerance for the series (default `1e-35`)
 - `max_terms`: maximum number of series terms (default `2000`)
@@ -21,7 +22,8 @@ References:
 function debye_function(n::T, β::T, x::T; tol = T(1.0e-35), max_terms = 2000) where {T <: AbstractFloat}
     n > 0 || throw(ArgumentError("n must be positive, got n = $n"))
     β > 0 || throw(ArgumentError("β must be positive, got β = $β"))
-    x > 0 || throw(ArgumentError("x must be positive, got x = $x"))
+    x < 0 && throw(ArgumentError("x must be non-negative, got x = $x"))
+    x == 0 && return one(T)
     sum = zero(T)
     c = one(T)
 
