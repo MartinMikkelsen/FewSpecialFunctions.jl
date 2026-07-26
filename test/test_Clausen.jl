@@ -104,6 +104,23 @@ end
     end
 end
 
+@testset "Clausen tail quadrature tables (default m)" begin
+    # References: mpmath clsin/clcos at 50 digits. With the default m the tail
+    # sum dominates, so these exercise the xi/A tables directly for both N.
+    refs = (
+        (0.5, (0.84831187770367927, 0.92769631047023043, 0.54837172654589549, 0.89390286951083851, 0.49419627977618802)),
+        (1.5, (0.93921859275409211, -0.04700740186510689, 0.99460736032397134, 0.03986278841584185, 0.99835187045742397)),
+        (3.05, (0.063455166612079619, -0.89863593050390852, 0.082485931636987413, -0.9683401855529791, 0.088923610492834005)),
+        (5.0, (-0.99282013254695672, 0.16294903158915304, -0.98224881953099551, 0.25499139995045364, -0.96633926213250764)),
+    )
+    for (θ, expected) in refs
+        for (n, ref) in zip(2:6, expected)
+            @test FewSpecialFunctions.Clausen(n, θ; N = 10) ≈ ref atol = 1.0e-13
+            @test FewSpecialFunctions.Clausen(n, θ; N = 20) ≈ ref atol = 1.0e-13
+        end
+    end
+end
+
 @testset "f_n function" begin
     # Test with even n (should use sine)
     @test FewSpecialFunctions.f_n(2, 1, π / 4) ≈ sin(π / 4) rtol = 1.0e-15
