@@ -4,12 +4,31 @@ export MarcumQ, dQdb
 
 Q(μ::T, x::T) where {T <: Number} = gamma_inc(μ, x)[2]
 
-# continued‐fraction ratio for scaled I_μ
-c_μ(μ::T, ξ::T) where {T <: Number} = besseli(μ, ξ) / besseli(μ - 1, ξ)
+# continued‐fraction ratio I_μ(ξ)/I_{μ-1}(ξ) = 1/(2μ/ξ + 1/(2(μ+1)/ξ + ⋯)),
+# evaluated by modified Lentz. Forming the ratio from besseli directly overflows
+# for large ξ and underflows to 0/0 for μ ≫ ξ; the continued fraction does neither.
+function c_μ(μ::T, ξ::T) where {T <: Number}
+    tiny = sqrt(floatmin(T))
+    fv = tiny; C = fv; D = zero(T)
+    for j in 1:100_000
+        bj = T(2) * (μ + j - one(T)) / ξ
+        D = bj + D; iszero(D) && (D = tiny)
+        C = bj + one(T) / C; iszero(C) && (C = tiny)
+        D = one(T) / D
+        Δ = C * D
+        fv *= Δ
+        abs(Δ - one(T)) <= eps(T) && break
+    end
+    return fv
+end
 
 # log of Aₙ from eq. (32)
 lnA(n::Integer, μ::T) where {T <: Number} =
     loggamma(μ + T(0.5) + n) - loggamma(μ + T(0.5) - n) - n * log(T(2)) - loggamma(n + 1)
+
+# Aₙ from eq. (32) as a ratio Aₙ/Aₙ₋₁, finite for every n unlike lnA
+A_ratio(n::Integer, μ::T) where {T <: Number} =
+    (μ + T(0.5) + n - one(T)) * (μ + T(0.5) - n) / (T(2) * n)
 
 # ζ²/2 from eq. (84)
 function half_ζ2(x::T, y::T) where {T <: Number}
@@ -85,17 +104,13 @@ function MarcumQ_large_xy(M::T, x::T, y::T, ξ::T) where {T <: Number}
     Φ = abs(δ) < T(1.0e-5) ? (σ == zero(T) ? zero(T) : sqrt(π / σ) - T(2) * sqrt(ξ)) : sqrt(π / σ) * erfc(abs(δ))
     Ψ = ρ0 == one(T) ? one(T) / T(2) : copysign(ρ0^(M - T(0.5)) / T(2) * erfc(abs(δ)), ρ0 - one(T))
     s = x > y ? one(T) : zero(T); n = 0; ρt = ρfac
-    while true
+    An1 = one(T); An = one(T)     # Aₙ(M-1), Aₙ(M), built as running products
+    while n < 100
         s += Ψ; abs(Ψ) <= eps(T) * abs(s) && break
         n += 1; ρt = -ρt; ef /= ξ
-        # Guard: prevent negative gamma arguments in lnA(n, M-1) and lnA(n, M).
-        # Must be checked after n is incremented, since lnA uses the incremented n.
-        if (M - one(T)) + T(0.5) - n <= 0 || M + T(0.5) - n <= 0
-            break
-        end
+        An1 *= A_ratio(n, M - one(T)); An *= A_ratio(n, M)
         Φ = (ef - σ * Φ) / (n - T(0.5))
-        lnAn = lnA(n, M - one(T))
-        Ψ = ρt * exp(lnAn) * (one(T) - exp(lnA(n, M) - lnAn) / ρ0) * Φ
+        Ψ = ρt * (An1 - An / ρ0) * Φ
     end
     return max(s, zero(T))
 end
@@ -145,6 +160,8 @@ end
 
 # core modified Marcum Q
 function MarcumQ_modified(M::T, x::T, y::T) where {T <: Number}
+    # Q_μ(a, 0) = 1; without this the quadrature branch divides by 2y in r(θ, y, ξ)
+    y == zero(T) && return one(T)
     ξ = T(2) * sqrt(x * y); f1, f2 = f1_f2(x, M)
     Qv = x < T(30) ? MarcumQ_small_x(M, x, y) :
         (ξ > T(30) && M^2 < T(2) * ξ) ? MarcumQ_large_xy(M, x, y, ξ) :

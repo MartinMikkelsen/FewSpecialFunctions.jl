@@ -430,7 +430,7 @@ end
     Q_mod = FewSpecialFunctions.MarcumQ_modified(M, x, y)
     @test isapprox(Q_large, Q_mod; rtol = 1.0e-10, atol = 1.0e-12)
 
-    # Small M triggers the gamma-domain guard break (guard fires after n increment)
+    # Small M: Aₙ(M) changes sign here rather than leaving lnA's gamma domain
     M, x, y = 1.5, 20.0, 20.0
     ξ = 2 * sqrt(x * y)
     Qxy = FewSpecialFunctions.MarcumQ_large_xy(M, x, y, ξ)
@@ -458,4 +458,111 @@ end
     @test 0.0 ≤ MarcumQ(150.0, 10.0, 10.0) ≤ 1.0
     @test 0.0 ≤ MarcumQ(150.0, 5.0, 20.0) ≤ 1.0
     @test 0.0 ≤ MarcumQ(200.0, 8.0, 15.0) ≤ 1.0
+end
+
+# The 1500-row reference file has a, b ≤ 5, so every row lands in MarcumQ_small_x.
+# The points below are the first coverage of the branches taken for x = a²/2 ≥ 30;
+# references are mpmath to 40 digits, cross-checked against scipy.stats.ncx2.sf.
+@testset "MarcumQ non-series branches vs high-precision reference" begin
+    dispatch(M, a, b) = begin
+        x, y = a^2 / 2, b^2 / 2
+        ξ = 2 * sqrt(x * y)
+        f1, f2 = f1_f2(x, M)
+        x < 30 ? :small_x :
+        (ξ > 30 && M^2 < 2ξ) ? :large_xy :
+        (f1 < y < f2 && M < 135) ? :recurrence :
+        (f1 < y < f2) ? :large_M : :quadrature
+    end
+
+    @testset "large_xy (§4.1 asymptotic expansion)" begin
+        for (M, a, b, ref) in [
+                (1.0, 8.0, 8.5, 0.33024862086790825),
+                (1.0, 10.0, 10.5, 0.32594703743194997),
+                (1.0, 15.0, 16.0, 0.16659499484239472),
+                (1.0, 20.0, 24.0, 3.4865452841469621e-5),
+                (1.0, 25.0, 25.0, 0.50798044281574201),
+                (1.5, 20.0, 20.0, 0.51994711402007163),
+                (2.0, 10.0, 9.5, 0.74349407305752647),
+                (3.0, 8.0, 10.0, 0.042663610582210727),
+                (5.0, 10.0, 11.0, 0.28415186649850582),
+                (7.0, 12.0, 13.0, 0.31587144279992512),
+                (10.0, 20.0, 21.0, 0.29586161260225127),
+                (20.0, 30.0, 31.0, 0.35923144682109404),
+                (3.0, 10.0, 20.0, 4.3230594972136664e-23),
+                (1.0, 10.0, 30.0, 4.7753578434723138e-89),
+            ]
+            @test dispatch(M, a, b) == :large_xy
+            @test MarcumQ(M, a, b) ≈ ref rtol = 1.0e-12
+        end
+    end
+
+    @testset "recurrence (eq. 14)" begin
+        for (M, a, b, ref) in [
+                (20.0, 12.0, 13.0, 0.71254382824498949),
+                (50.0, 30.0, 31.5, 0.54379683284522344),
+                (60.0, 40.0, 42.0, 0.29166436564278988),
+                (100.0, 50.0, 52.0, 0.48050526573576086),
+                (134.0, 80.0, 82.0, 0.36249818465769036),
+            ]
+            @test dispatch(M, a, b) == :recurrence
+            @test MarcumQ(M, a, b) ≈ ref rtol = 1.0e-12
+        end
+    end
+
+    @testset "quadrature (§5)" begin
+        for (M, a, b, ref) in [
+                (80.0, 20.0, 25.0, 0.072180049682362132),
+                (120.0, 10.0, 17.0, 0.96249190360238321),
+            ]
+            @test dispatch(M, a, b) == :quadrature
+            @test MarcumQ(M, a, b) ≈ ref rtol = 1.0e-12
+        end
+    end
+end
+
+@testset "MarcumQ at b = 0" begin
+    # Q_μ(a, 0) = 1 exactly; a ≥ √60 used to reach the quadrature branch, where
+    # r(θ, y, ξ) divides by 2y and QuadGK saw a NaN integrand.
+    for μ in (0.5, 1.0, 3.5, 10.0, 135.0, 200.0)
+        for a in (0.0, 1.0, 7.74, sqrt(60.0), 10.0, 50.0)
+            @test MarcumQ(μ, a, 0.0) == 1.0
+        end
+    end
+    @test MarcumQ(10.0, 0.0) == 1.0
+    @test MarcumQ(1, 0, 0) == 1.0
+
+    # the shortcut must sit exactly at b = 0: small positive b is still below 1
+    @test MarcumQ(1.0, 0.0, 0.01) ≈ 0.99995000124997917 rtol = 1.0e-14
+    @test MarcumQ(1.0, 1.0, 0.01) ≈ 0.99996967384609445 rtol = 1.0e-14
+    @test MarcumQ(1.0, 0.0, 0.04) < 1.0
+end
+
+@testset "c_μ (continued fraction for I_μ(ξ)/I_{μ-1}(ξ))" begin
+    for μ in (0.5, 1.0, 2.5, 5.0, 20.0, 100.0), ξ in (0.1, 1.0, 5.0, 100.0)
+        @test c_μ(μ, ξ) ≈ besseli(μ, ξ) / besseli(μ - 1, ξ) rtol = 1.0e-12
+    end
+
+    # besseli overflows past ξ ≈ 700; the exponentially scaled ratio is the same number
+    for (μ, ξ) in ((50.0, 948.7), (113.0, 6532.6), (300.0, 2598.1))
+        @test c_μ(μ, ξ) ≈ besselix(μ, ξ) / besselix(μ - 1, ξ) rtol = 1.0e-12
+    end
+
+    # besselix underflows to 0/0 for μ ≫ ξ; check against I_{μ-1} = (2μ/ξ)I_μ + I_{μ+1}
+    for (μ, ξ) in ((2.5, 5.0), (100.0, 3.0), (5000.0, 1428.0), (20000.0, 200.5))
+        @test isfinite(c_μ(μ, ξ))
+        @test 1 / c_μ(μ, ξ) ≈ 2μ / ξ + c_μ(μ + 1, ξ) rtol = 1.0e-13
+    end
+end
+
+@testset "A_ratio (Aₙ/Aₙ₋₁ from eq. 32)" begin
+    for μ in (5.0, 10.0, 40.0)
+        A = 1.0
+        for n in 1:4
+            A *= FewSpecialFunctions.A_ratio(n, μ)
+            @test A ≈ exp(lnA(n, μ)) rtol = 1.0e-13
+        end
+    end
+    # Aₙ(1) turns negative at n = 2, where lnA would need loggamma(-1/2)
+    @test FewSpecialFunctions.A_ratio(2, 1.0) < 0
+    @test_throws DomainError lnA(2, 1.0)
 end
