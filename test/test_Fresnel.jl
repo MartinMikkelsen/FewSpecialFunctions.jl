@@ -76,3 +76,26 @@ end
     @test isapprox(S, -FewSpecialFunctions.FresnelS(2.0), rtol = 1.0e-6)
 
 end
+
+@testset "Fresnel complex values" begin
+    z = 1.0 + 1.0im
+    C, S, E = fresnel(z)
+
+    @test C isa ComplexF64
+    @test S isa ComplexF64
+    @test isapprox(C, 2.5557937781024376 + 2.5557937781024376im; rtol = 1.0e-14)
+    @test isapprox(S, -2.0618882191948393 + 2.0618882191948393im; rtol = 1.0e-14)
+    @test E ≈ C + im * S
+    @test FresnelC(z) ≈ C
+    @test FresnelS(z) ≈ S
+    @test FresnelE(z) ≈ E
+end
+
+@testset "Fresnel complex intermediate value" begin
+    z = 2.0 + 3.0im
+    C, S, E = fresnel(z)
+
+    @test isapprox(C, -3.788100200182899e6 + 5.815899102940467e6im; rtol = 1.0e-13)
+    @test isapprox(S, -5.815898602940467e6 - 3.788100700182899e6im; rtol = 1.0e-13)
+    @test E ≈ C + im * S
+end

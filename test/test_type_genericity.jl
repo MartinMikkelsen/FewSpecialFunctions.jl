@@ -120,8 +120,18 @@ using FewSpecialFunctions
         # Float32 inputs work and produce correct values
         # (erf from SpecialFunctions may promote to Float64 internally)
         C32, S32, E32 = FewSpecialFunctions.fresnel(1.0f0)
+        @test C32 isa Float32
+        @test S32 isa Float32
+        @test E32 isa ComplexF32
         @test isapprox(C32, C64; atol = 1.0e-5)
         @test isapprox(S32, S64; atol = 1.0e-5)
+
+        Cbig, Sbig, Ebig = FewSpecialFunctions.fresnel(big"1.0")
+        @test Cbig isa BigFloat
+        @test Sbig isa BigFloat
+        @test Ebig isa Complex{BigFloat}
+        @test isapprox(Cbig, big"0.7798934003768228294742064136527749"; rtol = big"1e-30")
+        @test isapprox(Sbig, big"0.4382591473903547660767566966251526"; rtol = big"1e-30")
     end
 
     @testset "Coulomb type handling" begin
