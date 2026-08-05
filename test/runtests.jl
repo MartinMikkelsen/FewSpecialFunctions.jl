@@ -8,6 +8,7 @@ using DelimitedFiles
     include("test_Coulomb.jl")
     include("test_Clausen.jl")
     include("test_Debye.jl")
+    include("test_Dawson.jl")
     include("test_FermiDirac.jl")
     include("test_Fresnel.jl")
     include("test_MarcumQ.jl")

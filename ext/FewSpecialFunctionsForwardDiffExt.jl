@@ -8,6 +8,7 @@ import FewSpecialFunctions:
     η, C, θ, F, D⁺, D⁻, H⁺, H⁻, F_imag, G, M_regularized, Φ, w,
     debye_function,
     fresnel, FresnelS, FresnelC, FresnelE,
+    dawson,
     Clausen,
     FermiDiracIntegral, FermiDiracIntegralNorm,
     MarcumQ, dQdb,
@@ -546,6 +547,15 @@ function FresnelE(z::Dual{T}) where {T}
 end
 
 fresnel(z::Dual{T}) where {T} = (FresnelC(z), FresnelS(z), FresnelE(z))
+
+# ── Dawson integral (analytic derivative) ──────────────────────────────────────
+
+function dawson(x::Dual{T}) where {T}
+    xv = value(x)
+    y = dawson(xv)
+    derivative = muladd(-2 * xv, y, one(xv))
+    return Dual{T}(y, derivative * partials(x))
+end
 
 # ── Clausen (analytic dCl_n/dθ = ±Cl_{n-1}(θ) for n≥2, FD for n=1) ──────────
 
