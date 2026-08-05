@@ -1,4 +1,4 @@
-using Test, DelimitedFiles, FewSpecialFunctions
+using Test, DelimitedFiles, FewSpecialFunctions, SpecialFunctions
 
 @testset "Fresnel" begin
 
@@ -139,4 +139,38 @@ end
     @test Sgeneric isa ComplexF64
     @test Egeneric isa ComplexF64
     @test (Cgeneric, Sgeneric, Egeneric) == fresnel(complex(0.5, 1 / 3))
+end
+
+@testset "Fresnel asymptotic and complex branches" begin
+    # Real intermediate region: the error-function evaluation path.
+    Cintermediate, Sintermediate, Eintermediate = fresnel(3.0)
+    wintermediate = (sqrt(π) / 2) * (1 - im) * 3.0
+    Eintermediate_ref = (1 + im) / 2 * erf(wintermediate)
+    @test Eintermediate ≈ Eintermediate_ref
+    @test Cintermediate + im * Sintermediate == Eintermediate
+
+    # Real large-argument region: the asymptotic evaluation path.
+    Casymptotic, Sasymptotic, Easymptotic = fresnel(10.0)
+    @test isapprox(Casymptotic, 0.49989869420551575; rtol = 1.0e-14)
+    @test isapprox(Sasymptotic, 0.46816997858488224; rtol = 1.0e-14)
+    @test Casymptotic + im * Sasymptotic == Easymptotic
+
+    # Complex large-argument region with |imag(z)| > |real(z)|.
+    zasymptotic = 1.0 + 12.0im
+    Casymptotic_complex, Sasymptotic_complex, Easymptotic_complex = fresnel(zasymptotic)
+    wasymptotic = (sqrt(π) / 2) * (1 - im) * zasymptotic
+    Easymptotic_ref = (1 + im) / 2 * erf(wasymptotic)
+    @test isapprox(Easymptotic_complex, Easymptotic_ref; rtol = 1.0e-13)
+    @test Casymptotic_complex + im * Sasymptotic_complex == Easymptotic_complex
+
+    # Complex dispatch branches for zero imaginary and negative real parts.
+    Creal_complex, Sreal_complex, Ereal_complex = fresnel(3.0 + 0.0im)
+    @test (Creal_complex, Sreal_complex, Ereal_complex) ==
+        (complex(Cintermediate), complex(Sintermediate), Eintermediate)
+
+    Cnegative, Snegative, Enegative = fresnel(-1.0 + 1.0im)
+    Cpositive, Spositive, Epositive = fresnel(1.0 - 1.0im)
+    @test Cnegative == -Cpositive
+    @test Snegative == -Spositive
+    @test Enegative == -Epositive
 end
