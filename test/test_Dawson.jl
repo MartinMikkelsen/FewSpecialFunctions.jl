@@ -1,4 +1,5 @@
 using FewSpecialFunctions
+import FewSpecialFunctions: dawson
 using Test
 
 @testset "Dawson integral" begin
