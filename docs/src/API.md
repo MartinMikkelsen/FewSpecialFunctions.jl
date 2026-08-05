@@ -5,6 +5,7 @@
 - [Coulomb wave functions: Connection formulas between Coulomb wave functions](https://arxiv.org/abs/1804.10976)
 - [Debye functions: Calculation of Integer and Noninteger n-Dimensional Debye Functions Using Binomial Coefficients and Incomplete Gamma Functions](https://doi.org/10.1007/s10765-007-0256-1)
 - [Fermi-Dirac integrals: Notes on Fermi-Dirac Integrals](https://arxiv.org/abs/0811.0116)
+- [Fresnel integrals: Calculation of Fresnel integrals of real and complex arguments up to 28 significant digits](https://doi.org/10.1007/s11075-023-01654-2)
 - [Marcum Q-function: https://arxiv.org/pdf/1311.0681v1](https://arxiv.org/pdf/1311.0681v1)
 - [Parabolic cylinder functions](https://www.scirp.org/reference/referencespapers?referenceid=1112080)
 
@@ -39,6 +40,7 @@ I
 debye_function
 
 # Fresnel integrals
+fresnel
 FresnelC
 FresnelS
 FresnelE

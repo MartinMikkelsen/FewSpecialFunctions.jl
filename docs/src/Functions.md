@@ -26,7 +26,7 @@ The following table summarizes the type behavior for each function family:
 |---|---|---|
 | Coulomb wave functions | `Number` | Via Julia's promotion rules |
 | Debye functions | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
-| Fresnel integrals | `Number` | Via `erf` from SpecialFunctions |
+| Fresnel integrals | `Number` | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
 | Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
 | Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
@@ -36,7 +36,7 @@ The following table summarizes the type behavior for each function family:
 
 All functions support automatic differentiation via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl). The extension is a weak dependency and is loaded automatically when `ForwardDiff` is available.
 
-### Fresnel integrals
+### Differentiating Fresnel integrals
 
 The derivative of `FresnelC` is analytically `cos(πx²/2)`, which ForwardDiff recovers exactly:
 
@@ -308,24 +308,63 @@ xlabel!(L"\theta")
 title!("Clausen Functions")
 ```
 
-## Fresnel integrals
+## Fresnel integrals 
 
-The Fresnel integrals `C(x)` and `S(x)` are implemented using the complex error function, matching the NIST and MATLAB conventions. The implementation is accurate for both real and complex arguments, and provides auxiliary values for advanced applications.
+The Fresnel integrals are
 
-- `FresnelC(x)`: Computes the Fresnel cosine integral.
-- `FresnelS(x)`: Computes the Fresnel sine integral.
-- `FresnelE(x)`: Auxiliary value, `C(x) + i S(x)`.
+```math
+C(z) = \int_0^z \cos\!\left(\frac{\pi t^2}{2}\right)\,\mathrm{d}t,
+\qquad
+S(z) = \int_0^z \sin\!\left(\frac{\pi t^2}{2}\right)\,\mathrm{d}t.
+```
 
-All functions are implemented with attention to numerical stability and efficiency, and references to the original papers are provided for further reading.
+`fresnel(z)` returns `(C(z), S(z), C(z) + im * S(z))`. The convenience
+functions `FresnelC`, `FresnelS`, and `FresnelE` return the corresponding
+components. Real and complex arguments are supported; integer arguments are
+promoted to floating point.
 
-```@example Fresnel
+```julia
+using FewSpecialFunctions
+
+C, S, E = fresnel(1.0)
+FresnelC(1 + im)
+FresnelS(1 + im)
+FresnelE(1 + im)
+```
+
+### Real axis
+
+```@example FresnelReal
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide
 
-plot_font = "Computer Modern" # hide
-default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid=true,palette=:tab10) # hide
-
-xes = collect(range(0, 5, length=250))
-plot(xes, FewSpecialFunctions.FresnelC.(xes), label=L"C(x)")
-plot!(xes, FewSpecialFunctions.FresnelS.(xes), label=L"S(x)")
+default(fontfamily="Computer Modern", linewidth=2.5, framestyle=:box, grid=true)
+x = range(-6, 6, length=1000)
+plot(x, FresnelC.(x), label=L"C(x)", xlabel=L"x", ylabel="value",
+     title="Fresnel integrals on the real axis")
+plot!(x, FresnelS.(x), label=L"S(x)")
 ```
+
+### Euler spiral
+
+```@example EulerSpiral
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+default(fontfamily="Computer Modern", linewidth=2.5, framestyle=:box, grid=true)
+x = range(-12, 12, length=1500)
+plot(FresnelC.(x), FresnelS.(x), label=nothing, xlabel=L"C(x)",
+     ylabel=L"S(x)", title="Euler spiral")
+```
+
+### Complex plane
+
+```@example FresnelComplex
+using DomainColoring, FewSpecialFunctions
+
+domaincolor(FresnelE, [-2, 2, -2, 2], grid=true)
+```
+
+The implementation combines a convergent series near zero, stable intermediate
+evaluation, and asymptotic expansions for large arguments. It is adapted from [this paper](https://doi.org/10.1007/s11075-023-01654-2)
+and the [upstream Fortran source repository](https://github.com/mofrehzaghloul/Fresnel_Integrals).

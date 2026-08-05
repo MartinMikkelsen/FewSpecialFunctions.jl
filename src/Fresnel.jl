@@ -184,6 +184,23 @@ fresnel(z::Complex{<:Integer}) = fresnel(ComplexF64(z))
 fresnel(z::Real) = fresnel(float(z))
 fresnel(z::Complex) = fresnel(complex(float(real(z)), float(imag(z))))
 
+"""
+    FresnelC(z::Number)
+
+Compute the Fresnel cosine integral `C(z)`.
+"""
 FresnelC(z::Number) = fresnel(z)[1]
+
+"""
+    FresnelS(z::Number)
+
+Compute the Fresnel sine integral `S(z)`.
+"""
 FresnelS(z::Number) = fresnel(z)[2]
+
+"""
+    FresnelE(z::Number)
+
+Compute the Fresnel integral combination `C(z) + im * S(z)`.
+"""
 FresnelE(z::Number) = fresnel(z)[3]
