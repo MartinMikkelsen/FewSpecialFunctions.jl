@@ -174,3 +174,18 @@ end
     @test Snegative == -Spositive
     @test Enegative == -Epositive
 end
+
+@testset "Fresnel helper functions" begin
+    # The real error-function decomposition reproduces known C(3) and S(3).
+    Cerf, Serf = FewSpecialFunctions._fresnel_erf_real(3.0)
+    @test isapprox(Cerf, 0.6057207892976857; rtol = 1.0e-14)
+    @test isapprox(Serf, 0.496312998967375; rtol = 1.0e-14)
+
+    # The asymptotic threshold is precision-aware and never below five.
+    @test isapprox(
+        FewSpecialFunctions._fresnel_asymptotic_start(Float64),
+        5.790209015886026;
+        rtol = 1.0e-15,
+    )
+    @test FewSpecialFunctions._fresnel_asymptotic_start(BigFloat) > BigFloat(5)
+end
