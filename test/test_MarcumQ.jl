@@ -469,9 +469,9 @@ end
         ξ = 2 * sqrt(x * y)
         f1, f2 = f1_f2(x, M)
         x < 30 ? :small_x :
-        (ξ > 30 && M^2 < 2ξ) ? :large_xy :
-        (f1 < y < f2 && M < 135) ? :recurrence :
-        (f1 < y < f2) ? :large_M : :quadrature
+            (ξ > 30 && M^2 < 2ξ) ? :large_xy :
+            (f1 < y < f2 && M < 135) ? :recurrence :
+            (f1 < y < f2) ? :large_M : :quadrature
     end
 
     @testset "large_xy (§4.1 asymptotic expansion)" begin
