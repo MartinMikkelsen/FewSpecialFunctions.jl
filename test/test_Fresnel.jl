@@ -99,3 +99,44 @@ end
     @test isapprox(S, -5.815898602940467e6 - 3.788100700182899e6im; rtol = 1.0e-13)
     @test E ≈ C + im * S
 end
+
+@testset "Fresnel dispatch" begin
+    Cfloat, Sfloat, Efloat = fresnel(1.0)
+    @test Cfloat isa Float64
+    @test Sfloat isa Float64
+    @test Efloat isa ComplexF64
+    @test isapprox(Sfloat, 0.4382591473903548; rtol = 1.0e-15)
+    @test FresnelS(1.0) == Sfloat
+
+    Cint, Sint, Eint = fresnel(1)
+    @test Cint isa Float64
+    @test Sint isa Float64
+    @test Eint isa ComplexF64
+    @test (Cint, Sint, Eint) == (Cfloat, Sfloat, Efloat)
+
+    zfloat = 1.0 + 1.0im
+    Ccomplex, Scomplex, Ecomplex = fresnel(zfloat)
+    @test Ccomplex isa ComplexF64
+    @test Scomplex isa ComplexF64
+    @test Ecomplex isa ComplexF64
+    @test FresnelS(zfloat) == Scomplex
+
+    Ccomplexint, Scomplexint, Ecomplexint = fresnel(1 + im)
+    @test Ccomplexint isa ComplexF64
+    @test Scomplexint isa ComplexF64
+    @test Ecomplexint isa ComplexF64
+    @test (Ccomplexint, Scomplexint, Ecomplexint) == (Ccomplex, Scomplex, Ecomplex)
+
+    Creal, Sreal, Ereal = fresnel(1 // 2)
+    @test Creal isa Float64
+    @test Sreal isa Float64
+    @test Ereal isa ComplexF64
+    @test (Creal, Sreal, Ereal) == fresnel(0.5)
+
+    zrational = complex(1 // 2, 1 // 3)
+    Cgeneric, Sgeneric, Egeneric = fresnel(zrational)
+    @test Cgeneric isa ComplexF64
+    @test Sgeneric isa ComplexF64
+    @test Egeneric isa ComplexF64
+    @test (Cgeneric, Sgeneric, Egeneric) == fresnel(complex(0.5, 1 / 3))
+end
