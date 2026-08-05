@@ -1,4 +1,4 @@
-using Test, DelimitedFiles, FewSpecialFunctions
+using Test, DelimitedFiles, FewSpecialFunctions, SpecialFunctions
 
 @testset "Fresnel" begin
 
@@ -75,4 +75,117 @@ end
     @test isapprox(C, -FewSpecialFunctions.FresnelC(2.0), rtol = 1.0e-6)
     @test isapprox(S, -FewSpecialFunctions.FresnelS(2.0), rtol = 1.0e-6)
 
+end
+
+@testset "Fresnel complex values" begin
+    z = 1.0 + 1.0im
+    C, S, E = fresnel(z)
+
+    @test C isa ComplexF64
+    @test S isa ComplexF64
+    @test isapprox(C, 2.5557937781024376 + 2.5557937781024376im; rtol = 1.0e-14)
+    @test isapprox(S, -2.0618882191948393 + 2.0618882191948393im; rtol = 1.0e-14)
+    @test E ≈ C + im * S
+    @test FresnelC(z) ≈ C
+    @test FresnelS(z) ≈ S
+    @test FresnelE(z) ≈ E
+end
+
+@testset "Fresnel complex intermediate value" begin
+    z = 2.0 + 3.0im
+    C, S, E = fresnel(z)
+
+    @test isapprox(C, -3.788100200182899e6 + 5.815899102940467e6im; rtol = 1.0e-13)
+    @test isapprox(S, -5.815898602940467e6 - 3.788100700182899e6im; rtol = 1.0e-13)
+    @test E ≈ C + im * S
+end
+
+@testset "Fresnel dispatch" begin
+    Cfloat, Sfloat, Efloat = fresnel(1.0)
+    @test Cfloat isa Float64
+    @test Sfloat isa Float64
+    @test Efloat isa ComplexF64
+    @test isapprox(Sfloat, 0.4382591473903548; rtol = 1.0e-15)
+    @test FresnelS(1.0) == Sfloat
+
+    Cint, Sint, Eint = fresnel(1)
+    @test Cint isa Float64
+    @test Sint isa Float64
+    @test Eint isa ComplexF64
+    @test (Cint, Sint, Eint) == (Cfloat, Sfloat, Efloat)
+
+    zfloat = 1.0 + 1.0im
+    Ccomplex, Scomplex, Ecomplex = fresnel(zfloat)
+    @test Ccomplex isa ComplexF64
+    @test Scomplex isa ComplexF64
+    @test Ecomplex isa ComplexF64
+    @test FresnelS(zfloat) == Scomplex
+
+    Ccomplexint, Scomplexint, Ecomplexint = fresnel(1 + im)
+    @test Ccomplexint isa ComplexF64
+    @test Scomplexint isa ComplexF64
+    @test Ecomplexint isa ComplexF64
+    @test (Ccomplexint, Scomplexint, Ecomplexint) == (Ccomplex, Scomplex, Ecomplex)
+
+    Creal, Sreal, Ereal = fresnel(1 // 2)
+    @test Creal isa Float64
+    @test Sreal isa Float64
+    @test Ereal isa ComplexF64
+    @test (Creal, Sreal, Ereal) == fresnel(0.5)
+
+    zrational = complex(1 // 2, 1 // 3)
+    Cgeneric, Sgeneric, Egeneric = fresnel(zrational)
+    @test Cgeneric isa ComplexF64
+    @test Sgeneric isa ComplexF64
+    @test Egeneric isa ComplexF64
+    @test (Cgeneric, Sgeneric, Egeneric) == fresnel(complex(0.5, 1 / 3))
+end
+
+@testset "Fresnel asymptotic and complex branches" begin
+    # Real intermediate region: the error-function evaluation path.
+    Cintermediate, Sintermediate, Eintermediate = fresnel(3.0)
+    wintermediate = (sqrt(π) / 2) * (1 - im) * 3.0
+    Eintermediate_ref = (1 + im) / 2 * erf(wintermediate)
+    @test Eintermediate ≈ Eintermediate_ref
+    @test Cintermediate + im * Sintermediate == Eintermediate
+
+    # Real large-argument region: the asymptotic evaluation path.
+    Casymptotic, Sasymptotic, Easymptotic = fresnel(10.0)
+    @test isapprox(Casymptotic, 0.49989869420551575; rtol = 1.0e-14)
+    @test isapprox(Sasymptotic, 0.46816997858488224; rtol = 1.0e-14)
+    @test Casymptotic + im * Sasymptotic == Easymptotic
+
+    # Complex large-argument region with |imag(z)| > |real(z)|.
+    zasymptotic = 1.0 + 12.0im
+    Casymptotic_complex, Sasymptotic_complex, Easymptotic_complex = fresnel(zasymptotic)
+    wasymptotic = (sqrt(π) / 2) * (1 - im) * zasymptotic
+    Easymptotic_ref = (1 + im) / 2 * erf(wasymptotic)
+    @test isapprox(Easymptotic_complex, Easymptotic_ref; rtol = 1.0e-13)
+    @test Casymptotic_complex + im * Sasymptotic_complex == Easymptotic_complex
+
+    # Complex dispatch branches for zero imaginary and negative real parts.
+    Creal_complex, Sreal_complex, Ereal_complex = fresnel(3.0 + 0.0im)
+    @test (Creal_complex, Sreal_complex, Ereal_complex) ==
+        (complex(Cintermediate), complex(Sintermediate), Eintermediate)
+
+    Cnegative, Snegative, Enegative = fresnel(-1.0 + 1.0im)
+    Cpositive, Spositive, Epositive = fresnel(1.0 - 1.0im)
+    @test Cnegative == -Cpositive
+    @test Snegative == -Spositive
+    @test Enegative == -Epositive
+end
+
+@testset "Fresnel helper functions" begin
+    # The real error-function decomposition reproduces known C(3) and S(3).
+    Cerf, Serf = FewSpecialFunctions._fresnel_erf_real(3.0)
+    @test isapprox(Cerf, 0.6057207892976857; rtol = 1.0e-14)
+    @test isapprox(Serf, 0.496312998967375; rtol = 1.0e-14)
+
+    # The asymptotic threshold is precision-aware and never below five.
+    @test isapprox(
+        FewSpecialFunctions._fresnel_asymptotic_start(Float64),
+        5.790209015886026;
+        rtol = 1.0e-15,
+    )
+    @test FewSpecialFunctions._fresnel_asymptotic_start(BigFloat) > BigFloat(5)
 end
