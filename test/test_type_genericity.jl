@@ -18,6 +18,14 @@ using FewSpecialFunctions
         @test result_mix isa Float64
     end
 
+    @testset "Voigt type preservation" begin
+        @test voigt(1.0f0, 0.5f0) isa Float32
+        @test voigt(1.0, 0.5) isa Float64
+        @test voigt(big"1.0", big"0.5") isa BigFloat
+        @test voigt(1, 1) isa Float64
+        @test voigt(1 // 2, 1 // 3) isa Float64
+    end
+
     @testset "Debye BigFloat" begin
         result = FewSpecialFunctions.debye_function(big"2.0", big"1.0", big"5.0")
         @test result isa BigFloat

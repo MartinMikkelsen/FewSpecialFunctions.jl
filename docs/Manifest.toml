@@ -209,9 +209,9 @@ version = "8.0.1+0"
 
 [[deps.FewSpecialFunctions]]
 deps = ["HypergeometricFunctions", "QuadGK", "SpecialFunctions"]
-git-tree-sha1 = "dc7df6b4defef1f029863b397246833b1a81a12e"
+path = ".."
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
-version = "0.1.12"
+version = "0.1.13"
 
     [deps.FewSpecialFunctions.extensions]
     FewSpecialFunctionsForwardDiffExt = "ForwardDiff"

@@ -31,6 +31,7 @@ The following table summarizes the type behavior for each function family:
 | Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
 | Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
+| Voigt function | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Parabolic cylinder | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
 
 ## Automatic differentiation
@@ -184,6 +185,22 @@ default(fontfamily=plot_font,linewidth=2.5, framestyle=:box, label=nothing, grid
 bs = collect(range(0.0,10,length=100))
 M1 = dQdb(1, 0.2, bs)
 plot(bs, M1, label=L"a=0.2")
+```
+
+## Voigt function
+
+The real Voigt function `voigt(x, y)` is the convolution of a Gaussian and a
+Lorentzian profile, with nonnegative width parameter `y`.
+
+```@example Voigt
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+default(fontfamily="Computer Modern", linewidth=2.5, framestyle=:box, grid=true)
+x = range(-6, 6, length=1000)
+plot(x, voigt.(x, 0.1), label=L"y=0.1", xlabel=L"x", ylabel=L"K(x,y)",
+     title="Voigt function")
+plot!(x, voigt.(x, 1.0), label=L"y=1.0")
 ```
 
 ## Parabolic cylinder functions

@@ -9,6 +9,7 @@ import FewSpecialFunctions:
     debye_function,
     fresnel, FresnelS, FresnelC, FresnelE,
     dawson,
+    voigt,
     Clausen,
     FermiDiracIntegral, FermiDiracIntegralNorm,
     MarcumQ, dQdb,
@@ -62,6 +63,24 @@ function C(ℓ::Dual{T}, η_::Dual{T}) where {T}
     ℓv, ηv = value(ℓ), value(η_)
     y = C(ℓv, ηv)
     return Dual{T}(y, _fd_deriv(x -> C(x, ηv), ℓv) * partials(ℓ) + _fd_deriv(x -> C(ℓv, x), ηv) * partials(η_))
+end
+
+# ── Voigt (real-valued, FD) ───────────────────────────────────────────────────
+
+function voigt(x::Dual{T}, y::Real) where {T}
+    xv = value(x)
+    return Dual{T}(voigt(xv, y), _fd_deriv(t -> voigt(t, y), xv) * partials(x))
+end
+
+function voigt(x::Real, y::Dual{T}) where {T}
+    yv = value(y)
+    return Dual{T}(voigt(x, yv), _fd_deriv(t -> voigt(x, t), yv) * partials(y))
+end
+
+function voigt(x::Dual{T}, y::Dual{T}) where {T}
+    xv, yv = value(x), value(y)
+    z = voigt(xv, yv)
+    return Dual{T}(z, _fd_deriv(t -> voigt(t, yv), xv) * partials(x) + _fd_deriv(t -> voigt(xv, t), yv) * partials(y))
 end
 
 # ── Coulomb: D⁺, D⁻ (complex-valued, FD) ──────────────────────────────────────

@@ -13,6 +13,7 @@ using DelimitedFiles
     include("test_Fresnel.jl")
     include("test_MarcumQ.jl")
     include("test_parabolic_cylinder.jl")
+    include("test_Voigt.jl")
     include("test_type_genericity.jl")
     include("test_forwarddiff_ext.jl")
 
