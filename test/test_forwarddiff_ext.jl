@@ -2,6 +2,7 @@ using Test
 using FewSpecialFunctions
 using ForwardDiff
 using SpecialFunctions
+import FewSpecialFunctions: dawson
 
 fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
 
@@ -81,6 +82,14 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
         @test Ex isa Complex
         @test real(Ex) isa ForwardDiff.Dual
         @test imag(Ex) isa ForwardDiff.Dual
+    end
+
+    @testset "Dawson integral" begin
+        for x in (-2.0, -0.1, 0.1, 1.0, 10.0)
+            expected = muladd(-2x, dawson(x), 1.0)
+            @test isapprox(ForwardDiff.derivative(dawson, x), expected; rtol = 1.0e-12)
+        end
+        @test dawson(ForwardDiff.Dual{Nothing}(1.0, 1.0)) isa ForwardDiff.Dual
     end
 
     @testset "Clausen family" begin

@@ -27,6 +27,7 @@ The following table summarizes the type behavior for each function family:
 | Coulomb wave functions | `Number` | Via Julia's promotion rules |
 | Debye functions | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Fresnel integrals | `Number` | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
+| Dawson integral | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
 | Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
@@ -368,3 +369,25 @@ domaincolor(FresnelE, [-2, 2, -2, 2], grid=true)
 The implementation combines a convergent series near zero, stable intermediate
 evaluation, and asymptotic expansions for large arguments. It is adapted from [this paper](https://doi.org/10.1007/s11075-023-01654-2)
 and the [upstream Fortran source repository](https://github.com/mofrehzaghloul/Fresnel_Integrals).
+
+## Dawson integral
+
+```math
+D(x) = e^{-x^2}\int_0^x e^{t^2}\,\mathrm{d}t.
+```
+
+`dawson(x)` evaluates the real Dawson integral. It is odd, is zero at the
+origin, and approaches `1 / (2x)` for large magnitude arguments.
+
+```@example Dawson
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+
+default(fontfamily="Computer Modern", linewidth=2.5, framestyle=:box, grid=true)
+x = range(-8, 8, length=1000)
+plot(x, FewSpecialFunctions.dawson.(x), label=L"D(x)", xlabel=L"x", ylabel="value", title="Dawson integral")
+```
+
+The implementation uses the adaptive series and continued fractions described in
+[Zaghloul (2023)](https://doi.org/10.1007/s11075-023-01608-8) and is informed by
+the [upstream MIT-licensed Fortran implementation](https://github.com/mofrehzaghloul/Dawson).

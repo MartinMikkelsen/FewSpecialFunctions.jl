@@ -6,6 +6,9 @@ include("CoulombWave.jl")
 export debye_function
 include("Debye.jl")
 
+export dawson
+include("Dawson.jl")
+
 export fresnel, FresnelS, FresnelC, FresnelE
 include("Fresnel.jl")
 
