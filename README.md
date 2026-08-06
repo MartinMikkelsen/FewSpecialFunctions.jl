@@ -14,6 +14,7 @@ A Julia package collecting a few special functions. Now includes over 13000 test
 - [Debye functions](https://en.wikipedia.org/wiki/Debye_function)
 - [Fermi-Dirac integrals](https://en.wikipedia.org/wiki/Incomplete_Fermi%E2%80%93Dirac_integral)
 - [Fresnel integrals](https://en.wikipedia.org/wiki/Fresnel_integral)
+- [Voigt profile](https://en.wikipedia.org/wiki/Voigt_profile)
 
 ### Install 
 
