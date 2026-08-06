@@ -60,6 +60,9 @@ FermiDiracIntegralNorm
 MarcumQ
 dQdb
 
+# Voigt function
+voigt
+
 # Parabolic cylinder functions
 U
 V

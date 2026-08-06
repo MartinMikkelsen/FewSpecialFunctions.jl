@@ -92,6 +92,27 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
         @test dawson(ForwardDiff.Dual{Nothing}(1.0, 1.0)) isa ForwardDiff.Dual
     end
 
+    @testset "Voigt function" begin
+        x, y = 1.0, 0.5
+        @test isapprox(ForwardDiff.derivative(t -> voigt(t, y), x), fdiff(t -> voigt(t, y), x); rtol = 1.0e-5)
+        @test isapprox(ForwardDiff.derivative(t -> voigt(x, t), y), fdiff(t -> voigt(x, t), y); rtol = 1.0e-5)
+
+        xdual = ForwardDiff.Dual{Nothing}(x, 1.0, 0.0)
+        ydual = ForwardDiff.Dual{Nothing}(y, 0.0, 1.0)
+        zdual = voigt(xdual, ydual)
+        @test zdual isa ForwardDiff.Dual
+        @test isapprox(ForwardDiff.value(zdual), voigt(x, y); rtol = 1.0e-12)
+        @test isapprox(ForwardDiff.partials(zdual)[1], fdiff(t -> voigt(t, y), x); rtol = 1.0e-5)
+        @test isapprox(ForwardDiff.partials(zdual)[2], fdiff(t -> voigt(x, t), y); rtol = 1.0e-5)
+
+        xunit = ForwardDiff.Dual{Nothing}(1.0, 1.0)
+        yunit = ForwardDiff.Dual{Nothing}(0.5, 1.0)
+        zunit = voigt(xunit, yunit)
+        @test zunit isa ForwardDiff.Dual
+        @test isapprox(ForwardDiff.value(zunit), voigt(1.0, 0.5); rtol = 1.0e-12)
+        @test isapprox(ForwardDiff.partials(zunit)[1], fdiff(t -> voigt(t, 0.5), 1.0) + fdiff(t -> voigt(1.0, t), 0.5); rtol = 1.0e-5)
+    end
+
     @testset "Clausen family" begin
         d = ForwardDiff.derivative(x -> Clausen(2, x), 1.1)
         r = fdiff(x -> Clausen(2, x), 1.1)

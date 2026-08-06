@@ -9,6 +9,9 @@ include("Debye.jl")
 export dawson
 include("Dawson.jl")
 
+export voigt
+include("Voigt.jl")
+
 export fresnel, FresnelS, FresnelC, FresnelE
 include("Fresnel.jl")
 
