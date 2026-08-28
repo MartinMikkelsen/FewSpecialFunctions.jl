@@ -36,14 +36,14 @@ end
     end
 
     narrow_y_reference = [
-        (1e-12, 1e-10),
-        (π / 12 + 1e-12, 1e-10),
+        (1.0e-12, 1.0e-10),
+        (π / 12 + 1.0e-12, 1.0e-10),
     ]
     for (x, y) in narrow_y_reference
         @test isapprox(voigt(x, y), Float64(voigt_quadgk_reference(x, y)); rtol = 2.0e-12)
     end
 
-    @test isapprox(voigt(1.0, 1e200), inv(sqrt(π) * 1e200); rtol = 2.0e-12)
+    @test isapprox(voigt(1.0, 1.0e200), inv(sqrt(π) * 1.0e200); rtol = 2.0e-12)
 
     @test isnan(voigt(NaN, 0.5))
     @test isnan(voigt(0.5, NaN))

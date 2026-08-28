@@ -59,7 +59,7 @@ function _voigt_fourier(x::T, y::T) where {T <: AbstractFloat}
         cos_minus = cos_xtM * cos_nπ + sin_xtM * sin_nπ
         K += T(_VOIGT_FOURIER_COEFFICIENTS[n + 1]) * (
             _voigt_integral(y, x + nπ, cos_plus, sin_plus) +
-            _voigt_integral(y, x - nπ, cos_minus, sin_minus)
+                _voigt_integral(y, x - nπ, cos_minus, sin_minus)
         ) / 2
     end
 
