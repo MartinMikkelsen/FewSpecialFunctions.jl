@@ -205,12 +205,15 @@ plot!(x, voigt.(x, 1.0), label=L"y=1.0")
 
 ## Parabolic cylinder functions
 
-The parabolic cylinder functions `U(a, x)` and `V(a, x)` are solutions to the parabolic cylinder differential equation. The implementation is based on series expansions and asymptotic formulas, following standard references. The code is optimized for both small and large arguments, and handles edge cases robustly.
+The parabolic cylinder functions `U(a, x)` and `V(a, x)` solve the parabolic cylinder differential equation. `U` and `W` use asymptotic expansions only when their decreasing terms reach the target precision. Otherwise, they use a convergent series with extra working precision to control cancellation. This fallback favors accuracy over speed. The derivatives `dU`, `dV`, and `dW` differentiate the same expansions as their corresponding functions.
 
 - `U(a, x)`: Computes the parabolic cylinder function of the first kind using a combination of series and asymptotic expansions.
-- `V(a, x)`: Computes the second, linearly independent solution, using similar techniques.
+- `V(a, x)`: Computes the second, linearly independent solution using a convergent series with extra working precision.
+- `W(a, x)`: Solves the related equation ``W''=(a-x^2/4)W`` using series or asymptotic expansions.
 
-The implementation is adapted from S. Zhang and J. Jin, 'Computation of Special Functions' (Wiley, 1966) and other standard sources.
+The formulas follow [DLMF Chapter 12](https://dlmf.nist.gov/12), including its [expansions for W](https://dlmf.nist.gov/12.14).
+
+On Julia versions with process-global `BigFloat` precision (including Julia 1.10), the extra-precision fallback is serialized between cylinder calls. Avoid running it concurrently with unrelated `BigFloat` arithmetic, which shares that precision setting.
 
 ```@example U
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -228,7 +231,7 @@ plot!(xlabel="x", ylabel=L"U(a,x)", title="Parabolic Cylinder Function U(a,x)")
 ```
 
 ### `V(a, x)`
-The function `V(a, x)` is a second, linearly independent solution to the same differential equation satisfied by `U(a, x)`. The implementation of `V(a, x)` in `FewSpecialFunctions.jl` uses a combination of convergent series and asymptotic expansions adapted from standard references.
+The function `V(a, x)` is a second, linearly independent solution to the same differential equation satisfied by `U(a, x)`. It uses a convergent series with extra working precision.
 
 ```@example Cylinder
 using Plots, FewSpecialFunctions, LaTeXStrings  # hide
@@ -258,7 +261,10 @@ The Debye functions are given by
 ```math
     D_n(\beta,x)= \frac{n}{x^n} \int_0^x \frac{t^n}{(\text{e}^t-1)^\beta} \, \text{d}t
 ```
-And
+For finite `n > 0`, the integral converges when `0 < β < n+1`. At `x = 0`, the limiting value is `0` for `β < 1`, `1` for `β = 1`, and `Inf` for `β > 1`.
+
+The implementation uses transformed adaptive quadrature. `tol` specifies a relative tolerance, floored at eight times machine epsilon; `max_terms` limits the number of quadrature subintervals. Failure to reach that tolerance raises an error.
+
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
 ENV["GKSwstype"] = "100" # hide

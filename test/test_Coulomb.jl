@@ -59,6 +59,38 @@ using SpecialFunctions
         @test C(0, 0.0) ≈ 1.0 atol = 1.0e-10
         # for η=0, ℓ=1: C = 2^1 * |Γ(2)/Γ(4)| = 2 * (1!)/(3!) = 2/6 = 1/3
         @test C(1, 0.0) ≈ 1 // 3 atol = 1.0e-10
+
+        # The l=0 gamma product reduces to this elementary expression.
+        ηcomplex = 0.2 + 0.3im
+        @test C(0, ηcomplex) ≈ sqrt(2π * ηcomplex / expm1(2π * ηcomplex)) rtol = 1.0e-14
+        @test C(0, conj(ηcomplex)) ≈ conj(C(0, ηcomplex)) rtol = 1.0e-14
+
+        # Exact zero-charge normalization remains representable at large l.
+        C100 = Float64(BigFloat(2)^100 * factorial(big(100)) / factorial(big(201)))
+        @test C(100, 0.0) ≈ C100 rtol = 1.0e-12
+        @test C(0, -500.0) ≈ sqrt(1000π) rtol = 1.0e-12
+        for T in (Float32, Float64, BigFloat)
+            @test C(T(1), T(0.2)) isa T
+            @test C(T(1), T(0.2)) > 0
+        end
+
+        # Holomorphic functions have the same derivative along real and
+        # imaginary increments, away from gamma poles and branch cuts.
+        ℓcomplex = 0.4 + 0.2im
+        h = 1.0e-5
+        for (f, z) in ((η -> C(ℓcomplex, η), ηcomplex), (ℓ -> C(ℓ, ηcomplex), ℓcomplex))
+            dre = (f(z + h) - f(z - h)) / (2h)
+            dim = (f(z + im * h) - f(z - im * h)) / (2im * h)
+            @test dre ≈ dim rtol = 1.0e-8
+        end
+    end
+
+    @testset "Coulomb normalization propagation" begin
+        ηcomplex, ρ = 0.2 + 0.3im, 1.2
+        @test F(0, ηcomplex, ρ) ≈ F_imag(0, ηcomplex, ρ) rtol = 1.0e-12
+        @test H⁺(0, ηcomplex, ρ) ≈ G(0, ηcomplex, ρ) + im * F(0, ηcomplex, ρ) rtol = 1.0e-12
+        @test H⁻(0, ηcomplex, ρ) ≈ G(0, ηcomplex, ρ) - im * F(0, ηcomplex, ρ) rtol = 1.0e-12
+        @test F(100, 0.0, 1.0) ≈ sqrt(π / 2) * besselj(100.5, 1.0) rtol = 1.0e-12
     end
 
     @testset "θ phase" begin

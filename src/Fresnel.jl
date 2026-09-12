@@ -144,7 +144,25 @@ function _fresnel_complex(z::Complex{T}) where {T <: AbstractFloat}
         return -C, -S, -E
     end
 
-    C, S = _fresnel_pair(z)
+    if T <: Union{Float16, Float32, Float64}
+        # DLMF 7.5.8: evaluate E directly so large C and iS never cancel.
+        scale = sqrt(T(π)) / 2
+        E = (one(T) + im) / 2 * erf(scale * (one(T) - im) * z)
+        C, S = if abs2(z) <= T(6.9)
+            _fresnel_series(z)
+        else
+            Eminus = (one(T) - im) / 2 * erf(scale * (one(T) + im) * z)
+            (E + Eminus) / 2, (E - Eminus) / (2im)
+        end
+        return C, S, E
+    end
+
+    # Generic arithmetic retains the series/Miller precision; its asymptotic
+    # sector correction is defined in the first quadrant.
+    C, S = _fresnel_pair(complex(x, abs(y)))
+    if y < zero(T)
+        C, S = conj(C), conj(S)
+    end
     return C, S, C + im * S
 end
 
@@ -157,7 +175,10 @@ Compute the Fresnel cosine and sine integrals and their combination:
     C(z) = ∫₀ᶻ cos(π / 2 * t²) dt
 
 Returns `(C, S, C + im * S)`. For complex inputs, `C` and `S` are the analytic
-complex Fresnel integrals.
+complex Fresnel integrals. For `ComplexF16`, `ComplexF32`, and `ComplexF64`,
+the third value is evaluated independently to avoid cancellation. Other
+complex float types retain the series/asymptotic implementation, whose
+combination can lose precision when `C` and `S` nearly cancel.
 """
 fresnel(z::T) where {T <: AbstractFloat} = _fresnel_real(z)
 fresnel(z::Integer) = fresnel(Float64(z))

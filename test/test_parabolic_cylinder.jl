@@ -1,5 +1,87 @@
 using SpecialFunctions
 
+@testset "Cylinder numerical regression checks" begin
+    @testset "U near the former asymptotic switch" begin
+        # Positive-integrand quadrature of DLMF 12.5.1 at 256-bit precision.
+        for (a, x, expected) in [
+                (10.0, 5.00001, 1.549593832704713e-11),
+                (10.0, 6.0, 2.252444925281081e-13),
+            ]
+            @test FewSpecialFunctions.U(a, x) ≈ expected rtol = 2.0e-12
+        end
+        for x in (-20.0, -10.0, -5.00001, 5.00001, 10.0, 20.0)
+            gaussian = exp(-x^2 / 4)
+            @test FewSpecialFunctions.U(-0.5, x) ≈ gaussian rtol = 2.0e-13
+            @test FewSpecialFunctions.dU(-0.5, x) ≈ -x * gaussian / 2 rtol = 2.0e-13
+        end
+    end
+
+    @testset "W phase, amplitude, and derivative" begin
+        # Independently summed ODE solution at 768 bits; truncations at 800 and
+        # 1200 terms agreed. The a=0 checks below use a separate Bessel identity.
+        for (a, x, expected) in [
+                (1.0, 10.0, -0.035016738866263074),
+                (0.1, 8.00001, -0.205949151506127),
+                (10.0, 20.0, -1.6623780433717748e-8),
+            ]
+            @test FewSpecialFunctions.W(a, x) ≈ expected rtol = 2.0e-11
+        end
+        for x in (5.0, 7.99999, 8.00001, 10.0, 20.0, 40.0)
+            z = x^2 / 4
+            expected = sqrt(pi * x) / 2^(5 / 4) *
+                (besselj(-0.25, z) - besselj(0.25, z))
+            derivative = -sqrt(pi * x) * x / 2^(9 / 4) *
+                (besselj(-0.75, z) + besselj(0.75, z))
+            @test FewSpecialFunctions.W(0.0, x) ≈ expected rtol = 2.0e-11
+            @test FewSpecialFunctions.dW(0.0, x) ≈ derivative rtol = 2.0e-11
+        end
+    end
+
+    @testset "Float32 derivatives at the origin" begin
+        @test FewSpecialFunctions.dU(0.0f0, 0.0f0) ≈ -0.5813683170191186f0 rtol = 5.0f-7
+        @test FewSpecialFunctions.dV(0.0f0, 0.0f0) ≈ 0.3280019486668765f0 rtol = 5.0f-7
+        @test FewSpecialFunctions.dW(0.0f0, 0.0f0) ≈ -0.48887053372346173f0 rtol = 5.0f-7
+    end
+
+    @testset "Independent solutions and precision" begin
+        for a in (-10.0, -0.5, 0.0, 1.0, 10.0), x in (0.0, 2.0, 5.0, 8.0, 10.0)
+            u, v = FewSpecialFunctions.U(a, x), FewSpecialFunctions.V(a, x)
+            du, dv = FewSpecialFunctions.dU(a, x), FewSpecialFunctions.dV(a, x)
+            @test u * dv - du * v ≈ sqrt(2 / pi) rtol = 2.0e-11
+            w, wn = FewSpecialFunctions.W(a, x), FewSpecialFunctions.W(a, -x)
+            dw, dwn = FewSpecialFunctions.dW(a, x), FewSpecialFunctions.dW(a, -x)
+            @test w * dwn + dw * wn ≈ -1 rtol = 2.0e-11
+        end
+        # Fixed high-precision references from the independently summed ODE.
+        setprecision(256) do
+            @test FewSpecialFunctions.U(big(10), big(6)) ≈ big"2.25244492528108108020437274296873569833210978800633191009619758715824058922e-13" rtol = big"1e-65"
+            @test FewSpecialFunctions.W(big(0), big(10)) ≈ big"0.229304673430426488080556254525231378709958147043123523788331611358746566233" rtol = big"1e-65"
+            @test FewSpecialFunctions.dW(big(0), big(10)) ≈ big"-0.881210343397594405108599265961579620485936842697233669233829684544252911335" rtol = big"1e-65"
+            @test precision(FewSpecialFunctions.W(big(0), big(2))) == 256
+            @test precision(BigFloat) == 256
+        end
+        @test FewSpecialFunctions.U(10.0f0, 6.0f0) ≈ 2.252444925281081f-13 rtol = 2.0f-6
+        @test FewSpecialFunctions.W(10.0f0, 20.0f0) ≈ -1.6623780433717748f-8 rtol = 2.0f-5
+        x = 25.0
+        derivative = -sqrt(pi * x) * x / 2^(9 / 4) * (besselj(-0.75, x^2 / 4) + besselj(0.75, x^2 / 4))
+        @test FewSpecialFunctions.dW(0.0f0, 25.0f0) ≈ Float32(derivative) rtol = 2eps(Float32)
+        # The derivative can remain representable after U itself underflows.
+        for x in (54.6, 20.5f0)
+            expected = typeof(x)(-BigFloat(x) / 2 * exp(-BigFloat(x)^2 / 4))
+            @test FewSpecialFunctions.dU(typeof(x)(-0.5), x) == expected
+        end
+    end
+end
+
+@testset "Concurrent cylinder precision" begin
+    parameters = [(10.0, 6.0), (1.0, 0.1), (-10.0, 15.0), (20.0, 5.0)]
+    references = [FewSpecialFunctions.U(a, x) for (a, x) in parameters]
+    before = precision(BigFloat)
+    tasks = [Threads.@spawn(FewSpecialFunctions.U(parameters[i]...)) for i in repeat(1:4, 8)]
+    @test fetch.(tasks) == repeat(references, 8)
+    @test precision(BigFloat) == before
+end
+
 @testset "Parabolic Cylinder function" begin
 
 
@@ -26,17 +108,13 @@ using SpecialFunctions
     end
 
     # https://link.springer.com/content/pdf/10.1007/s00211-004-0517-x.pdf
-    @test FewSpecialFunctions.U(10.1, 2 * 1.2 * sqrt(10.1)) ≈ 8.7742145116891e-17 atol = 1.0e-9
-    @test FewSpecialFunctions.U(20.1, 2 * 1.2 * sqrt(20.1)) ≈ 2.8991030051243e-35 atol = 1.0e-9
-    @test FewSpecialFunctions.U(30.1, 2 * 1.2 * sqrt(30.1)) ≈ 7.6172124886582e-55 atol = 1.0e-9
+    @test FewSpecialFunctions.U(10.1, 2 * 1.2 * sqrt(10.1)) ≈ 8.7742145116891e-17 rtol = 1.0e-12
+    @test FewSpecialFunctions.U(20.1, 2 * 1.2 * sqrt(20.1)) ≈ 2.8991030051243e-35 rtol = 1.0e-12
+    @test FewSpecialFunctions.U(30.1, 2 * 1.2 * sqrt(30.1)) ≈ 7.6172124886582e-55 rtol = 1.0e-12
 
-    @test FewSpecialFunctions.U(0.0, 10.0) ≈ exp(-0.25 * 10^2) atol = 1.0e-9
-    @test FewSpecialFunctions.U(0.0, 20.0) ≈ exp(-0.25 * 20^2) atol = 1.0e-9
-    @test FewSpecialFunctions.U(0.0, 30.0) ≈ exp(-0.25 * 30^2) atol = 1.0e-9
-
-    @test FewSpecialFunctions.U(0.0, 40.0) ≈ exp(-0.25 * 40^2) atol = 1.0e-9
-    @test FewSpecialFunctions.U(0.0, 50.0) ≈ exp(-0.25 * 50^2) atol = 1.0e-9
-    @test FewSpecialFunctions.U(0.0, 60.0) ≈ exp(-0.25 * 60^2) atol = 1.0e-9
+    for x in (10.0, 20.0, 30.0, 40.0, 50.0, 60.0)
+        @test FewSpecialFunctions.U(-0.5, x) ≈ exp(-0.25 * x^2) rtol = 1.0e-14
+    end
 
 
     # S. Zhang and J. Jin, 'Computation of Special functions' (Wiley, 1966),  E. Cojocaru, January 2009
@@ -195,62 +273,12 @@ end
         @test isreal(w)
     end
 
-    # Check that the branch for x > 0 and x < 0 is used
-    for a in a_vals
-        x = 15.0
-        w_pos = FewSpecialFunctions.W(a, x)
-        w_neg = FewSpecialFunctions.W(a, -x)
-        # For a = 0, W(0, x) is even in x, so values should be close
-        if a == 0.0
-            @test isapprox(w_pos, w_neg; atol = 1.0e-8)
-        end
-    end
-
-    # Check that the phase ϕ is finite and well-defined for large x
-    for a in a_vals, x in x_vals
-        g₀ = gamma(Complex(1 / 2, a))
-        ϕ₂ = imag(g₀)
-        ϕ = x^2 / 4 - a * log(abs(x)) + π / 4 + ϕ₂ / 2
-        @test isfinite(ϕ)
-    end
-
-    # Check that the denominator in the recurrence is not zero
-    for a in a_vals
-        gref = gamma(Complex(1 / 2, a))
-        gr₀, gi₀ = real(gref), imag(gref)
-        den = gr₀^2 + gi₀^2
-        @test den > 0
-    end
-
-    # Check that the recurrence for u and v produces finite arrays
-    for a in a_vals
-        u = zeros(Float64, 21)
-        v = zeros(Float64, 21)
-        gref = gamma(Complex(1 / 2, a))
-        gr₀, gi₀ = real(gref), imag(gref)
-        den = gr₀^2 + gi₀^2
-        for k in 2:2:40
-            m = k ÷ 2
-            g = gamma(Complex(k + 0.5, a))
-            gr, gi = real(g), imag(g)
-            u[m] = (gr * gr₀ + gi * gi₀) / den
-            v[m] = (gr₀ * gi - gr * gi₀) / den
-        end
-        @test all(isfinite, u)
-        @test all(isfinite, v)
-    end
 end
 
-@testset "U large |x|, negative x, half-integer a branch" begin
-    # Hits the `return -u * sinpi(a)` path: |x| > 5, x < 0, a < 0, a+0.5 ≈ integer
-    # e.g. a = -0.5 → a+0.5 = 0 (integer), x = -6.0
-    val = FewSpecialFunctions.U(-0.5, -6.0)
-    @test isfinite(val)
-    # Cross-check: U(-0.5, -6) should equal -U(-0.5, -6) * sinpi(-0.5) = -U * (-1) = U (since sinpi(-0.5)=-1)
-    # More precisely just verify it matches a scalar reference
-    @test val ≈ FewSpecialFunctions.U(-0.5, -6.0)  # idempotency
-    # Also test a = -1.5 (a+0.5=-1, integer)
-    @test isfinite(FewSpecialFunctions.U(-1.5, -7.0))
+@testset "U at negative half-integer orders" begin
+    # DLMF 12.7.1–2: the Gaussian and first Hermite polynomial.
+    @test FewSpecialFunctions.U(-0.5, -6.0) ≈ exp(-9) rtol = 1.0e-14
+    @test FewSpecialFunctions.U(-1.5, -7.0) ≈ -7exp(-49 / 4) rtol = 1.0e-14
 end
 
 @testset "parabolic cylinder array consistency" begin
