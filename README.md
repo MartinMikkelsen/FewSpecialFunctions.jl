@@ -13,6 +13,7 @@ A Julia package collecting a few special functions. Now includes over 13000 test
 - [Coulomb wave functions](https://en.wikipedia.org/wiki/Coulomb_wave_function)
 - [Debye functions](https://en.wikipedia.org/wiki/Debye_function)
 - [Fermi-Dirac integrals](https://en.wikipedia.org/wiki/Incomplete_Fermi%E2%80%93Dirac_integral)
+- [Bose–Einstein integrals](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/Functions/#Bose–Einstein-integrals)
 - [Fresnel integrals](https://en.wikipedia.org/wiki/Fresnel_integral)
 - [Voigt profile](https://en.wikipedia.org/wiki/Voigt_profile)
 
@@ -34,11 +35,19 @@ julia> using FewSpecialFunctions
 
 julia> FermiDiracIntegral(3 / 2, 1.0)
 2.6616826247307124
+
+julia> BoseEinsteinIntegralNorm(1 / 2, -1.0) ≈ 0.4284407345998379
+true
 ```
+
+`BoseEinsteinIntegral(k, η)` evaluates the unnormalized integral for integer or
+half-integer `k > -1` and real `η ≤ 0`. `BoseEinsteinIntegralNorm(k, η)` divides
+by `Γ(k + 1)` and extends to integer or half-integer orders `k ≥ -9/2` by
+differentiation. Both support `Float32`, `Float64`, `BigFloat`, broadcasting,
+and ForwardDiff differentiation with respect to `η`.
 
 ### Some other examples
 
 Some other examples are shown in the [documentation](https://martinmikkelsen.github.io/FewSpecialFunctions.jl/dev/).
 
 ![CombinedPlot](combinedplot.png)
-

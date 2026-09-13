@@ -12,6 +12,7 @@ import FewSpecialFunctions:
     voigt,
     Clausen,
     FermiDiracIntegral, FermiDiracIntegralNorm,
+    BoseEinsteinIntegral, BoseEinsteinIntegralNorm,
     MarcumQ, dQdb,
     U, V, W, dU, dV, dW
 
@@ -589,6 +590,60 @@ function Clausen(n::Int, θv::Dual{T}; N::Int = 10, m::Int = 20) where {T}
         -Clausen(n - 1, θval; N = N, m = m)
     end
     return Dual{T}(y, dθ * partials(θv))
+end
+
+# ── Bose–Einstein: dBₖ/dη = Bₖ₋₁ ────────────────────────────────────────────────
+
+# Promote before subtraction, including unsigned orders and nested Dual inputs.
+function _bose_lower_order(k::Real, x::Real)
+    T = float(promote_type(typeof(k), typeof(x)))
+    return T(k) - one(T)
+end
+_bose_lower_order(k::Real, x::Dual) = _bose_lower_order(k, value(x))
+
+# Continue below the lowest tabulated order for derivatives, including nested Duals.
+function _bose_continued(k::Real, x::Real)
+    k >= -4.5 && return BoseEinsteinIntegralNorm(k, x)
+    T = float(promote_type(typeof(k), typeof(x)))
+    return FewSpecialFunctions._bose_normalized(T(k), T(x))
+end
+
+function _bose_continued(k::Real, x::Dual{T}) where {T}
+    xv = value(x)
+    return Dual{T}(_bose_continued(k, xv), _bose_continued(_bose_lower_order(k, xv), xv) * partials(x))
+end
+
+# Keep Γ(k+1) fixed while lowering the polylogarithm order for derivatives.
+function _bose_scaled(k::Real, order::Real, x::Real)
+    T = float(promote_type(typeof(k), typeof(order), typeof(x)))
+    if T === Float16 || T === Float32
+        return T(FewSpecialFunctions._bose_unnormalized(Float64(k), Float64(x), Float64(order)))
+    end
+    return FewSpecialFunctions._bose_unnormalized(T(k), T(x), T(order))
+end
+
+function _bose_scaled(k::Real, order::Real, x::Dual{T}) where {T}
+    xv = value(x)
+    return Dual{T}(_bose_scaled(k, order, xv), _bose_scaled(k, _bose_lower_order(order, xv), xv) * partials(x))
+end
+
+function BoseEinsteinIntegralNorm(k::Real, x::Dual{T}) where {T}
+    xv = value(x)
+    y = BoseEinsteinIntegralNorm(k, xv)
+    return Dual{T}(y, _bose_continued(_bose_lower_order(k, xv), xv) * partials(x))
+end
+
+function BoseEinsteinIntegral(k::Real, x::Dual{T}) where {T}
+    xv = value(x)
+    y = BoseEinsteinIntegral(k, xv)
+    return Dual{T}(y, _bose_scaled(k, _bose_lower_order(k, xv), xv) * partials(x))
+end
+
+for f in (:BoseEinsteinIntegral, :BoseEinsteinIntegralNorm)
+    @eval begin
+        $f(k::Dual, x::Real) = throw(DomainError(k, "differentiation in the discrete order k is not supported"))
+        $f(k::Dual, x::Dual) = throw(DomainError(k, "differentiation in the discrete order k is not supported"))
+    end
 end
 
 # ── Fermi-Dirac (FD) ───────────────────────────────────────────────────────────

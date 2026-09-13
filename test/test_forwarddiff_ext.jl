@@ -126,6 +126,43 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
         end
     end
 
+    @testset "Bose–Einstein family" begin
+        for k in (-4.5, -3.0, -0.5, 0.0, 0.5, 1.5, 5.5, 19.5, 20.0), x in (-2.5, -0.1)
+            # Independent derivative of the fugacity expansion, evaluated at
+            # high precision; 3000 terms leave a negligible exponential tail.
+            reference = Float64(sum(exp(big(n) * big(x)) / big(n)^big(k) for n in 1:3000))
+            @test ForwardDiff.derivative(t -> BoseEinsteinIntegralNorm(k, t), x) ≈ reference rtol = 5.0e-15
+            if k > -1
+                @test ForwardDiff.derivative(t -> BoseEinsteinIntegral(k, t), x) ≈ gamma(k + 1) * reference rtol = 5.0e-15
+            end
+        end
+        for k in (-4.5, 0.5, 1.5)
+            reference = Float64(sum(exp(-big(n)) / big(n)^(big(k) - 1) for n in 1:300))
+            second = ForwardDiff.derivative(x -> ForwardDiff.derivative(t -> BoseEinsteinIntegralNorm(k, t), x), -1.0)
+            @test second ≈ reference rtol = 5.0e-15
+            if k > -1
+                second_scaled = ForwardDiff.derivative(x -> ForwardDiff.derivative(t -> BoseEinsteinIntegral(k, t), x), -1.0)
+                @test second_scaled ≈ gamma(k + 1) * reference rtol = 5.0e-15
+            end
+        end
+        @test ForwardDiff.derivative(x -> BoseEinsteinIntegralNorm(1.5f0, x), -1.0f0) isa Float32
+        for (k, x) in ((35.0f0, -10.0f0), (40.0f0, -30.0f0))
+            reference = Float32(gamma(BigFloat(k) + 1) * BoseEinsteinIntegralNorm(BigFloat(k) - 1, BigFloat(x)))
+            @test ForwardDiff.derivative(t -> BoseEinsteinIntegral(k, t), x) ≈ reference rtol = 2eps(Float32)
+        end
+        @test ForwardDiff.derivative(x -> BoseEinsteinIntegralNorm(1.5, x), big"-1") isa BigFloat
+        @test ForwardDiff.derivative(x -> BoseEinsteinIntegralNorm(1.5, x), 0.0) ≈ zeta(1.5)
+        @test ForwardDiff.derivative(x -> BoseEinsteinIntegralNorm(0.5, x), 0.0) == Inf
+        @test ForwardDiff.derivative(x -> BoseEinsteinIntegral(200, x), -1000.0) ≈ Float64(gamma(big(201)) * exp(big(-1000))) rtol = 3.0e-13
+        for f in (BoseEinsteinIntegral, BoseEinsteinIntegralNorm)
+            @test ForwardDiff.derivative(x -> f(UInt(0), x), -0.5) ≈ inv(expm1(0.5))
+            @test ForwardDiff.derivative(x -> f(UInt(0), x), -0.5f0) isa Float32
+            @test ForwardDiff.derivative(x -> ForwardDiff.derivative(t -> f(UInt(1), t), x), -0.5) ≈ inv(expm1(0.5))
+            @test_throws DomainError ForwardDiff.derivative(k -> f(k, -1.0), 0.5)
+            @test_throws DomainError ForwardDiff.gradient(v -> f(v[1], v[2]), [0.5, -1.0])
+        end
+    end
+
     @testset "Fermi-Dirac family" begin
         d = ForwardDiff.derivative(x -> FermiDiracIntegral(1.5, x), 0.2)
         r = fdiff(x -> FermiDiracIntegral(1.5, x), 0.2)
