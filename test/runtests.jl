@@ -10,6 +10,7 @@ using DelimitedFiles
     include("test_Debye.jl")
     include("test_Dawson.jl")
     include("test_FermiDirac.jl")
+    include("test_BoseEinstein.jl")
     include("test_Fresnel.jl")
     include("test_MarcumQ.jl")
     include("test_parabolic_cylinder.jl")

@@ -21,6 +21,9 @@ include("Clausen.jl")
 export FermiDiracIntegral, FermiDiracIntegralNorm
 include("FermiDirac.jl")
 
+export BoseEinsteinIntegral, BoseEinsteinIntegralNorm
+include("BoseEinstein.jl")
+
 export MarcumQ, dQdb
 include("MarcumQ.jl")
 

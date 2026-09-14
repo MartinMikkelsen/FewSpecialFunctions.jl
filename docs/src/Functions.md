@@ -30,6 +30,7 @@ The following table summarizes the type behavior for each function family:
 | Dawson integral | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
 | Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
+| Bose–Einstein integrals | `Real`; integer or half-integer order | Full (`Float32`, `Float64`, `BigFloat`) |
 | Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
 | Voigt function | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Parabolic cylinder | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
@@ -306,6 +307,63 @@ plot!(x,FermiDiracIntegralNorm.(5/2,x),label=L"F_{5/2}(x)")
 xlabel!(L"x")
 title!("Fermi-Dirac Integral")
 ```
+
+## Bose–Einstein integrals
+
+[`BoseEinsteinIntegral`](@ref) evaluates the unnormalized complete integral
+
+```math
+    \mathcal{B}_k(\eta) = \int_0^\infty \frac{t^k}{\exp(t-\eta)-1}\,dt,
+```
+
+for integer or half-integer orders `k > -1` and real `η ≤ 0`.
+[`BoseEinsteinIntegralNorm`](@ref) evaluates its normalized form
+
+```math
+    B_k(\eta) = \frac{\mathcal{B}_k(\eta)}{\Gamma(k+1)}
+              = \operatorname{Li}_{k+1}(e^\eta).
+```
+
+The normalized function also accepts integer or half-integer orders down to
+`k = -9/2`. For `k ≤ -1`, it is defined by repeated differentiation,
+``dB_k/d\eta = B_{k-1}``; the integral above does not converge at those orders.
+
+Both functions return `0` at `η = -Inf`. At `η = 0`, the normalized value is
+``\zeta(k+1)`` for `k > 0`, and the unnormalized value includes the factor
+``\Gamma(k+1)``. For supported `k ≤ 0`, the limit as `η → 0⁻` is `Inf`.
+Positive `η`, `NaN`, and unsupported orders raise `DomainError`.
+
+```jldoctest bose_einstein
+julia> using FewSpecialFunctions
+
+julia> BoseEinsteinIntegralNorm(0.5, -1.0) ≈ 0.4284407345998379
+true
+
+julia> BoseEinsteinIntegral(1.5, -1.0) ≈ (3 * sqrt(π) / 4) * 0.3957280103803376
+true
+
+julia> BoseEinsteinIntegralNorm(1, 0) ≈ π^2 / 6
+true
+
+julia> BoseEinsteinIntegralNorm(-1, -1.0) ≈ inv(expm1(1.0))
+true
+
+julia> all(isfinite, BoseEinsteinIntegralNorm.(0.5, [-2.0, -1.0, 0.0]))
+true
+```
+
+For `Float32` and `Float64`, the implementation uses minimax rational
+approximations with convergent-series fallbacks, based on Tables A.5–A.48 of
+[Fukushima's 2020 preprint](https://doi.org/10.13140/RG.2.2.21720.65283)
+for half-integer orders `-9/2:1:39/2` and integer orders `1:19`.
+The approximations target near-double-precision accuracy for `Float64`;
+`Float32` results retain single precision. Nonpositive integer orders use
+elementary formulas, and higher orders use convergent series. `BigFloat`
+evaluation uses convergent series at the working precision.
+
+ForwardDiff differentiates with respect to `η` using the order-lowering
+identity. Differentiation with respect to the discrete order `k` raises
+`DomainError`.
 
 ## Clausen functions
 
