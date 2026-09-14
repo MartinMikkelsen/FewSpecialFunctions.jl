@@ -1,4 +1,5 @@
 using Test, DelimitedFiles, FewSpecialFunctions, SpecialFunctions
+using QuadGK: quadgk
 
 @testset "Fresnel" begin
 
@@ -138,6 +139,22 @@ end
         for f in (FresnelC, FresnelS, FresnelE)
             @test f((1 - 1.0e-10) * z) ≈ f((1 + 1.0e-10) * z) rtol = 1.0e-7
             @test f((1 - 1.0e-10) * conj(z)) ≈ f((1 + 1.0e-10) * conj(z)) rtol = 1.0e-7
+        end
+    end
+end
+
+@testset "BigFloat Fresnel conjugation across numerical regions" begin
+    setprecision(BigFloat, 128) do
+        # Series, Miller recurrence, and the imaginary-dominant asymptotic
+        # sector. Integrate along a straight complex segment independently.
+        for (x, y) in ((1, 1), (2, 3), (1 // 10, 18))
+            z = complex(BigFloat(x), BigFloat(y))
+            Cref, _ = quadgk(t -> z * cos(BigFloat(π) * (z * t)^2 / 2), zero(BigFloat), one(BigFloat); rtol = big"1e-32")
+            Sref, _ = quadgk(t -> z * sin(BigFloat(π) * (z * t)^2 / 2), zero(BigFloat), one(BigFloat); rtol = big"1e-32")
+            C, S, E = fresnel(conj(z))
+            @test C ≈ conj(Cref) rtol = big"1e-30"
+            @test S ≈ conj(Sref) rtol = big"1e-30"
+            @test E ≈ conj(Cref) + im * conj(Sref) rtol = big"1e-30"
         end
     end
 end

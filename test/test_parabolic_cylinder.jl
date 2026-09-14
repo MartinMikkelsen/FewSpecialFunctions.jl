@@ -73,6 +73,27 @@ using SpecialFunctions
     end
 end
 
+@testset "Cylinder scaling and convergence safeguards" begin
+    # Neither exp(logscale) is representable in Float64, but both complete
+    # products are. BigFloat supplies an independently rounded reference.
+    for (logscale, amplitude) in ((-750.0, 1.0e100), (750.0, -1.0e-100))
+        reference = Float64(exp(BigFloat(logscale)) * BigFloat(amplitude))
+        @test FewSpecialFunctions._cylinder_scaled(logscale, amplitude) ≈ reference rtol = 1.0e-13
+    end
+    @test isequal(FewSpecialFunctions._cylinder_scaled(Inf, -0.0), -0.0)
+
+    # A Taylor sum that overflows at this precision must report failure.
+    @test_throws r"series did not converge" FewSpecialFunctions._cylinder_series(0.0, 100.0, :U)
+
+    # At 2048 bits these decreasing asymptotic sums cannot reach the requested
+    # accuracy within the work limit: reject them so the caller uses its fallback.
+    setprecision(BigFloat, 2048) do
+        a, x = BigFloat(0), BigFloat(50)
+        @test FewSpecialFunctions._cylinder_u_asymptotic(a, x) === nothing
+        @test FewSpecialFunctions._cylinder_w_asymptotic(a, x) === nothing
+    end
+end
+
 @testset "Concurrent cylinder precision" begin
     parameters = [(10.0, 6.0), (1.0, 0.1), (-10.0, 15.0), (20.0, 5.0)]
     references = [FewSpecialFunctions.U(a, x) for (a, x) in parameters]

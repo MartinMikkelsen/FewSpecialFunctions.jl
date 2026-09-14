@@ -102,6 +102,14 @@ end
     @test debye_function(2.0, 1.0, 1.0e150) ≈ 4zeta(3.0) / 1.0e300 rtol = 2.0e-14
     @test debye_function(2.0, 2.0, 1.0e6) ≈ 4(zeta(2.0) - zeta(3.0)) / 1.0e12 rtol = 2.0e-14
 
+    # D₂,₂(x) → 4(ζ(2) - ζ(3))/x². The separate x⁻² factor
+    # underflows here, but the complete result still rounds to a subnormal.
+    x = 8.0e161
+    reference = Float64(4(zeta(BigFloat(2)) - zeta(BigFloat(3))) / BigFloat(x)^2)
+    @test inv(x)^2 == 0.0
+    @test reference > 0 && issubnormal(reference)
+    @test debye_function(2.0, 2.0, x) == reference
+
     @test debye_function(2.0, 0.5, 0.0) == 0.0
     @test debye_function(2.0, 1.0, 0.0) == 1.0
     @test debye_function(2.0, 2.0, 0.0) == Inf
