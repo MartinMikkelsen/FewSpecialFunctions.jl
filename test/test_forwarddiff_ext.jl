@@ -252,3 +252,28 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
         end
     end
 end
+
+@testset "Whittaker and scaled cylinder differentiation" begin
+    for (f, df) in ((WhittakerM, dWhittakerM), (WhittakerW, dWhittakerW))
+        # Real differentiation parameters can also produce complex values.
+        complex_derivative = ForwardDiff.derivative(k -> real(f(k, 0.3, 1 + 2im)), 0.2)
+        @test complex_derivative ≈ real(f(0.2 + 1.0e-5, 0.3, 1 + 2im) - f(0.2 - 1.0e-5, 0.3, 1 + 2im)) / 2.0e-5 rtol = 1.0e-7
+        @test ForwardDiff.derivative(z -> f(0.2, 0.3, z), 1.2) ≈ df(0.2, 0.3, 1.2) rtol = 2.0e-13
+        @test ForwardDiff.derivative(z -> df(0.2, 0.3, z), 1.2) ≈ (1 / 4 - 0.2 / 1.2 - (1 / 4 - 0.3^2) / 1.2^2) * f(0.2, 0.3, 1.2) rtol = 2.0e-13
+        g = ForwardDiff.gradient(v -> f(v...), [0.2, 0.3, 1.2])
+        @test g[3] ≈ df(0.2, 0.3, 1.2) rtol = 2.0e-13
+        h = 1.0e-5
+        @test g[1] ≈ (f(0.2 + h, 0.3, 1.2) - f(0.2 - h, 0.3, 1.2)) / (2h) rtol = 2.0e-8
+        @test g[2] ≈ (f(0.2, 0.3 + h, 1.2) - f(0.2, 0.3 - h, 1.2)) / (2h) rtol = 2.0e-8
+    end
+    @test ForwardDiff.derivative(x -> ParabolicCylinderD(0, x), 2.0) ≈ -exp(-1)
+    @test ForwardDiff.derivative(x -> dParabolicCylinderD(0, x), 2.0) ≈ exp(-1) / 2
+    for f in (U_scaled, V_scaled, ParabolicCylinderD_scaled)
+        for x in (1.0, 60.0)
+            h = 1.0e-4
+            expected = (f(0.2, x + h) - f(0.2, x - h)) / (2h)
+            @test ForwardDiff.derivative(t -> f(0.2, t), x) ≈ expected rtol = 2.0e-7
+            @test ForwardDiff.gradient(v -> f(v...), [0.2, x])[2] ≈ expected rtol = 2.0e-7
+        end
+    end
+end

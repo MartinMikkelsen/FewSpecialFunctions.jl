@@ -14,7 +14,8 @@ import FewSpecialFunctions:
     FermiDiracIntegral, FermiDiracIntegralNorm,
     BoseEinsteinIntegral, BoseEinsteinIntegralNorm,
     MarcumQ, dQdb,
-    U, V, W, dU, dV, dW
+    U, V, W, dU, dV, dW, U_scaled, V_scaled,
+    WhittakerM, WhittakerW, dWhittakerM, dWhittakerW
 
 _fd_step(x::T) where {T <: Real} = cbrt(eps(T)) * (abs(x) + one(T))
 _fd_deriv(f, x) = (h = _fd_step(x); (f(x + h) - f(x - h)) / (2h))
@@ -900,6 +901,58 @@ function debye_function(n::Dual{T}, β::Dual{T}, x::Dual{T}; tol = 1.0e-35, max_
     dβ = _fd_deriv(t -> debye_function(nv, t, xv; tol = tol, max_terms = max_terms), βv)
     dx = _fd_deriv(t -> debye_function(nv, βv, t; tol = tol, max_terms = max_terms), xv)
     return Dual{T}(y, dn * partials(n) + dβ * partials(β) + dx * partials(x))
+end
+
+# Whittaker: analytic argument derivatives, finite differences in κ and μ.
+function _whittaker_lift(f, df, args, ::Type{T}) where {T}
+    vals = value.(args)
+    y = f(vals...)
+    p = partials(args[findfirst(x -> x isa Dual, args)])
+    pr, pi = zero(p), zero(p)
+    for i in 1:3
+        args[i] isa Dual || continue
+        d = i == 3 ? df(vals...) : _fd_deriv(t -> f(ntuple(j -> j == i ? t : vals[j], 3)...), vals[i])
+        pr += real(d) * partials(args[i])
+        pi += imag(d) * partials(args[i])
+    end
+    return y isa Real ? Dual{T}(y, pr) : complex(Dual{T}(real(y), pr), Dual{T}(imag(y), pi))
+end
+
+_whittaker_second(f, κ, μ, z) = (1 / 4 - κ / z - (1 / 4 - μ^2) / z^2) * f(κ, μ, z)
+
+for (f, df) in (
+        (:WhittakerM, :dWhittakerM), (:WhittakerW, :dWhittakerW),
+        (:dWhittakerM, :((κ, μ, z) -> _whittaker_second(WhittakerM, κ, μ, z))),
+        (:dWhittakerW, :((κ, μ, z) -> _whittaker_second(WhittakerW, κ, μ, z))),
+    )
+    for mask in 1:7
+        args = [:($(name)::$(iszero(mask & (1 << (i - 1))) ? :Number : :(Dual{T}))) for (i, name) in enumerate((:κ, :μ, :z))]
+        @eval $f($(args...)) where {T} = _whittaker_lift($f, $df, (κ, μ, z), T)
+    end
+end
+
+function _cylinder_scaled_dx(a, x, kind)
+    af, xf = promote(float(a), float(x))
+    y, dy = FewSpecialFunctions._cylinder_scaled_pair(af, xf, kind)
+    dlogscale = sqrt(max(zero(xf), xf^2 / 4 + af))
+    return dy + (kind === :U ? dlogscale : -dlogscale) * y
+end
+
+for (f, kind) in ((:U_scaled, :U), (:V_scaled, :V))
+    @eval begin
+        function $f(a::Dual{T}, x::Real) where {T}
+            av = value(a)
+            return Dual{T}($f(av, x), _fd_deriv(t -> $f(t, x), av) * partials(a))
+        end
+        function $f(a::Real, x::Dual{T}) where {T}
+            xv = value(x)
+            return Dual{T}($f(a, xv), _cylinder_scaled_dx(a, xv, $(QuoteNode(kind))) * partials(x))
+        end
+        function $f(a::Dual{T}, x::Dual{T}) where {T}
+            av, xv = value(a), value(x)
+            return Dual{T}($f(av, xv), _fd_deriv(t -> $f(t, xv), av) * partials(a) + _cylinder_scaled_dx(av, xv, $(QuoteNode(kind))) * partials(x))
+        end
+    end
 end
 
 # ── Parabolic cylinder: U, V, W ────────────────────────────────────────────────

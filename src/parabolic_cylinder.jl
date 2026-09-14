@@ -49,14 +49,20 @@ end
 # Growing and decaying solutions can cancel in a Taylor sum. Reserve bits
 # for both exponential scales, exp(±(x²/4 + sqrt(abs(a))*abs(x))), then round
 # back to the caller's precision. This fallback trades speed for accuracy.
-function _cylinder_series_guarded(a::T, x::T, kind::Symbol) where {T <: AbstractFloat}
+function _cylinder_series_guarded(a::T, x::T, kind::Symbol, scaled::Bool = false) where {T <: AbstractFloat}
     isfinite(a) && isfinite(x) || throw(DomainError((a, x), "cylinder parameters must be finite"))
-    iszero(x) && return _cylinder_initial(a, kind)
+    iszero(x) && !scaled && return _cylinder_initial(a, kind)
     p = precision(x)
     extra = ceil(Int, (abs(x)^2 / 2 + 2sqrt(abs(a)) * abs(x)) / log(T(2))) + 32
     values = lock(_cylinder_precision_lock) do
         setprecision(BigFloat, p + extra) do
-            _cylinder_series(BigFloat(a), BigFloat(x), kind)
+            ab, xb = BigFloat(a), BigFloat(x)
+            result = _cylinder_series(ab, xb, kind)
+            if scaled
+                logscale = _cylinder_logscale(ab, xb) * (kind === :U ? 1 : -1)
+                return map(y -> _cylinder_scaled(logscale, y), result)
+            end
+            return result
         end
     end
     return map(v -> T === BigFloat ? BigFloat(v; precision = p) : T(v), values)
@@ -72,7 +78,7 @@ function _cylinder_scaled(logscale::T, y::T) where {T <: AbstractFloat}
     return scale * y
 end
 
-function _cylinder_u_asymptotic(a::T, x::T) where {T <: AbstractFloat}
+function _cylinder_u_asymptotic(a::T, x::T, scaled::Bool = false) where {T <: AbstractFloat}
     r, s, ds = one(T), one(T), zero(T)
     for k in 1:1000
         next = -r * (a + T(2k) - T(1.5)) * (a + T(2k) - T(0.5)) / (T(2k) * x^2)
@@ -81,11 +87,117 @@ function _cylinder_u_asymptotic(a::T, x::T) where {T <: AbstractFloat}
         ds -= T(2k) * next / x
         r = next
         if abs(r) <= eps(T) * abs(s) / 16
-            logscale = -x^2 / 4 - (a + T(0.5)) * log(x)
+            logscale = scaled ? _cylinder_asymptotic_scale(a, x, :U) : -x^2 / 4 - (a + T(0.5)) * log(x)
             return _cylinder_scaled(logscale, s), _cylinder_scaled(logscale, ds - (x / 2 + (a + T(0.5)) / x) * s)
         end
     end
     return nothing
+end
+
+# Gil, Segura & Temme (2006), equations (7), (11)–(13). The absolute
+# value of the saddle-point factor is constant in the oscillatory region.
+function _cylinder_logscale(a::T, x::T) where {T <: AbstractFloat}
+    iszero(a) && return x^2 / 4
+    q = x^2 / 4 + a
+    q <= 0 && return a * (log(abs(a)) - 1) / 2
+    d = sqrt(q)
+    return a * log(x / 2 + d) + x * d / 2 - a / 2
+end
+
+# Combine the saddle-point and Poincaré factors without subtracting x²/4.
+function _cylinder_asymptotic_scale(a::T, x::T, kind::Symbol) where {T <: AbstractFloat}
+    q = a / (sqrt(x^2 / 4 + a) + x / 2)
+    correction = a * log1p(q / x) - q^2 / 2
+    return (kind === :U ? correction : -correction) - log(x) / 2
+end
+
+function _cylinder_v_asymptotic_scaled(a::T, x::T) where {T <: AbstractFloat}
+    r, s, ds = one(T), one(T), zero(T)
+    for k in 1:1000
+        next = r * (T(2k) - T(1.5) - a) * (T(2k) - T(0.5) - a) / (T(2k) * x^2)
+        abs(next) > abs(r) && return nothing
+        s += next
+        ds -= T(2k) * next / x
+        r = next
+        if abs(r) <= eps(T) * abs(s) / 16
+            logscale = _cylinder_asymptotic_scale(a, x, :V) + log(T(2) / T(π)) / 2
+            return _cylinder_scaled(logscale, s), _cylinder_scaled(logscale, ds + (x / 2 + (a - T(0.5)) / x) * s)
+        end
+    end
+    return nothing
+end
+
+function _cylinder_scaled_pair(a::T, x::T, kind::Symbol) where {T <: AbstractFloat}
+    isfinite(a) && isfinite(x) && x >= 0 || throw(DomainError((a, x), "scaled cylinder functions require finite a and x ≥ 0"))
+    if x > 1 && x^2 / 4 + a > 0
+        result = kind === :U ? _cylinder_u_asymptotic(a, x, true) : _cylinder_v_asymptotic_scaled(a, x)
+        result === nothing || return result
+    end
+    return _cylinder_series_guarded(a, x, kind, true)
+end
+
+"""
+    U_scaled(a::Real, x::Real)
+
+Compute `F(a,x) * U(a,x)` for finite real `a` and `x ≥ 0`, evaluating the
+scaling before rounding to the output type. Here `F = exp(L)`, with
+`L = a*log(x/2 + sqrt(x²/4+a)) + x*sqrt(x²/4+a)/2 - a/2` in the
+nonoscillatory region, `L = a*(log(abs(a))-1)/2` in the oscillatory region,
+and `L = x²/4` when `a = 0`.
+
+Supports Float32, Float64 and BigFloat. Invalid arguments raise `DomainError`.
+The series fallback uses extra precision and can be expensive for large orders.
+This scaling is from Gil, Segura & Temme (2006), equations (7), (11)–(13):
+[paper](https://ir.cwi.nl/pub/14654/14654D.pdf). It removes growth/decay in both
+order and argument; it is not simply multiplication by `exp(x²/4)`.
+"""
+U_scaled(a::T, x::T) where {T <: AbstractFloat} = first(_cylinder_scaled_pair(a, x, :U))
+
+"""
+    V_scaled(a::Real, x::Real)
+
+Compute `V(a,x) / F(a,x)` for finite real `a` and `x ≥ 0`, with the scaling
+factor defined in [`U_scaled`](@ref). Scaling is applied before rounding,
+so values can remain finite when `V` overflows. Supports Float32, Float64
+and BigFloat; invalid arguments raise `DomainError`.
+"""
+V_scaled(a::T, x::T) where {T <: AbstractFloat} = first(_cylinder_scaled_pair(a, x, :V))
+
+"""
+    ParabolicCylinderD(ν::Real, x::Real)
+
+Compute `Dν(x) = U(-ν-1/2, x)` for finite real order and argument.
+Supports Float32, Float64 and BigFloat, with mixed inputs promoted.
+See [DLMF 12.2.5](https://dlmf.nist.gov/12.2.E5).
+"""
+function ParabolicCylinderD(ν::Real, x::Real)
+    isfinite(ν) && isfinite(x) || throw(DomainError((ν, x), "cylinder parameters must be finite"))
+    νf, xf = promote(float(ν), float(x))
+    return U(-νf - one(νf) / 2, xf)
+end
+
+"""
+    dParabolicCylinderD(ν::Real, x::Real)
+
+Compute the argument derivative `dDν(x)/dx = dU(-ν-1/2, x)`.
+The domain and type behavior match [`ParabolicCylinderD`](@ref).
+"""
+function dParabolicCylinderD(ν::Real, x::Real)
+    isfinite(ν) && isfinite(x) || throw(DomainError((ν, x), "cylinder parameters must be finite"))
+    νf, xf = promote(float(ν), float(x))
+    return dU(-νf - one(νf) / 2, xf)
+end
+
+"""
+    ParabolicCylinderD_scaled(ν::Real, x::Real)
+
+Compute `U_scaled(-ν-1/2, x)` for finite real `ν` and `x ≥ 0`.
+Uses the order-dependent scaling of [`U_scaled`](@ref), and supports
+Float32, Float64 and BigFloat. Invalid arguments raise `DomainError`.
+"""
+function ParabolicCylinderD_scaled(ν::Real, x::Real)
+    νf, xf = promote(float(ν), float(x))
+    return U_scaled(-νf - one(νf) / 2, xf)
 end
 
 # DLMF 12.14.17–22. The coefficient of x^(-2k) is
@@ -193,7 +305,7 @@ and BigFloat.
 dW(a::T, x::T) where {T <: AbstractFloat} = last(_cylinder_w(a, x))
 
 # Extra phase bits matter for oscillatory W, particularly near its zeros.
-for func in (:U, :V, :W, :dU, :dV, :dW)
+for func in (:U, :V, :W, :dU, :dV, :dW, :U_scaled, :V_scaled)
     @eval $func(a::T, x::T) where {T <: Union{Float16, Float32}} = T($func(Float64(a), Float64(x)))
 end
 
@@ -206,9 +318,11 @@ for (func, evaluator, component) in (
 end
 V(a::BigFloat, x::BigFloat) = lock(() -> first(_cylinder_series_guarded(a, x, :V)), _cylinder_precision_lock)
 dV(a::BigFloat, x::BigFloat) = lock(() -> last(_cylinder_series_guarded(a, x, :V)), _cylinder_precision_lock)
+U_scaled(a::BigFloat, x::BigFloat) = lock(() -> first(_cylinder_scaled_pair(a, x, :U)), _cylinder_precision_lock)
+V_scaled(a::BigFloat, x::BigFloat) = lock(() -> first(_cylinder_scaled_pair(a, x, :V)), _cylinder_precision_lock)
 
 # Promotion methods for Real inputs
-for func in (:U, :V, :W, :dU, :dV, :dW)
+for func in (:U, :V, :W, :dU, :dV, :dW, :U_scaled, :V_scaled)
     @eval function $func(a::Real, x::Real)
         T = float(promote_type(typeof(a), typeof(x)))
         return $func(T(a), T(x))
