@@ -50,8 +50,8 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
             rtol = 1.0e-4,
         )
         @test isapprox(
-            ForwardDiff.derivative(x -> debye_function(1.0, 2.0, x), 0.5),
-            fdiff(x -> debye_function(1.0, 2.0, x), 0.5);
+            ForwardDiff.derivative(x -> debye_function(2.0, 2.0, x), 0.5),
+            fdiff(x -> debye_function(2.0, 2.0, x), 0.5);
             atol = 1.0e-5,
             rtol = 1.0e-4,
         )
@@ -174,6 +174,15 @@ fdiff(f, x; h = 1.0e-6) = (f(x + h) - f(x - h)) / (2h)
     end
 
     @testset "Parabolic cylinder family" begin
+        # Independent Gaussian and Bessel identities at the reported failures.
+        for x in (-10.0, 10.0)
+            @test ForwardDiff.derivative(t -> U(-0.5, t), x) ≈ -x / 2 * exp(-x^2 / 4) rtol = 2.0e-13
+        end
+        w10 = sqrt(10pi) / 2^(5 / 4) * (besselj(-0.25, 25) - besselj(0.25, 25))
+        dw10 = -10sqrt(10pi) / 2^(9 / 4) * (besselj(-0.75, 25) + besselj(0.75, 25))
+        @test ForwardDiff.derivative(x -> W(0.0, x), 10.0) ≈ dw10 rtol = 2.0e-12
+        @test ForwardDiff.derivative(x -> dW(0.0, x), 10.0) ≈ -25w10 rtol = 2.0e-12
+
         x0 = 0.7
         @test isapprox(ForwardDiff.derivative(x -> U(0.2, x), x0), dU(0.2, x0); atol = 1.0e-5, rtol = 1.0e-4)
         @test isapprox(ForwardDiff.derivative(x -> V(0.2, x), x0), dV(0.2, x0); atol = 1.0e-5, rtol = 1.0e-4)

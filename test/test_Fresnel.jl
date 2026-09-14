@@ -1,4 +1,5 @@
 using Test, DelimitedFiles, FewSpecialFunctions, SpecialFunctions
+using QuadGK: quadgk
 
 @testset "Fresnel" begin
 
@@ -98,6 +99,64 @@ end
     @test isapprox(C, -3.788100200182899e6 + 5.815899102940467e6im; rtol = 1.0e-13)
     @test isapprox(S, -5.815898602940467e6 - 3.788100700182899e6im; rtol = 1.0e-13)
     @test E ≈ C + im * S
+end
+
+@testset "Fresnel complex cancellation and sectors" begin
+    # Independent references from the defining integrals, evaluated with
+    # 320-bit BigFloat quadrature. E must not be reconstructed from C and S
+    # where the components cancel many digits.
+    @test FresnelE(4 + 4im) ≈ 0.5 + 0.5im rtol = 1.0e-14
+    @test FresnelE(8 + 8im) ≈ 0.5 + 0.5im rtol = 1.0e-14
+    Cref = 2.521551371184569e13 - 3.107276588837978e14im
+    Sref = 3.107276588837983e14 + 2.521551371184519e13im
+    @test FresnelC(1 + 12im) ≈ Cref rtol = 1.0e-13
+    @test FresnelS(1 + 12im) ≈ Sref rtol = 1.0e-13
+    @test FresnelC(1 - 12im) ≈ conj(Cref) rtol = 1.0e-13
+    @test FresnelS(1 - 12im) ≈ conj(Sref) rtol = 1.0e-13
+
+    for z in (1.0 + 12im, 12.0 + im, 2.0 + 3im, 4.0 + 4im)
+        C, S, E = fresnel(z)
+        @test FresnelC(conj(z)) ≈ conj(C) rtol = 1.0e-13
+        @test FresnelS(conj(z)) ≈ conj(S) rtol = 1.0e-13
+        @test FresnelC(im * z) ≈ im * C rtol = 1.0e-13
+        @test FresnelS(im * z) ≈ -im * S rtol = 1.0e-13
+        @test FresnelE(-z) ≈ -E rtol = 1.0e-13
+        # These identities remain well conditioned when E is small.
+        Eminus = conj(FresnelE(conj(z)))
+        @test E + Eminus ≈ 2C rtol = 1.0e-13
+        @test E - Eminus ≈ 2im * S rtol = 1.0e-13
+    end
+
+    for T in (Float32, Float64, BigFloat)
+        vals = fresnel(complex(T(1), T(1)))
+        @test all(v -> v isa Complex{T}, vals)
+        @test vals[3] ≈ complex(T(0.49390555890759856), T(0.49390555890759856)) rtol = 20eps(T) + eps(Float64)
+    end
+
+    # The old complex series/Miller and Miller/asymptotic switches.
+    for radius in sqrt.((6.9, 25 + 2precision(Float64)))
+        z = radius * cis(0.7)
+        for f in (FresnelC, FresnelS, FresnelE)
+            @test f((1 - 1.0e-10) * z) ≈ f((1 + 1.0e-10) * z) rtol = 1.0e-7
+            @test f((1 - 1.0e-10) * conj(z)) ≈ f((1 + 1.0e-10) * conj(z)) rtol = 1.0e-7
+        end
+    end
+end
+
+@testset "BigFloat Fresnel conjugation across numerical regions" begin
+    setprecision(BigFloat, 128) do
+        # Series, Miller recurrence, and the imaginary-dominant asymptotic
+        # sector. Integrate along a straight complex segment independently.
+        for (x, y) in ((1, 1), (2, 3), (1 // 10, 18))
+            z = complex(BigFloat(x), BigFloat(y))
+            Cref, _ = quadgk(t -> z * cos(BigFloat(π) * (z * t)^2 / 2), zero(BigFloat), one(BigFloat); rtol = big"1e-32")
+            Sref, _ = quadgk(t -> z * sin(BigFloat(π) * (z * t)^2 / 2), zero(BigFloat), one(BigFloat); rtol = big"1e-32")
+            C, S, E = fresnel(conj(z))
+            @test C ≈ conj(Cref) rtol = big"1e-30"
+            @test S ≈ conj(Sref) rtol = big"1e-30"
+            @test E ≈ conj(Cref) + im * conj(Sref) rtol = big"1e-30"
+        end
+    end
 end
 
 @testset "Fresnel dispatch" begin

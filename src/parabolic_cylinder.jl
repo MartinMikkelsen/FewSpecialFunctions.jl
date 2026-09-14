@@ -1,472 +1,211 @@
-using SpecialFunctions: gamma
+using SpecialFunctions: gamma, loggamma
 
 export U, V, W, dU, dV, dW
+
+# Older supported Julia versions have process-global MPFR precision.
+const _cylinder_precision_lock = ReentrantLock()
+
+# Values at zero, including reciprocal-gamma zeros (DLMF 12.2 and 12.14).
+_cylinder_rgamma(x) = x <= 0 && isinteger(x) ? zero(x) : inv(gamma(x))
+
+function _cylinder_initial(a::T, kind::Symbol) where {T <: AbstractFloat}
+    if kind === :U
+        c = sqrt(T(π)) * T(2)^(-a / 2 - T(0.25))
+        return c * _cylinder_rgamma(a / 2 + T(0.75)),
+            -sqrt(T(2)) * c * _cylinder_rgamma(a / 2 + T(0.25))
+    elseif kind === :V
+        return T(2)^(a / 2 + T(0.25)) * sinpi(a / 2 + T(0.25)) * _cylinder_rgamma(T(0.75) - a / 2),
+            T(2)^(a / 2 + T(0.75)) * sinpi(a / 2 + T(0.75)) * _cylinder_rgamma(T(0.25) - a / 2)
+    else
+        l = real(loggamma(Complex{T}(T(0.25), a / 2)) - loggamma(Complex{T}(T(0.75), a / 2))) / 2
+        return T(2)^(-T(0.75)) * exp(l), -T(2)^(-T(0.25)) * exp(-l)
+    end
+end
+
+# Sum actual Taylor terms of y'' = (a ± x²/4)y, together with their
+# derivatives. Keeping the factorial in the recurrence avoids overflowing
+# coefficient arrays, even when the final terms are small.
+function _cylinder_series(a::T, x::T, kind::Symbol) where {T <: AbstractFloat}
+    y0, y1 = _cylinder_initial(a, kind)
+    iszero(x) && return y0, y1
+    ep, e, op, o = zero(T), y0, zero(T), x * y1
+    y, dy = e + o, y1
+    A, B = a * x^2, (kind === :W ? -one(T) : one(T)) * x^4 / 4
+    small = 0
+    for k in 1:10000
+        ep, e = e, (A * e + B * ep) / (T(2k) * T(2k - 1))
+        op, o = o, (A * o + B * op) / (T(2k + 1) * T(2k))
+        dyterm = (T(2k) * e + T(2k + 1) * o) / x
+        y += e + o
+        dy += dyterm
+        value_small = abs(e) + abs(o) <= eps(T) * abs(y)
+        derivative_small = (T(2k) * abs(e) + T(2k + 1) * abs(o)) / abs(x) <= eps(T) * abs(dy)
+        small = value_small && derivative_small ? small + 1 : 0
+        small >= 3 && return y, dy
+    end
+    throw(ErrorException("Parabolic cylinder series did not converge"))
+end
+
+# Growing and decaying solutions can cancel in a Taylor sum. Reserve bits
+# for both exponential scales, exp(±(x²/4 + sqrt(abs(a))*abs(x))), then round
+# back to the caller's precision. This fallback trades speed for accuracy.
+function _cylinder_series_guarded(a::T, x::T, kind::Symbol) where {T <: AbstractFloat}
+    isfinite(a) && isfinite(x) || throw(DomainError((a, x), "cylinder parameters must be finite"))
+    iszero(x) && return _cylinder_initial(a, kind)
+    p = precision(x)
+    extra = ceil(Int, (abs(x)^2 / 2 + 2sqrt(abs(a)) * abs(x)) / log(T(2))) + 32
+    values = lock(_cylinder_precision_lock) do
+        setprecision(BigFloat, p + extra) do
+            _cylinder_series(BigFloat(a), BigFloat(x), kind)
+        end
+    end
+    return map(v -> T === BigFloat ? BigFloat(v; precision = p) : T(v), values)
+end
+
+# DLMF 12.9.1. Use an asymptotic expansion only if its decreasing terms
+# reach the target precision; otherwise return nothing and use the series.
+function _cylinder_scaled(logscale::T, y::T) where {T <: AbstractFloat}
+    scale = exp(logscale)
+    if scale < floatmin(T) || !isfinite(scale)
+        return iszero(y) ? y : copysign(exp(logscale + log(abs(y))), y)
+    end
+    return scale * y
+end
+
+function _cylinder_u_asymptotic(a::T, x::T) where {T <: AbstractFloat}
+    r, s, ds = one(T), one(T), zero(T)
+    for k in 1:1000
+        next = -r * (a + T(2k) - T(1.5)) * (a + T(2k) - T(0.5)) / (T(2k) * x^2)
+        abs(next) > abs(r) && return nothing
+        s += next
+        ds -= T(2k) * next / x
+        r = next
+        if abs(r) <= eps(T) * abs(s) / 16
+            logscale = -x^2 / 4 - (a + T(0.5)) * log(x)
+            return _cylinder_scaled(logscale, s), _cylinder_scaled(logscale, ds - (x / 2 + (a + T(0.5)) / x) * s)
+        end
+    end
+    return nothing
+end
+
+# DLMF 12.14.17–22. The coefficient of x^(-2k) is
+# (-i)^k (1/2+ia)_(2k)/(k! 2^k). Differentiating the same sum keeps
+# W and dW consistent; log(k) avoids subtracting nearly equal amplitudes.
+function _cylinder_w_asymptotic(a::T, x::T) where {T <: AbstractFloat}
+    t = abs(x)
+    r = s = one(Complex{T})
+    ds = zero(Complex{T})
+    for k in 1:1000
+        next = -im * r * Complex{T}(T(2k) - T(1.5), a) *
+            Complex{T}(T(2k) - T(0.5), a) / (T(2k) * t^2)
+        abs(next) > abs(r) && return nothing
+        s += next
+        ds -= T(2k) * next / t
+        r = next
+        if abs(r) <= eps(T) * abs(s) / 16
+            log_inv_k = a >= 0 ? T(π) * a + log1p(sqrt(one(T) + exp(-2T(π) * a))) : asinh(exp(T(π) * a))
+            phase = t^2 / 4 - a * log(t) + T(π) / 4 + imag(loggamma(Complex{T}(T(0.5), a))) / 2
+            logscale = (log(T(2)) - log(t) + (x > 0 ? -log_inv_k : log_inv_k)) / 2
+            oscillation = cis(phase)
+            derivative = ds + Complex{T}(-one(T) / (2t), t / 2 - a / t) * s
+            component = x > 0 ? real : imag
+            return _cylinder_scaled(logscale, component(oscillation * s)), sign(x) * _cylinder_scaled(logscale, component(oscillation * derivative))
+        end
+    end
+    return nothing
+end
+
+function _cylinder_u(a::T, x::T) where {T <: AbstractFloat}
+    # Exact Hermite parity prevents subtracting growing solutions at negative
+    # half-integer orders. Test exact equality, not an approximate order.
+    if x < 0 && a <= -T(0.5) && isinteger(a + T(0.5))
+        y, dy = _cylinder_u(a, -x)
+        parity = -sinpi(a)
+        return parity * y, -parity * dy
+    end
+    if x > 1
+        result = _cylinder_u_asymptotic(a, x)
+        result === nothing || return result
+    end
+    return _cylinder_series_guarded(a, x, :U)
+end
+
+function _cylinder_w(a::T, x::T) where {T <: AbstractFloat}
+    if abs(x) > 1
+        result = _cylinder_w_asymptotic(a, x)
+        result === nothing || return result
+    end
+    return _cylinder_series_guarded(a, x, :W)
+end
 
 """
     U(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the parabolic cylinder function U(a,x) of the first kind for real parameters.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute the real parabolic cylinder function U(a,x). Supports Float32,
+Float64, and BigFloat. Uses a precision-guarded convergent series when the
+order and argument do not permit an accurate asymptotic expansion.
 
-S. Zhang and J. Jin, 'Computation of Special functions' (Wiley, 1966), E. Cojocaru, January 2009
+Reference: [DLMF, Chapter 12](https://dlmf.nist.gov/12).
 """
-function U(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-
-    return if abs(x) ≤ 5
-        c = zeros(T, 100)
-        c[1] = a
-        c₀, c₁ = one(T), a
-        for k in 4:2:200
-            m = k ÷ 2
-            c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
-            c₀, c₁ = c₁, c[m]
-        end
-
-        y₁ = one(T)
-        term = one(T)
-        @inbounds for k in 1:100
-            term *= x^2 / (T(2) * T(k) * T(2k - 1))
-            Δ = c[k] * term
-            y₁ += Δ
-            if abs(Δ / y₁) ≤ ε && k > 30
-                break
-            end
-        end
-
-        d = zeros(T, 101)
-        d[1], d[2] = one(T), a
-        d₁, d₂ = one(T), a
-        for k in 5:2:160
-            m = (k + 1) ÷ 2
-            d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
-            d₁, d₂ = d₂, d[m]
-        end
-
-        y₂ = one(T)
-        term = one(T)
-        @inbounds for k in 1:100
-            term *= x^2 / (T(2) * T(k) * T(2k + 1))
-            Δ = d[k + 1] * term
-            y₂ += Δ
-            if abs(Δ / y₂) ≤ ε && k > 30
-                break
-            end
-        end
-        y₂ *= x
-
-        if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
-            θ = T(π) * (T(0.25) + a / 2)
-            f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-            f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
-            return cos(θ) * f₁ * y₁ - sin(θ) * f₂ * y₂
-        else
-            prefactor = sqrt(T(π)) / T(2)^(a / 2 + T(0.25))
-            g₁ = gamma(T(0.25) + a / 2)
-            g₃ = gamma(T(0.75) + a / 2)
-            return prefactor * (y₁ / g₃ - sqrt(T(2)) * y₂ / g₁)
-        end
-    else
-        q = exp(-x^2 / 4)
-        a₀ = q * abs(x)^(-a - T(0.5))
-        r = one(T)
-        u = one(T)
-        for k in 1:20
-            r *= -(T(2k) + a - T(0.5)) * (T(2k) + a - T(1.5)) / (T(2k) * x^2)
-            u += r
-            if abs(r / u) < ε
-                break
-            end
-        end
-        u *= a₀
-
-        if x < 0
-            if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
-                return -u * sinpi(a)
-            else
-                v = V(a, -x)
-                return T(π) * v / gamma(a + T(0.5)) - sinpi(a) * u
-            end
-        else
-            return u
-        end
-    end
-end
+U(a::T, x::T) where {T <: AbstractFloat} = first(_cylinder_u(a, x))
 
 """
     V(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the parabolic cylinder function V(a,x).
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute the real parabolic cylinder function V(a,x) using a convergent
+series with extra working precision. Supports Float32, Float64, and BigFloat.
 """
-function V(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-
-    c = zeros(T, 100)
-    c[1] = a
-    c₀, c₁ = one(T), a
-    for k in 4:2:200
-        m = k ÷ 2
-        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
-        c₀, c₁ = c₁, c[m]
-    end
-
-    y₁ = one(T)
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k - 1))
-        Δ = c[k] * term
-        y₁ += Δ
-        if abs(Δ / y₁) ≤ ε && k > 30
-            break
-        end
-    end
-
-    d = zeros(T, 101)
-    d[1], d[2] = one(T), a
-    d₁, d₂ = one(T), a
-    for k in 5:2:160
-        m = (k + 1) ÷ 2
-        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
-        d₁, d₂ = d₂, d[m]
-    end
-
-    y₂ = one(T)
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k + 1))
-        Δ = d[k + 1] * term
-        y₂ += Δ
-        if abs(Δ / y₂) ≤ ε && k > 30
-            break
-        end
-    end
-    y₂ *= x
-
-    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
-        θ = T(π) * (T(0.25) + a / 2)
-        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
-        v = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(T(0.5) - a)
-    else
-        sinπa = sinpi(a)
-        g₀ = gamma(T(0.5) + a)
-        p₀ = g₀ / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-        g₁ = gamma(T(0.25) + a / 2)
-        g₃ = gamma(T(0.75) + a / 2)
-        v = p₀ * (y₁ * (one(T) + sinπa) / g₃ + sqrt(T(2)) * y₂ * (one(T) - sinπa) / g₁)
-    end
-
-    return v
-end
+V(a::T, x::T) where {T <: AbstractFloat} = first(_cylinder_series_guarded(a, x, :V))
 
 """
     W(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the parabolic cylinder function W(a,x) for real parameters.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute the real parabolic cylinder function W(a,x). Supports Float32,
+Float64, and BigFloat. Uses a precision-guarded convergent series or an
+asymptotic expansion whose decreasing terms reach the requested precision.
+
+Reference: [DLMF 12.14](https://dlmf.nist.gov/12.14).
 """
-function W(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-    if abs(x) ≤ 8
-        p₀ = T(2)^(-T(3) / 4)
-        g₁ = abs(gamma(Complex{T}(T(1) / 4, a / 2)))
-        g₃ = abs(gamma(Complex{T}(T(3) / 4, a / 2)))
-        f₁ = sqrt(g₁ / g₃)
-        f₂ = sqrt(T(2) * g₃ / g₁)
-
-        c = zeros(T, 100)
-        c[1] = a
-        c₀, c₁ = one(T), a
-        for k in 4:2:200
-            m = k ÷ 2
-            c[m] = a * c₁ - T(k - 2) * T(k - 3) * c₀ / 4
-            c₀, c₁ = c₁, c[m]
-        end
-
-        y₁ = one(T)
-        term = one(T)
-        for k in 1:100
-            term *= x^2 / (T(2) * T(k) * T(2k - 1))
-            Δ = c[k] * term
-            y₁ += Δ
-            if abs(Δ / y₁) ≤ ε && k > 30
-                break
-            end
-        end
-
-        d = zeros(T, 101)
-        d[1], d[2] = one(T), a
-        d₁, d₂ = one(T), a
-        for k in 5:2:160
-            m = (k + 1) ÷ 2
-            d[m] = a * d₂ - T(k - 2) * T(k - 3) * d₁ / 4
-            d₁, d₂ = d₂, d[m]
-        end
-
-        y₂ = one(T)
-        term = one(T)
-        for k in 1:100
-            term *= x^2 / (T(2) * T(k) * T(2k + 1))
-            Δ = d[k + 1] * term
-            y₂ += Δ
-            if abs(Δ / y₂) ≤ ε && k > 30
-                break
-            end
-        end
-        y₂ *= x
-
-        return p₀ * (f₁ * y₁ - f₂ * y₂)
-
-    else
-        u = zeros(T, 21)
-        v = zeros(T, 21)
-
-        g₀ = gamma(Complex{T}(T(1) / 2, a))
-        ϕ₂ = imag(g₀)
-
-        gref = gamma(Complex{T}(T(1) / 2, a))
-        gr₀, gi₀ = real(gref), imag(gref)
-        den = gr₀^2 + gi₀^2
-
-        for k in 2:2:40
-            m = k ÷ 2
-            g = gamma(Complex{T}(T(k) + T(0.5), a))
-            gr, gi = real(g), imag(g)
-            u[m] = (gr * gr₀ + gi * gi₀) / den
-            v[m] = (gr₀ * gi - gr * gi₀) / den
-        end
-
-        x² = x^2
-        sv₁ = v[1] / (T(2) * x²)
-        su₂ = u[1] / (T(2) * x²)
-        fac = one(T)
-        for k in 3:2:19
-            fac *= -T(k) * T(k - 1)
-            denom = fac * T(2)^k * x^(2k)
-            sv₁ += v[k] / denom
-            su₂ += u[k] / denom
-        end
-
-        sv₂ = zero(T)
-        su₁ = zero(T)
-        fac = one(T)
-        for k in 2:2:20
-            fac *= -T(k) * T(k - 1)
-            denom = fac * T(2)^k * x^(2k)
-            sv₂ += v[k] / denom
-            su₁ += u[k] / denom
-        end
-
-        s₁ = one(T) + sv₁ - su₁
-        s₂ = -sv₂ - su₂
-
-        ea = exp(T(π) * a)
-        S = sqrt(one(T) + ea^2)
-        f₊ = S + ea
-        f₋ = S - ea
-
-        ϕ = x^2 / 4 - a * log(abs(x)) + T(π) / 4 + ϕ₂ / 2
-
-        if x > 0
-            return sqrt(T(2) * f₋ / abs(x)) * (s₁ * cos(ϕ) - s₂ * sin(ϕ))
-        else
-            return sqrt(T(2) * f₊ / abs(x)) * (s₁ * sin(ϕ) + s₂ * cos(ϕ))
-        end
-    end
-end
+W(a::T, x::T) where {T <: AbstractFloat} = first(_cylinder_w(a, x))
 
 """
     dU(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the derivative of the parabolic cylinder function U(a,x) for real parameters.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute ∂U(a,x)/∂x from the same expansion as U. Supports Float32, Float64,
+and BigFloat.
 """
-function dU(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-
-    c = zeros(T, 101)
-    c[1] = a
-    c₀, c₁ = one(T), a
-    for k in 4:2:202
-        m = k ÷ 2
-        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
-        c₀, c₁ = c₁, c[m]
-    end
-
-    y₁ = a
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k + 1))
-        Δ = c[k + 1] * term
-        y₁ += Δ
-        if abs(Δ / y₁) ≤ ε && k > 30
-            break
-        end
-    end
-    y₁ *= x
-
-    d = zeros(T, 101)
-    d[1], d[2] = one(T), a
-    d₁, d₂ = one(T), a
-    for k in 5:2:160
-        m = (k + 1) ÷ 2
-        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
-        d₁, d₂ = d₂, d[m]
-    end
-
-    y₂ = one(T)
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k - 1))
-        Δ = d[k + 1] * term
-        y₂ += Δ
-        if abs(Δ / y₂) ≤ ε && k > 30
-            break
-        end
-    end
-
-    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
-        θ = T(π) * (T(0.25) + a / 2)
-        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
-        du = cos(θ) * f₁ * y₁ - sin(θ) * f₂ * y₂
-    else
-        prefactor = sqrt(T(π)) / T(2)^(a / 2 + T(0.25))
-        g₁ = gamma(T(0.25) + a / 2)
-        g₃ = gamma(T(0.75) + a / 2)
-        du = prefactor * (y₁ / g₃ - sqrt(T(2)) * y₂ / g₁)
-    end
-
-    return du
-end
+dU(a::T, x::T) where {T <: AbstractFloat} = last(_cylinder_u(a, x))
 
 """
     dV(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the derivative of the parabolic cylinder function V(a,x) for real parameters.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute ∂V(a,x)/∂x from the same convergent series as V. Supports Float32,
+Float64, and BigFloat.
 """
-function dV(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-
-    c = zeros(T, 101)
-    c[1] = a
-    c₀, c₁ = one(T), a
-    for k in 4:2:202
-        m = k ÷ 2
-        c[m] = a * c₁ + T(k - 2) * T(k - 3) * c₀ / 4
-        c₀, c₁ = c₁, c[m]
-    end
-
-    y₁ = a
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k + 1))
-        Δ = c[k + 1] * term
-        y₁ += Δ
-        if abs(Δ / y₁) ≤ ε && k > 30
-            break
-        end
-    end
-    y₁ *= x
-
-    d = zeros(T, 101)
-    d[1], d[2] = one(T), a
-    d₁, d₂ = one(T), a
-    for k in 5:2:160
-        m = (k + 1) ÷ 2
-        d[m] = a * d₂ + T(k - 2) * T(k - 3) * d₁ / 4
-        d₁, d₂ = d₂, d[m]
-    end
-
-    y₂ = one(T)
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k - 1))
-        Δ = d[k + 1] * term
-        y₂ += Δ
-        if abs(Δ / y₂) ≤ ε && k > 30
-            break
-        end
-    end
-
-    if a < 0 && isapprox(a + T(0.5), round(a + T(0.5)))
-        θ = T(π) * (T(0.25) + a / 2)
-        f₁ = gamma(T(0.25) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-        f₂ = gamma(T(0.75) - a / 2) / (sqrt(T(π)) * T(2)^(a / 2 - T(0.25)))
-        dv = (sin(θ) * f₁ * y₁ + cos(θ) * f₂ * y₂) / gamma(T(0.5) - a)
-    else
-        sinπa = sinpi(a)
-        g₀ = gamma(T(0.5) + a)
-        p₀ = g₀ / (sqrt(T(π)) * T(2)^(a / 2 + T(0.25)))
-        g₁ = gamma(T(0.25) + a / 2)
-        g₃ = gamma(T(0.75) + a / 2)
-        dv = p₀ * (y₁ * (one(T) + sinπa) / g₃ + sqrt(T(2)) * y₂ * (one(T) - sinπa) / g₁)
-    end
-
-    return dv
-end
-
+dV(a::T, x::T) where {T <: AbstractFloat} = last(_cylinder_series_guarded(a, x, :V))
 
 """
     dW(a::T, x::T) where {T <: AbstractFloat}
 
-Compute the derivative of the parabolic cylinder function W with parameters `a` evaluated at `x`.
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+Compute ∂W(a,x)/∂x from the same expansion as W. Supports Float32, Float64,
+and BigFloat.
 """
-function dW(a::T, x::T) where {T <: AbstractFloat}
-    ε = eps(T) * 10
-    p₀ = T(2)^(-T(3) / 4)
+dW(a::T, x::T) where {T <: AbstractFloat} = last(_cylinder_w(a, x))
 
-    g₁ = abs(gamma(Complex{T}(T(1) / 4, a / 2)))
-    g₃ = abs(gamma(Complex{T}(T(3) / 4, a / 2)))
-    f₁ = sqrt(g₁ / g₃)
-    f₂ = sqrt(T(2) * g₃ / g₁)
-
-    c = zeros(T, 101)
-    c[1] = a
-    c₀, c₁ = one(T), a
-    for k in 4:2:202
-        m = k ÷ 2
-        c[m] = a * c₁ - T(k - 2) * T(k - 3) * c₀ / 4
-        c₀, c₁ = c₁, c[m]
-    end
-
-    y₁ = a
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k + 1))
-        Δ = c[k + 1] * term
-        y₁ += Δ
-        if abs(Δ / y₁) ≤ ε && k > 30
-            break
-        end
-    end
-    y₁ *= x
-
-    d = zeros(T, 101)
-    d[1], d[2] = one(T), a
-    d₁, d₂ = one(T), a
-    for k in 5:2:160
-        m = (k + 1) ÷ 2
-        d[m] = a * d₂ - T(k - 2) * T(k - 3) * d₁ / 4
-        d₁, d₂ = d₂, d[m]
-    end
-
-    y₂ = one(T)
-    term = one(T)
-    @inbounds for k in 1:100
-        term *= x^2 / (T(2) * T(k) * T(2k - 1))
-        Δ = d[k + 1] * term
-        y₂ += Δ
-        if abs(Δ / y₂) ≤ ε && k > 30
-            break
-        end
-    end
-
-    return p₀ * (f₁ * y₁ - f₂ * y₂)
+# Extra phase bits matter for oscillatory W, particularly near its zeros.
+for func in (:U, :V, :W, :dU, :dV, :dW)
+    @eval $func(a::T, x::T) where {T <: Union{Float16, Float32}} = T($func(Float64(a), Float64(x)))
 end
+
+# Protect BigFloat asymptotics and origin values from concurrent fallbacks too.
+for (func, evaluator, component) in (
+        (:U, :_cylinder_u, :first), (:dU, :_cylinder_u, :last),
+        (:W, :_cylinder_w, :first), (:dW, :_cylinder_w, :last),
+    )
+    @eval $func(a::BigFloat, x::BigFloat) = lock(() -> $component($evaluator(a, x)), _cylinder_precision_lock)
+end
+V(a::BigFloat, x::BigFloat) = lock(() -> first(_cylinder_series_guarded(a, x, :V)), _cylinder_precision_lock)
+dV(a::BigFloat, x::BigFloat) = lock(() -> last(_cylinder_series_guarded(a, x, :V)), _cylinder_precision_lock)
 
 # Promotion methods for Real inputs
 for func in (:U, :V, :W, :dU, :dV, :dW)

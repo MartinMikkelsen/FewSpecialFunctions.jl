@@ -351,7 +351,7 @@ end
 end
 
 
-@testset "MarcumQ_large_M (asymptotic expansion for large M)" begin
+@testset "MarcumQ_large_M (large-order fallback)" begin
 
     M, x = 100.0, 2.0
     ys = [2.0, 2.5, 3.0, 3.5]
@@ -360,11 +360,11 @@ end
 
     M, x, y = 100.0, 2.0, 20.0
     Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
-    @test Qlm ≈ 0.0 atol = 1.0e-10
+    @test Qlm ≈ 1.0 atol = 1.0e-10
 
     M, x, y = 100.0, 2.0, 0.01
     Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
-    @test Qlm ≈ 0.0 atol = 1.0e-10
+    @test Qlm ≈ 1.0 atol = 1.0e-10
 
     M, x, y = 50.0f0, 1.5f0, 2.5f0
     Qlm = FewSpecialFunctions.MarcumQ_large_M(M, x, y)
@@ -458,6 +458,38 @@ end
     @test 0.0 ≤ MarcumQ(150.0, 10.0, 10.0) ≤ 1.0
     @test 0.0 ≤ MarcumQ(150.0, 5.0, 20.0) ≤ 1.0
     @test 0.0 ≤ MarcumQ(200.0, 8.0, 15.0) ≤ 1.0
+
+    # 256-bit reference values from the forward Poisson series and the finite
+    # sum Q(k, y) = exp(-y) * sum(y^j / j!, j=0:k-1) for integer k.
+    # Cover both sides of y = x + M and the switch at M = 135.
+    for (M, a, b, ref) in (
+            (150.0, 10.0, 19.0, 0.89406487083535462339),
+            (150.0, 10.0, 20.0, 0.48990545395819161783),
+            (150.0, 10.0, 21.0, 0.10004003211587267843),
+            (134.0, 10.0, 19.0, 0.58069511641988806202),
+            (135.0, 10.0, 19.0, 0.60618077173463838273),
+            (136.0, 10.0, 19.0, 0.63119896628827845659),
+            # exp(-a^2 / 2) underflows here, so summing from n = 0 fails.
+            (150.0, 40.0, 43.0, 0.72649743285089533799),
+            (150.0, 40.0, 44.0, 0.33007251982467228318),
+            (150.0, 40.0, 45.0, 0.06938280751101370931),
+            (500.0, 100.0, 105.0, 0.44958275710352827299),
+        )
+        @test MarcumQ(M, a, b) ≈ ref rtol = 1.0e-12
+    end
+
+    # Noninteger order, from a 256-bit forward Poisson–gamma series.
+    @test MarcumQ(150.5, 10.0, 19.0) ≈ 0.8998791334494622 rtol = 1.0e-12
+
+    for T in (Float32, Float64, BigFloat), (a, b, ref) in (
+                (10, 20, "0.4899054539581916178277812825227582610195979017589042601894081296859726385789561"),
+                (40, 44, "0.330072519824672283179482488532648017337213277296409836229685945351112991563016"),
+            )
+        result = MarcumQ(T(150), T(a), T(b))
+        @test result isa T
+        rtol = T === Float32 ? 1.0e-5 : T === BigFloat ? big"1e-60" : 1.0e-12
+        @test result ≈ parse(T, ref) rtol = rtol
+    end
 end
 
 # The 1500-row reference file has a, b ≤ 5, so every row lands in MarcumQ_small_x.

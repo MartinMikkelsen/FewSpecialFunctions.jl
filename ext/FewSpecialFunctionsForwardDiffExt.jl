@@ -928,7 +928,7 @@ function dV(a::Dual{T}, x::Dual{T}) where {T}
     return Dual{T}(dV(av, xv), _fd_deriv(t -> dV(t, xv), av) * partials(a) + (xv^2 / 4 + av) * V(av, xv) * partials(x))
 end
 
-# ── Parabolic cylinder: dW (FD for both arguments) ────────────────────────────
+# ── Parabolic cylinder: dW (W'' = (a - x²/4)W) ────────────────────────────────
 
 function dW(a::Dual{T}, x::Real) where {T}
     av = value(a)
@@ -937,12 +937,12 @@ end
 
 function dW(a::Real, x::Dual{T}) where {T}
     xv = value(x)
-    return Dual{T}(dW(a, xv), _fd_deriv(t -> dW(a, t), xv) * partials(x))
+    return Dual{T}(dW(a, xv), (a - xv^2 / 4) * W(a, xv) * partials(x))
 end
 
 function dW(a::Dual{T}, x::Dual{T}) where {T}
     av, xv = value(a), value(x)
-    return Dual{T}(dW(av, xv), _fd_deriv(t -> dW(t, xv), av) * partials(a) + _fd_deriv(t -> dW(av, t), xv) * partials(x))
+    return Dual{T}(dW(av, xv), _fd_deriv(t -> dW(t, xv), av) * partials(a) + (av - xv^2 / 4) * W(av, xv) * partials(x))
 end
 
 end

@@ -24,10 +24,22 @@ end
     C(ℓ::Number, η::Number)
 
 Coulomb normalization constant.
+
+For complex parameters, the square root of the gamma product is defined by
+`exp((loggamma(ℓ + 1 + im * η) + loggamma(ℓ + 1 - im * η)) / 2)`.
+This selects a local analytic branch using the principal log-gamma branches,
+away from their cuts and poles, and agrees with the positive normalization
+for real `ℓ ≥ 0` and real `η`. The full normalization is evaluated in logarithmic
+form to avoid overflow or underflow of its individual factors.
+
+See [Eq. (8) of the implementation paper](https://arxiv.org/html/1804.10976v3#S2.E8)
+and [DLMF 33.2.5](https://dlmf.nist.gov/33.2.E5).
 """
 function C(ℓ::Number, η::Number)
-    logg = loggamma(ℓ + 1 + im * η)
-    return 2^ℓ * exp(-π * η / 2) * exp(real(logg)) / gamma(2 * ℓ + 2)
+    ℓf, ηf = promote(float(ℓ), float(η))
+    logg = (loggamma(ℓf + 1 + im * ηf) + loggamma(ℓf + 1 - im * ηf)) / 2
+    value = exp(ℓf * log(2 * one(real(ℓf))) - π * ηf / 2 + logg - loggamma(complex(2 * ℓf + 2)))
+    return ℓ isa Real && η isa Real ? real(value) : value
 end
 
 """

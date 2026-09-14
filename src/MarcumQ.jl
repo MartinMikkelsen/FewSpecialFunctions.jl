@@ -128,27 +128,31 @@ function MarcumQ_recurrence(M::T, x::T, y::T, ξ::T) where {T <: Number}
     return Q0
 end
 
-# asymptotic for large M (section 4.2)
+# Poisson–gamma mixture (eq. 7), centered at the Poisson mode to avoid
+# underflow of exp(-x). Unnormalized weights also avoid cancellation in
+# -x + n*log(x) - loggamma(n+1); their common scale cancels in the ratio.
+# ponytail: O(sqrt(x)) terms; use a complete uniform asymptotic if this is too slow.
 function MarcumQ_large_M(M::T, x::T, y::T) where {T <: Number}
-    ζv = ζ(x, y); ehalf = exp(-M * half_ζ2(x, y))
-    maxK = 100  # Increased to avoid BoundsError
-    Ψ = [zero(T) for _ in 1:maxK]
-    Ψ[1] = sqrt(π / (T(2) * M)) * erfc(-ζv * sqrt(M / T(2)))
-    Ψ[2] = ehalf / M
-    s = zero(T); k = one(Int)
-    while k < maxK
-        Bk = sum(Ψ[j] / M^(k - j) for j in one(Int):k); s += Bk
-        abs(Bk) <= eps(T) * abs(s) && break
-        k += one(Int)
-        if k > maxK
-            break
-        end
-        Ψ[k] = (k - one(Int)) / M * Ψ[k - one(Int)] + (-ζv)^(k - one(Int)) / M * ehalf
+    n0 = floor(Int, x)
+    s = Q(M + n0, y); weights = one(T)
+
+    w = one(T)
+    for n in n0:-1:1
+        w *= T(n) / x
+        s += w * Q(M + n - 1, y); weights += w
+        ratio = T(n - 1) / x
+        # The remaining Poisson tail is bounded by a geometric series.
+        w * ratio <= eps(T) * weights * (one(T) - ratio) && break
     end
-    result = erfc(-ζv * sqrt(M / T(2))) / T(2) - sqrt(M / (T(2) * π)) * s
-    # Clamp to [0,1] for probability
-    result = max(min(result, one(T)), zero(T))
-    return result
+
+    w = one(T); n = n0
+    while true
+        n += 1; w *= x / T(n)
+        s += w * Q(M + n, y); weights += w
+        ratio = x / T(n + 1)
+        w * ratio <= eps(T) * weights * (one(T) - ratio) && break
+    end
+    return s / weights
 end
 
 # quadrature (section 5)
