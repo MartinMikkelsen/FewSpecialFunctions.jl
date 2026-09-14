@@ -10,6 +10,8 @@
 - [Dawson integral: Numerical calculation of Dawson's integral and its imaginary error functions of complex arguments for arbitrary value of the phase angle](https://doi.org/10.1007/s11075-023-01608-8)
 - [Marcum Q-function: https://arxiv.org/pdf/1311.0681v1](https://arxiv.org/pdf/1311.0681v1)
 - [Parabolic cylinder functions](https://www.scirp.org/reference/referencespapers?referenceid=1112080)
+- [Whittaker functions: Thompson & Barnett, Coulomb and Bessel Functions of Complex Arguments and Order (1986)](https://doi.org/10.1016/0021-9991(86)90046-X)
+- [Scaled cylinder functions: Gil, Segura & Temme, Computing the Real Parabolic Cylinder Functions U(a,x), V(a,x) (2006)](https://ir.cwi.nl/pub/14654/14654D.pdf)
 
 ## API
 
@@ -75,6 +77,17 @@ W
 dU
 dV
 dW
+ParabolicCylinderD
+dParabolicCylinderD
+U_scaled
+V_scaled
+ParabolicCylinderD_scaled
+
+# Whittaker functions
+WhittakerM
+WhittakerW
+dWhittakerM
+dWhittakerW
 ```
 
 ## Dawson integral

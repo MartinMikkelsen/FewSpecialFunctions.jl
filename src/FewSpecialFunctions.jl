@@ -28,5 +28,9 @@ export MarcumQ, dQdb
 include("MarcumQ.jl")
 
 export U, V, W, dU, dV, dW
+export ParabolicCylinderD, dParabolicCylinderD, U_scaled, V_scaled, ParabolicCylinderD_scaled
 include("parabolic_cylinder.jl")
+
+export WhittakerM, WhittakerW, dWhittakerM, dWhittakerW
+include("Whittaker.jl")
 end

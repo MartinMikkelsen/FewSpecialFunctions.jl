@@ -25,6 +25,7 @@ The following table summarizes the type behavior for each function family:
 | Function family | Input type constraint | Type preservation |
 |---|---|---|
 | Coulomb wave functions | `Number` | Via Julia's promotion rules |
+| Whittaker functions | `Number`; nonzero argument | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
 | Debye functions | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
 | Fresnel integrals | `Number` | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
 | Dawson integral | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
@@ -146,6 +147,63 @@ using DomainColoring, FewSpecialFunctions, Plots
 domaincolor(z -> F(0,z,z), [-2, 2, 0, 5], grid=true)
 ```
 
+## Whittaker functions
+
+[`WhittakerM`](@ref) and [`WhittakerW`](@ref) evaluate the standard solutions
+of Whittaker's equation:
+
+```math
+M_{\kappa,\mu}(z) = e^{-z/2}z^{\mu+1/2}
+ {}_1F_1(\mu-\kappa+1/2;1+2\mu;z),\qquad
+W_{\kappa,\mu}(z) = e^{-z/2}z^{\mu+1/2}
+ U(\mu-\kappa+1/2,1+2\mu,z).
+```
+
+Here the three-argument ``U`` is Tricomi's hypergeometric function, distinct
+from the package's two-argument parabolic cylinder function `U(a, x)`.
+[`dWhittakerM`](@ref) and [`dWhittakerW`](@ref) differentiate with respect to `z`.
+
+Inputs must be finite, and this API requires `z ≠ 0`. Positive real arguments
+with real parameters return real values. Complex inputs select the principal
+branch; use `complex(z)` explicitly for negative real arguments. The sign
+of a zero imaginary part selects the corresponding side of the cut.
+`WhittakerM` has parameter poles at negative integer `2μ`, which raise
+`DomainError`; `WhittakerW` remains defined there.
+
+```jldoctest whittaker
+julia> using FewSpecialFunctions
+
+julia> WhittakerM(0, 0.5, 2) ≈ 2sinh(1)
+true
+
+julia> WhittakerW(0, 0.5, 2) ≈ exp(-1)
+true
+
+julia> dWhittakerW(0, 0.5, 2) ≈ -exp(-1) / 2
+true
+
+julia> WhittakerW(0.2, 0.3, 1 - 2im) ≈ conj(WhittakerW(0.2, 0.3, 1 + 2im))
+true
+```
+
+The implementation uses the existing Kummer series with additional working
+precision, a connection formula for `W` with removable parameter poles
+evaluated by limits, and an asymptotic expansion accepted only when its terms
+reach working precision. These methods follow [DLMF 13.14](https://dlmf.nist.gov/13.14)
+and the series techniques in [Thompson & Barnett (1986)](https://doi.org/10.1016/0021-9991(86)90046-X).
+It does not implement the full COULCC continued-fraction algorithm.
+The extra-precision series favors accuracy over speed, especially for large
+parameters or complex arguments. Its precision changes share the cylinder
+fallback lock described below.
+
+ForwardDiff uses analytic derivatives in `z` and finite differences for real
+`κ` and `μ`, following the package's existing differentiation convention.
+Tests include independent mpmath values; the implementation was also compared
+with the direct evaluation path in
+[WhittakerCoulomb.jl](https://github.com/banana-bred/WhittakerCoulomb.jl/tree/bab2a17).
+The latter shares our hypergeometric dependency, so that comparison alone
+does not establish numerical accuracy.
+
 ## Marcum Q-function
 
 The Marcum Q-function is a generalized integral involving the modified Bessel function of the first kind. It is widely used in communications and radar signal processing. The implementation in this package is based on the methods described in [arXiv:1311.0681v1](https://arxiv.org/pdf/1311.0681v1), providing accurate results for a wide range of parameters.
@@ -215,6 +273,58 @@ The parabolic cylinder functions `U(a, x)` and `V(a, x)` solve the parabolic cyl
 The formulas follow [DLMF Chapter 12](https://dlmf.nist.gov/12), including its [expansions for W](https://dlmf.nist.gov/12.14).
 
 On Julia versions with process-global `BigFloat` precision (including Julia 1.10), the extra-precision fallback is serialized between cylinder calls. Avoid running it concurrently with unrelated `BigFloat` arithmetic, which shares that precision setting.
+
+### The ``D_ν`` convention and scaled values
+
+[`ParabolicCylinderD`](@ref) implements ``D_ν(x)=U(-ν-1/2,x)`` for real
+order and argument. [`dParabolicCylinderD`](@ref) gives its argument derivative.
+
+For finite real `a` and `x ≥ 0`, [`U_scaled`](@ref) and [`V_scaled`](@ref)
+use the scaling of [Gil, Segura & Temme (2006), equations (7), (11)–(13)](https://ir.cwi.nl/pub/14654/14654D.pdf):
+
+```math
+U_{\rm scaled}(a,x)=e^{L(a,x)}U(a,x),\qquad
+V_{\rm scaled}(a,x)=e^{-L(a,x)}V(a,x),
+```
+
+where, with ``q=x^2/4+a``,
+
+```math
+L(a,x)=\begin{cases}
+x^2/4,&a=0,\\
+\frac{a}{2}(\log|a|-1),&q\le0,\ a\ne0,\\
+a\log(x/2+\sqrt{q})+\frac{x}{2}\sqrt{q}-\frac{a}{2},&q>0,\ a\ne0.
+\end{cases}
+```
+
+[`ParabolicCylinderD_scaled`](@ref) is `U_scaled(-ν-1/2, x)`.
+The scaling removes dominant behavior in both order and argument; for general
+order it differs from simply multiplying `Dν(x)` by `exp(x²/4)`.
+The asymptotic path combines exponential factors algebraically; the series
+path scales before conversion to the output type. Thus intermediate underflow
+or overflow does not destroy the scaled result. Large-order series can be slow;
+this implementation does not port Algorithm 850's full method-selection scheme.
+
+```jldoctest cylinder_scaled
+julia> using FewSpecialFunctions
+
+julia> ParabolicCylinderD(1, 2) ≈ 2exp(-1)
+true
+
+julia> U(0, 60) == 0 && isinf(V(0, 60))
+true
+
+julia> U_scaled(0, 60) ≈ 0.12908600517683427
+true
+
+julia> V_scaled(0, 60) ≈ 0.10301719023914642
+true
+```
+
+All five additions preserve `Float32`, `Float64`, and `BigFloat` and support
+broadcasting. ForwardDiff supports derivatives in real order and argument;
+for the scaled functions the argument derivative includes the derivative
+of the scaling factor.
 
 ```@example U
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
