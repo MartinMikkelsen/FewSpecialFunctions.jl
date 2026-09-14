@@ -204,6 +204,79 @@ with the direct evaluation path in
 The latter shares our hypergeometric dependency, so that comparison alone
 does not establish numerical accuracy.
 
+### Real arguments
+
+The following plots hold `μ = 0.3` fixed and vary `κ`. For these parameters,
+`M` grows at large positive arguments, while `W` decays. Each panel uses its
+own vertical scale. The grid starts above zero because the API requires
+a nonzero argument.
+
+```@example WhittakerReal
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+default(fontfamily = "Computer Modern", linewidth = 2.5, framestyle = :box, grid = true, palette = :tab10) # hide
+
+x = range(0.05, 8, length = 250)
+μ = 0.3
+pM = plot(xlabel = L"x", ylabel = L"M_{\kappa,0.3}(x)", title = "Whittaker M", legend = :topleft)
+pW = plot(xlabel = L"x", ylabel = L"W_{\kappa,0.3}(x)", title = "Whittaker W", legend = :topright)
+for (κ, style) in zip((-0.5, 0.0, 0.5), (:solid, :dash, :dot))
+    plot!(pM, x, WhittakerM.(κ, μ, x), label = "κ = $κ", linestyle = style)
+    plot!(pW, x, WhittakerW.(κ, μ, x), label = "κ = $κ", linestyle = style)
+end
+plot(pM, pW, layout = (1, 2), size = (800, 350))
+```
+
+### Argument derivatives
+
+[`dWhittakerM`](@ref) and [`dWhittakerW`](@ref) give the slopes of the
+corresponding solutions. Here both parameters are fixed, and the derivatives
+are evaluated directly using the analytic formulas in the package.
+
+```@example WhittakerDerivatives
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+default(fontfamily = "Computer Modern", linewidth = 2.5, framestyle = :box, grid = true, palette = :tab10) # hide
+
+κ, μ = 0.2, 0.3
+x = range(0.1, 4, length = 250)
+plot(
+    x, dWhittakerM.(κ, μ, x), label = L"M'_{0.2,0.3}(x)",
+    xlabel = L"x", ylabel = "derivative", title = "Whittaker argument derivatives",
+    legend = :topleft, size = (650, 350)
+)
+plot!(x, dWhittakerW.(κ, μ, x), label = L"W'_{0.2,0.3}(x)", linestyle = :dash)
+```
+
+### Complex arguments
+
+This example follows the vertical line `z = 1 + iy`, which avoids the origin
+and the negative-real branch cut. For real `κ` and `μ`, conjugation symmetry
+makes the real parts even in `y` and the imaginary parts odd.
+
+```@example WhittakerComplex
+using Plots, FewSpecialFunctions, LaTeXStrings # hide
+ENV["GKSwstype"] = "100" # hide
+default(fontfamily = "Computer Modern", linewidth = 2.5, framestyle = :box, grid = true, palette = :tab10) # hide
+
+κ, μ = 0.2, 0.3
+y = range(-6, 6, length = 251)
+z = 1 .+ im .* y
+m = WhittakerM.(κ, μ, z)
+w = WhittakerW.(κ, μ, z)
+pM = plot(
+    y, real.(m), label = "real part", xlabel = L"y", ylabel = "value",
+    title = L"M_{0.2,0.3}(1+iy)", legend = :outerbottom, legend_columns = 2
+)
+plot!(pM, y, imag.(m), label = "imaginary part", linestyle = :dash)
+pW = plot(
+    y, real.(w), label = "real part", xlabel = L"y", ylabel = "value",
+    title = L"W_{0.2,0.3}(1+iy)", legend = :outerbottom, legend_columns = 2
+)
+plot!(pW, y, imag.(w), label = "imaginary part", linestyle = :dash)
+plot(pM, pW, layout = (1, 2), size = (800, 400))
+```
+
 ## Marcum Q-function
 
 The Marcum Q-function is a generalized integral involving the modified Bessel function of the first kind. It is widely used in communications and radar signal processing. The implementation in this package is based on the methods described in [arXiv:1311.0681v1](https://arxiv.org/pdf/1311.0681v1), providing accurate results for a wide range of parameters.
