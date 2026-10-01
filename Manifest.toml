@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "7129bbbb38e5340af02e6fe1a9f65ca2d1e78d25"
+project_hash = "6b04712ca5a0d7c19547c4a8956d764f30c1cbfc"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -33,7 +33,7 @@ version = "0.9.5"
 deps = ["HypergeometricFunctions", "QuadGK", "SpecialFunctions"]
 path = "."
 uuid = "6fcbd3ca-4273-49c4-98b3-81b765566de6"
-version = "0.1.13"
+version = "0.1.15"
 
     [deps.FewSpecialFunctions.extensions]
     FewSpecialFunctionsForwardDiffExt = "ForwardDiff"
@@ -134,9 +134,9 @@ version = "2.11.3"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
-git-tree-sha1 = "cd4b115137894ced9830a92bcdb95a6bd8f38880"
+git-tree-sha1 = "429071b23f4c9a13fb6582f807cc2ef454082408"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
-version = "2.8.2"
+version = "2.9.0"
 
     [deps.SpecialFunctions.extensions]
     SpecialFunctionsChainRulesCoreExt = "ChainRulesCore"
