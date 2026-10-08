@@ -1,113 +1,65 @@
 # Functions
 
-## Type flexibility
+This page describes each family of functions: its definition, the accepted
+arguments, the method, and examples. Number types and error estimates are
+collected in [Accuracy and number types](@ref), derivative support in
+[Automatic differentiation](@ref), and the docstrings in the
+[API reference](@ref).
 
-All functions in this package support generic numeric types. Instead of being restricted to `Float64`, the functions accept any `AbstractFloat` (or `Real`) input type and preserve the type through computation where possible. This means you can use `Float32` for faster computation with lower precision, or `BigFloat` for arbitrary-precision calculations.
-
-**Examples:**
-
-```julia
-# Float32 inputs → Float32 output
-debye_function(2.0f0, 1.0f0, 5.0f0)  # returns Float32
-
-# BigFloat for high precision
-debye_function(big"2.0", big"1.0", big"5.0")  # returns BigFloat
-
-# Integer inputs are automatically promoted to Float64
-U(0, 1)  # returns Float64
-
-# Mixed types promote to the widest common type
-debye_function(2.0f0, 1.0, 5.0f0)  # Float32 + Float64 → Float64
-```
-
-The following table summarizes the type behavior for each function family:
-
-| Function family | Input type constraint | Type preservation |
-|---|---|---|
-| Coulomb wave functions | `Number` | Via Julia's promotion rules |
-| Whittaker functions | `Number`; nonzero argument | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
-| Debye functions | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
-| Fresnel integrals | `Number` | Full (`Float32`, `Float64`, `BigFloat`); real and complex inputs |
-| Dawson integral | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
-| Clausen functions | `Real` for `θ` | Promoted to `AbstractFloat` |
-| Fermi-Dirac integrals | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
-| Bose–Einstein integrals | `Real`; integer or half-integer order | Full (`Float32`, `Float64`, `BigFloat`) |
-| Marcum Q-function | `Real` / `Number` | Full (`Float32`, `Float64`) |
-| Voigt function | `Real` | Full (`Float32`, `Float64`, `BigFloat`) |
-| Parabolic cylinder | `Real` / `AbstractFloat` | Full (`Float32`, `Float64`, `BigFloat`) |
-
-## Automatic differentiation
-
-All functions support automatic differentiation via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl). The extension is a weak dependency and is loaded automatically when `ForwardDiff` is available.
-
-### Differentiating Fresnel integrals
-
-The derivative of `FresnelC` is analytically `cos(πx²/2)`, which ForwardDiff recovers exactly:
-
-```julia
-using FewSpecialFunctions, ForwardDiff
-
-x0 = 0.7
-dC = ForwardDiff.derivative(FresnelC, x0)
-exact = cos((π / 2) * x0^2)
-isapprox(dC, exact)  # true
-```
-
-Similarly for `FresnelS`:
-
-```julia
-dS = ForwardDiff.derivative(FresnelS, x0)
-isapprox(dS, sin((π / 2) * x0^2))  # true
-```
-
-### Marcum Q-function
-
-The derivative of `MarcumQ(M, a, b)` with respect to `b` is available analytically via `dQdb`. ForwardDiff gives the same result:
-
-```julia
-M, a, b = 2.0, 1.5, 3.0
-dQ_ad = ForwardDiff.derivative(b -> MarcumQ(M, a, b), b)
-dQ_exact = dQdb(M, a, b)
-isapprox(dQ_ad, dQ_exact)  # true
-```
-
-ForwardDiff can also differentiate with respect to `a` or `M`, where no closed-form is available:
-
-```julia
-# Gradient with respect to both a and b simultaneously
-f(v) = MarcumQ(2.0, v[1], v[2])
-g = ForwardDiff.gradient(f, [1.5, 3.0])
-# g[1] ≈ d/da MarcumQ,  g[2] ≈ dQdb(2.0, 1.5, 3.0)
-```
-
-### Parabolic cylinder function
-
-The first derivative `dU(a, x)` is built in; ForwardDiff agrees with it. The second derivative follows from the parabolic cylinder ODE, `U''(a,x) = (x²/4 + a) U(a,x)`, and ForwardDiff recovers it by differentiating `dU`:
-
-```julia
-a, x0 = 0.5, 1.2
-
-# First derivative
-dU_ad = ForwardDiff.derivative(x -> U(a, x), x0)
-isapprox(dU_ad, dU(a, x0))  # true
-
-# Second derivative via ForwardDiff of dU
-d2U_ad = ForwardDiff.derivative(x -> dU(a, x), x0)
-d2U_ode = (x0^2 / 4 + a) * U(a, x0)   # from the ODE
-isapprox(d2U_ad, d2U_ode)  # true
-```
+The plotting examples use [Plots.jl](https://github.com/JuliaPlots/Plots.jl)
+and [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl), and
+two of them use
+[DomainColoring.jl](https://github.com/eprovst/DomainColoring.jl). These
+packages are not dependencies of
+FewSpecialFunctions.jl; install them with
+`import Pkg; Pkg.add(["Plots", "LaTeXStrings", "DomainColoring"])` to
+reproduce the figures.
 
 ## Coulomb wave functions
 
-The Coulomb wave functions are solutions to the radial Schrödinger equation for a charged particle in a Coulomb potential. This package implements both the regular (`F_ℓ(η, ρ)`) and irregular (`G_ℓ(η, ρ)`) Coulomb wave functions, as well as auxiliary functions and normalization constants. The implementation follows the approach described in [arXiv:1804.10976](https://arxiv.org/abs/1804.10976), using confluent hypergeometric functions and robust normalization. The functions are implemented for real and complex arguments, and special care is taken to ensure numerical stability across a wide range of parameters.
+The Coulomb wave functions solve the radial Schrödinger equation for a
+charged particle in a Coulomb potential,
 
-- `F(ℓ, η, ρ)`: Computes the regular Coulomb wave function using the normalization constant and the confluent hypergeometric function. For real arguments, the function returns the real part.
-- `G(ℓ, η, ρ)`: Computes the irregular Coulomb wave function as a combination of outgoing and incoming solutions.
-- `C(ℓ, η)`: Returns the normalization constant for the regular solution.
-- `η(a, k)`: Computes the Coulomb parameter.
-- `H⁺` and `H⁻`: Outgoing and incoming Coulomb wave functions, respectively.
+```math
+\frac{d^2u}{d\rho^2} + \left(1 - \frac{2\eta}{\rho} - \frac{\ell(\ell+1)}{\rho^2}\right)u = 0 .
+```
 
-The implementation is robust for both small and large arguments, and auxiliary functions such as derivatives and normalization factors are also provided. See the [reference](https://arxiv.org/abs/1804.10976) for mathematical details.
+All functions share three arguments: the angular momentum ``\ell``, the
+Coulomb (Sommerfeld) parameter ``\eta``, which is positive for a repulsive
+and negative for an attractive interaction, and the dimensionless radius
+``\rho = kr``. Real and complex values are accepted for all three.
+
+- [`F`](@ref)`(ℓ, η, ρ)` is the regular solution, ``F_\ell = C_\ell(\eta)\,\rho^{\ell+1}e^{-i\rho}\,{}_1F_1(\ell+1-i\eta;2\ell+2;2i\rho)``.
+- [`G`](@ref)`(ℓ, η, ρ)` is the irregular solution, ``G_\ell = (H^+_\ell + H^-_\ell)/2``.
+- [`H⁺`](@ref) and [`H⁻`](@ref) are the outgoing and incoming solutions,
+  defined through Tricomi's function ``U``; for real arguments ``H^\pm_\ell = G_\ell \pm iF_\ell``.
+- [`C`](@ref)`(ℓ, η)` is the normalization constant ``C_\ell(\eta) = 2^\ell e^{-\pi\eta/2}\,|\Gamma(\ell+1+i\eta)|/\Gamma(2\ell+2)`` for real arguments.
+- [`θ`](@ref)`(ℓ, η, ρ)` is the phase ``\rho - \ell\pi/2 - \eta\log 2\rho + \sigma_\ell(\eta)`` that the solutions approach at large ``\rho``.
+- [`η`](@ref)`(a, k)` computes the Coulomb parameter ``1/(ak)`` from the Bohr radius and wave number.
+
+`F`, `G`, `C`, and `θ` return real values for real arguments. The remaining
+functions ([`D⁺`](@ref), [`D⁻`](@ref), [`Φ`](@ref), [`M_regularized`](@ref),
+[`w`](@ref), [`w_plus`](@ref), [`w_minus`](@ref), [`h_plus`](@ref),
+[`h_minus`](@ref), [`g`](@ref), [`Φ_dot`](@ref), [`F_dot`](@ref), [`Ψ`](@ref),
+and `I`) are the building blocks of the connection formulas in
+[arXiv:1804.10976](https://arxiv.org/abs/1804.10976), which the
+implementation follows; their docstrings give the formula each one evaluates.
+
+```jldoctest coulomb
+julia> using FewSpecialFunctions
+
+julia> ℓ, η0, ρ = 0, 0.3, 2.0;
+
+julia> H⁺(ℓ, η0, ρ) ≈ G(ℓ, η0, ρ) + im * F(ℓ, η0, ρ)
+true
+
+julia> isapprox(F(ℓ, η0, 1.0e-4), C(ℓ, η0) * 1.0e-4; rtol = 1.0e-3)
+true
+```
+
+The confluent hypergeometric functions are evaluated by
+[HypergeometricFunctions.jl](https://github.com/JuliaMath/HypergeometricFunctions.jl), which determines the accuracy; see
+[Accuracy and number types](@ref).
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -122,7 +74,7 @@ xlabel!(L"ρ")
 title!("Regular Coulomb Wave Functions")
 ```
 
-Use a similar approach to plot the regular Coulomb functions for different a ``\ell``
+The same approach shows the regular Coulomb functions for several values of ``\ell``:
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -139,7 +91,9 @@ title!("Regular Coulomb Wave Functions for Different ℓ")
 xlabel!(L"ρ")
 ```
 
-## Complex plots
+### Complex arguments
+
+A domain coloring of ``F_0(z, z)`` in the complex plane:
 
 ```@example Complex_Coulomb
 using DomainColoring, FewSpecialFunctions, Plots
@@ -197,8 +151,8 @@ parameters or complex arguments. Its precision changes share the cylinder
 fallback lock described below.
 
 ForwardDiff uses analytic derivatives in `z` and finite differences for real
-`κ` and `μ`, following the package's existing differentiation convention.
-Tests include independent mpmath values; the implementation was also compared
+`κ` and `μ`; see [Automatic differentiation](@ref).
+Tests include independent [mpmath](https://mpmath.org) values; the implementation was also compared
 with the direct evaluation path in
 [WhittakerCoulomb.jl](https://github.com/banana-bred/WhittakerCoulomb.jl/tree/bab2a17).
 The latter shares our hypergeometric dependency, so that comparison alone
@@ -397,7 +351,7 @@ true
 All five additions preserve `Float32`, `Float64`, and `BigFloat` and support
 broadcasting. ForwardDiff supports derivatives in real order and argument;
 for the scaled functions the argument derivative includes the derivative
-of the scaling factor.
+of the scaling factor; see [Automatic differentiation](@ref).
 
 ```@example U
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -472,9 +426,41 @@ In solid state physics the Fermi-Dirac integral is given by
 ```math
     F_j(x) = \int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt.
 ```
-Approximations to this and the normalized case for ``j=-1/2``, ``j=1/2``, ``j=3/2`` and ``j=5/2`` are implemented to varying accuacy. Most are of the order of ``10^{-12}``.
+[`FermiDiracIntegral`](@ref)`(j, x)` approximates this unnormalized integral,
+and [`FermiDiracIntegralNorm`](@ref)`(j, x)` divides it by ``\Gamma(j+1)``.
+Both require ``j \ge -1/2`` and throw an error for smaller orders.
 
-Here is an example
+The method, and with it the accuracy, depends on the order:
+
+| Order ``j`` | Method | Measured relative error |
+|:--|:--|:--|
+| ``0`` | closed form ``\log(1+e^x)`` | ``1.5\times10^{-14}`` for ``x \ge -5`` |
+| ``-1/2,\ 1/2,\ 3/2,\ 5/2`` | Antia's rational approximations, in ``e^x`` for ``x<2`` and in ``1/x^2`` for ``x \ge 2`` | ``2.8\times10^{-12}`` or less |
+| any other ``j > -1/2`` | [closed-form expression of Aymerich-Humet, Serra-Mestres, and Millan](https://doi.org/10.1063/1.332276) | ``5.8\times10^{-3}`` to ``1.2\times10^{-2}`` at the tested orders ``1/4, 1, 2, 3, 9/2``; ``2.9\times10^{-2}`` at order ``10`` |
+
+Each figure is the maximum over a grid in ``-30 \le x \le 60`` relative to
+high-precision quadrature; the per-order values and the grid are given in
+[Accuracy and number types](@ref). The errors are properties of the
+approximations, not of the number type: `BigFloat` arguments return a
+`BigFloat` with the same error. For ``j = 0`` and ``x \ll 0`` the relative
+error grows (``1.0\times10^{-3}`` at ``x=-30``) while the absolute error
+stays below machine epsilon, and the result overflows to `Inf` once ``e^x``
+does.
+
+```jldoctest fermi_dirac
+julia> using FewSpecialFunctions
+
+julia> FermiDiracIntegral(3 / 2, 1.0) ≈ 2.6616826247307124
+true
+
+julia> FermiDiracIntegralNorm(1 / 2, 1.0) ≈ FermiDiracIntegral(1 / 2, 1.0) / (sqrt(π) / 2)
+true
+
+julia> FermiDiracIntegral(0, 0.0) ≈ log(2)
+true
+```
+
+The normalized integrals of the four half-integer orders:
 
 ```@example
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -573,7 +559,7 @@ xlabel!(L"\theta")
 title!("Clausen Functions")
 ```
 
-## Fresnel integrals 
+## Fresnel integrals
 
 The Fresnel integrals are
 
@@ -588,14 +574,23 @@ functions `FresnelC`, `FresnelS`, and `FresnelE` return the corresponding
 components. Real and complex arguments are supported; integer arguments are
 promoted to floating point.
 
-```julia
-using FewSpecialFunctions
+```jldoctest fresnel
+julia> using FewSpecialFunctions
 
-C, S, E = fresnel(1.0)
-FresnelC(1 + im)
-FresnelS(1 + im)
-FresnelE(1 + im)
+julia> C1, S1, E1 = fresnel(1.0);
+
+julia> round(C1; digits = 10), round(S1; digits = 10)
+(0.7798934004, 0.4382591474)
+
+julia> E1 == C1 + im * S1
+true
+
+julia> FresnelE(1 + im) ≈ FresnelC(1 + im) + im * FresnelS(1 + im)
+true
 ```
+
+`BigFloat` arguments are supported, with a gap for real arguments of
+intermediate magnitude described in [Accuracy and number types](@ref).
 
 ### Real axis
 
@@ -640,8 +635,23 @@ and the [upstream Fortran source repository](https://github.com/mofrehzaghloul/F
 D(x) = e^{-x^2}\int_0^x e^{t^2}\,\mathrm{d}t.
 ```
 
-`dawson(x)` evaluates the real Dawson integral. It is odd, is zero at the
-origin, and approaches `1 / (2x)` for large magnitude arguments.
+[`dawson`](@ref)`(x)` evaluates the Dawson integral for real `x`. It is odd,
+is zero at the origin, and approaches `1 / (2x)` for large `|x|`. It is
+related to the imaginary error function by
+``D(x) = \tfrac{\sqrt{\pi}}{2}e^{-x^2}\operatorname{erfi}(x)``.
+
+```jldoctest dawson
+julia> using FewSpecialFunctions
+
+julia> round(dawson(1.0); digits = 10)
+0.5380795069
+
+julia> dawson(-0.5) == -dawson(0.5)
+true
+
+julia> dawson(big"1.0") isa BigFloat
+true
+```
 
 ```@example Dawson
 using Plots, FewSpecialFunctions, LaTeXStrings # hide
@@ -649,7 +659,7 @@ ENV["GKSwstype"] = "100" # hide
 
 default(fontfamily="Computer Modern", linewidth=2.5, framestyle=:box, grid=true)
 x = range(-8, 8, length=1000)
-plot(x, FewSpecialFunctions.dawson.(x), label=L"D(x)", xlabel=L"x", ylabel="value", title="Dawson integral")
+plot(x, dawson.(x), label=L"D(x)", xlabel=L"x", ylabel="value", title="Dawson integral")
 ```
 
 The implementation uses the adaptive series and continued fractions described in

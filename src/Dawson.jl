@@ -93,6 +93,50 @@ function _dawson_real(x::T) where {T <: AbstractFloat}
     return copysign(value, x)
 end
 
+@doc raw"""
+    dawson(x::Real)
+
+Compute the Dawson integral
+
+```math
+D(x) = e^{-x^2}\int_0^x e^{t^2}\,\mathrm{d}t
+     = \frac{\sqrt{\pi}}{2}\,e^{-x^2}\operatorname{erfi}(x)
+```
+
+for real `x`. `D` is odd, `D(0) = 0`, and `D(x) ≈ 1/(2x)` for large `|x|`;
+`dawson(±Inf)` returns `±0` and `NaN` propagates.
+
+`Float32`, `Float64`, and `BigFloat` arguments return the same type; integers
+and other reals are converted with `float`. Complex arguments are not
+supported.
+
+The argument range is split into four regions: a continued fraction for
+`|x| ≤ sqrt(eps(T))`, a power series up to `max(8, sqrt(2log(1/eps(T))))`,
+a second continued fraction beyond that, and the leading term `1/(2x)` for
+`|x| ≥ 1/sqrt(eps(T))`. The series and continued fractions iterate until
+successive values agree to a relative `4eps(T)`, so the accuracy follows the
+precision of `T`; an `ErrorException` is thrown if that is not reached within
+10 000 terms.
+
+# Examples
+```jldoctest
+julia> dawson(0.0)
+0.0
+
+julia> dawson(1.0) ≈ 0.5380795069127684
+true
+
+julia> dawson(-0.5) == -dawson(0.5)
+true
+
+julia> dawson(1.0e10) ≈ 1 / 2.0e10
+true
+```
+
+# Reference
+M. R. Zaghloul, *Numerical Algorithms* 95, 1291–1308 (2023),
+[doi:10.1007/s11075-023-01608-8](https://doi.org/10.1007/s11075-023-01608-8).
+"""
 dawson(x::T) where {T <: AbstractFloat} = _dawson_real(x)
 dawson(x::Integer) = dawson(Float64(x))
 dawson(x::Real) = dawson(float(x))

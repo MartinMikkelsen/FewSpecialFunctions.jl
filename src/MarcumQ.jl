@@ -220,8 +220,16 @@ end
 """
     dQdb(M, a, b)
 
-Derivative ∂Q_M(a,b)/∂b of the (standard) Marcum Q-function of order `M`.
-Requires `M` integer ≥1 and `a>0`.
+Derivative `∂Q_M(a, b)/∂b` of the Marcum Q-function [`MarcumQ`](@ref),
+
+    ∂Q_M(a, b)/∂b = -b^M / a^(M-1) * exp(-(a² + b²)/2) * I_{M-1}(a*b),
+
+where `I` is the modified Bessel function of the first kind.
+
+Requires a real order `M ≥ 1`, integer or non-integer, and `a ≠ 0`; other
+values throw an `AssertionError`. This domain is narrower than that of
+`MarcumQ`, which accepts `M ≥ 0.5` and `a ≥ 0`. `dQdb(a, b)` uses `M = 1`,
+and any one argument may be an `AbstractArray`.
 """
 function dQdb(M::T1, a::T2, b::T2) where {T1 <: Real, T2 <: Real}
     @assert M ≥ 1 "order M must be ≥1"
