@@ -43,6 +43,8 @@ docs/build/
 # Buildkite: Ignore the entire .buildkite directory
 /.buildkite
 *.md
+!/CONTRIBUTING.md
+!/docs/src/*.md
 
 # Builtkite: json test data
 /test/results.json

@@ -2,25 +2,64 @@ using SpecialFunctions
 
 export FermiDiracIntegral, FermiDiracIntegralNorm
 
-"""
-    FermiDiracIntegral(j, x)
+@doc raw"""
+    FermiDiracIntegral(j::Real, x::Real)
 
-The Fermi-Dirac integral
+Approximate the unnormalized complete Fermi–Dirac integral
 
-Returns the value ``F_j(x)``
+```math
+\mathcal{F}_j(x) = \int_0^\infty \frac{t^j}{\exp(t-x)+1}\,\mathrm{d}t
+```
 
-Supports any `AbstractFloat` type (e.g., `Float32`, `Float64`, `BigFloat`).
+of order `j ≥ -1/2` at real `x`. No factor `1/Γ(j+1)` is included; see
+[`FermiDiracIntegralNorm`](@ref) for the normalized form. Orders `j < -1/2`
+throw an `ErrorException`.
 
-Resources:
-[1] D. Bednarczyk and J. Bednarczyk, Phys. Lett. A, 64, 409 (1978)
-[2] J. S. Blakemore, Solid-St. Electron, 25, 1067 (1982)
-[3] X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, Solid-St. Electron, 24, 981 (1981)
-[4] X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, J. Appl. Phys., 54, 2850 (1983)
-[5] H. M. Antia, Rational Function Approximations for Fermi-Dirac Integrals (1993)
+The arguments are promoted to a common floating-point type `T`, which is also
+the return type. The method then depends on the order:
 
-https://arxiv.org/abs/0811.0116
-https://en.wikipedia.org/wiki/Complete_Fermi%E2%80%93Dirac_integral
-https://dlmf.nist.gov/25.12#iii
+| Order `j` | Method | Measured relative error (`Float64`) |
+|:--|:--|:--|
+| `0` | closed form `log(1 + exp(x))` | `1.5e-14` for `x ≥ -5`; see below |
+| `-1/2`, `1/2`, `3/2`, `5/2` | rational approximations of Antia [5]: in `exp(x)` for `x < 2`, in `1/x²` for `x ≥ 2` | `2.8e-12`, `5.4e-13`, `5.1e-13`, `2.5e-13` |
+| any other `j > -1/2` | closed-form expression of Aymerich-Humet et al. [4] | `5.8e-3` to `1.2e-2` at the tested orders `1/4`, `1`, `2`, `3`, `9/2`; `2.9e-2` at order `10` |
+
+Each figure is the maximum over a grid of 190 points in `-30 ≤ x ≤ 60`,
+relative to quadrature of the integral in 512-bit arithmetic. They are
+measurements at the listed orders, not bounds; `docs/accuracy_checks.jl`
+reproduces them. The order is matched by exact comparison after conversion to
+`T`, so `1/2` selects the rational approximation and `0.5 + 1e-12` does not.
+
+The return type does not change the method. The coefficients of [5] are
+double-precision constants and the expression of [4] is an approximation, so a
+`BigFloat` result has the same error as the `Float64` one, and a `Float32`
+result is limited by single precision. Two limits of the `j = 0` form: for
+`x ≪ 0` the sum `1 + exp(x)` rounds, so the relative error grows as `x`
+decreases (about `1e-3` at `x = -30` in `Float64`) although the absolute
+error stays below `eps(T)`, and for `x` large enough that `exp(x)` overflows
+(`x > 709` in `Float64`) the result is `Inf`.
+
+# Examples
+```jldoctest
+julia> FermiDiracIntegral(3 / 2, 1.0) ≈ 2.6616826247307124
+true
+
+julia> FermiDiracIntegral(0, 0.0) ≈ log(2)
+true
+
+julia> FermiDiracIntegral(0.5f0, 1.0f0) isa Float32
+true
+```
+
+# References
+1. D. Bednarczyk and J. Bednarczyk, Phys. Lett. A 64, 409 (1978)
+2. J. S. Blakemore, Solid-State Electron. 25, 1067 (1982)
+3. X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, Solid-State Electron. 24, 981 (1981)
+4. X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, J. Appl. Phys. 54, 2850 (1983)
+5. H. M. Antia, Astrophys. J. Suppl. Ser. 84, 101 (1993)
+
+See also [Kim and Lundstrom, *Notes on Fermi-Dirac Integrals*](https://arxiv.org/abs/0811.0116)
+and [DLMF 25.12(iii)](https://dlmf.nist.gov/25.12#iii).
 """
 function FermiDiracIntegral(j::Real, x::Real)
     T = float(promote_type(typeof(j), typeof(x)))
@@ -94,25 +133,30 @@ function _fermi_dirac_rational(j::T, x::T, a1, b1, a2, b2) where {T <: AbstractF
 end
 
 @doc raw"""
-    FermiDiracIntegralNorm(j,x)
+    FermiDiracIntegralNorm(j::Real, x::Real)
 
-The Fermi-Dirac integral
+Approximate the normalized complete Fermi–Dirac integral
 
 ```math
-    F_j(x) = \frac{1}{\Gamma(j+1)}\int_0^\infty \frac{t^j}{\exp(t-x)+1} \, dt
+F_j(x) = \frac{1}{\Gamma(j+1)}\int_0^\infty \frac{t^j}{\exp(t-x)+1}\,\mathrm{d}t
 ```
 
-Returns the value ``F_j(x)``
+of order `j ≥ -1/2` at real `x`, computed as
+`FermiDiracIntegral(j, x) / gamma(j + 1)`. With this normalization
+`F_j(x) → exp(x)` as `x → -∞` and `dF_j/dx = F_{j-1}`.
 
-Resources:
-[1] D. Bednarczyk and J. Bednarczyk, Phys. Lett. A, 64, 409 (1978)
-[2] J. S. Blakemore, Solid-St. Electron, 25, 1067 (1982)
-[3] X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, Solid-St. Electron, 24, 981 (1981)
-[4] X. Aymerich-Humet, F. Serra-Mestres, and J. Millan, J. Appl. Phys., 54, 2850 (1983)
-[5] H. M. Antia, Rational Function Approximations for Fermi-Dirac Integrals (1993)
+The order restriction, the choice of method for each order, and the relative
+error are those of [`FermiDiracIntegral`](@ref). In particular, only
+`j ∈ (-1/2, 1/2, 3/2, 5/2)` and `j = 0` are computed to better than the
+relative error of `6e-3` to `3e-2` measured for the other tested orders.
 
-https://arxiv.org/abs/0811.0116
-https://de.wikipedia.org/wiki/Fermi-Dirac-Integral
-https://dlmf.nist.gov/25.12#iii
+# Examples
+```jldoctest
+julia> FermiDiracIntegralNorm(1 / 2, 1.0) ≈ FermiDiracIntegral(1 / 2, 1.0) / (sqrt(π) / 2)
+true
+
+julia> FermiDiracIntegralNorm(0, 0.0) ≈ log(2)
+true
+```
 """
 FermiDiracIntegralNorm(j::Real, eta::Real) = FermiDiracIntegral(j, eta) / gamma(j + 1)

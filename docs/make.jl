@@ -10,7 +10,10 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Functions" => "Functions.md",
-        "References" => "API.md",
+        "Accuracy and number types" => "accuracy.md",
+        "Automatic differentiation" => "differentiation.md",
+        "API reference" => "API.md",
+        "Bibliography" => "references.md",
     ],
     format = Documenter.HTML()
 )
